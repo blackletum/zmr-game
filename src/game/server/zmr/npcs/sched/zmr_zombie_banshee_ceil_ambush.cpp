@@ -6,16 +6,13 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern ConVar zm_sk_banshee_dmg_leap_ceilambush;
 
 extern ConVar zm_sv_banshee_ceilambush_detectrange;
 extern ConVar zm_sv_banshee_ceilambush_maxheight;
 
-
 // ZMRTODO: Change this to take into account the ceiling height and gravity in case the max height is changed.
-#define FASTZOMBIE_CLING_JUMPSPEED      700.0f
-
+#define FASTZOMBIE_CLING_JUMPSPEED 700.0f
 
 CBansheeCeilAmbushSchedule::CBansheeCeilAmbushSchedule()
 {
@@ -35,22 +32,18 @@ void CBansheeCeilAmbushSchedule::OnStart()
     m_bInLeap = false;
     m_bDidLeapAttack = false;
 
-
     if ( !pOuter->GetMotor()->IsOnGround() )
     {
         End( "Can't jump to ceiling while in air!" );
         return;
     }
 
-
     trace_t tr;
     Vector upwards = Vector( 0.0f, 0.0f, zm_sv_banshee_ceilambush_maxheight.GetFloat() );
     UTIL_TraceEntity( pOuter, pOuter->GetPosition(), pOuter->GetPosition() + upwards, MASK_NPCSOLID, &tr );
 
     // Valid surface? that is, a brush that is not the sky
-    if (tr.fraction == 1.0f
-    ||  !tr.DidHitWorld()
-    ||  tr.surface.flags & SURF_SKY) 
+    if ( tr.fraction == 1.0f || !tr.DidHitWorld() || tr.surface.flags & SURF_SKY )
     {
         End( "Couldn't find valid ceiling!" );
         return;
@@ -62,7 +55,6 @@ void CBansheeCeilAmbushSchedule::OnStart()
         return;
     }
 
-
     Vector vecMyPos = pOuter->GetPosition() + Vector( 0.0f, 0.0f, 1.0f );
 
     // Lift them off the ground a bit so step trace doesn't hit the floor.
@@ -72,7 +64,6 @@ void CBansheeCeilAmbushSchedule::OnStart()
     pOuter->GetMotor()->Jump();
 
     pOuter->DoAnimationEvent( ZOMBIEANIMEVENT_BANSHEEANIM, ACT_HOP );
-
 
     m_vecStartPos = vecMyPos;
 
@@ -97,12 +88,11 @@ void CBansheeCeilAmbushSchedule::OnEnd()
 
 void CBansheeCeilAmbushSchedule::OnUpdate()
 {
-    if ( (m_ExpireTimer.HasStarted() && m_ExpireTimer.IsElapsed()) )
+    if ( ( m_ExpireTimer.HasStarted() && m_ExpireTimer.IsElapsed() ) )
     {
         End( "Failed to jump to ceiling!" );
         return;
     }
-
 
     if ( m_bOnCeiling )
     {
@@ -112,16 +102,13 @@ void CBansheeCeilAmbushSchedule::OnUpdate()
         if ( pOuter->GetMoveType() != MOVETYPE_NONE )
             pOuter->SetAbsOrigin( m_vecCeilingPos );
 
-
         pOuter->GetMotor()->SetVelocity( vec3_origin );
         pOuter->SetMoveType( MOVETYPE_NONE );
-
 
         // Check for enemies to target
         if ( !m_NextAmbushCheck.HasStarted() || m_NextAmbushCheck.IsElapsed() )
         {
             m_NextAmbushCheck.Start( 0.2f );
-
 
             CBaseEntity* pTarget = GetClingAmbushTarget();
             if ( pTarget )
@@ -157,7 +144,6 @@ void CBansheeCeilAmbushSchedule::OnAnimActivityInterrupted( Activity newActivity
     if ( newActivity == ACT_FASTZOMBIE_LEAP_STRIKE )
         return;
 
-
     TryEnd( "Banshee ceiling ambush was interrupted by another activity!" );
 }
 
@@ -170,7 +156,6 @@ void CBansheeCeilAmbushSchedule::OnLandedGround( CBaseEntity* pEnt )
         TryEnd( "Finished leap successfully!" );
         return;
     }
-
 
     TryEnd( "We landed on ground, wat?" );
 }
@@ -198,15 +183,13 @@ void CBansheeCeilAmbushSchedule::OnTouch( CBaseEntity* pEnt, trace_t* tr )
         float minspd = CZMBanshee::GetMinLeapAttackSpeed();
 
         // Do some leap damage
-        if (!m_bDidLeapAttack
-        &&  pOuter->GetVel().LengthSqr() > (minspd*minspd)
-        &&  pEnt && pOuter->IsEnemy( pEnt ))
+        if ( !m_bDidLeapAttack && pOuter->GetVel().LengthSqr() > ( minspd * minspd ) && pEnt && pOuter->IsEnemy( pEnt ) )
         {
             Vector fwd;
             AngleVectors( pOuter->GetAngles(), &fwd );
             QAngle angPunch( 20.0f, random->RandomInt( -5.0f, 5.0f ), random->RandomInt( -5.0f, 5.0f ) );
             Vector vecPunchVel = fwd * 500.0f;
-    
+
             // Do more damage than normal leap
             float damage = zm_sk_banshee_dmg_leap_ceilambush.GetFloat();
 
@@ -261,21 +244,16 @@ CBaseEntity* CBansheeCeilAmbushSchedule::GetClingAmbushTarget() const
 
     Vector vecMyPos = pOuter->GetAbsOrigin();
 
-            
     int count = UTIL_EntitiesInSphere( pList, ARRAYSIZE( pList ), m_vecStartPos, zm_sv_banshee_ceilambush_detectrange.GetFloat(), FL_CLIENT );
-
 
     for ( int i = 0; i < count; i++ )
     {
         if ( !pList[i] )
             continue;
 
-
         CBaseEntity* pLoop = pList[i];
         if ( pLoop->GetTeamNumber() != ZMTEAM_HUMAN || !pLoop->IsAlive() )
             continue;
-
-
 
         if ( !pOuter->GetSenses()->HasLOS( pLoop->WorldSpaceCenter() ) )
             continue;
@@ -306,7 +284,6 @@ void CBansheeCeilAmbushSchedule::Leap( CBaseEntity* pTarget )
     m_bInLeap = true;
     m_bOnCeiling = false;
 
-
     pOuter->AcquireEnemy( pTarget );
 
     // Leap towards the enemy
@@ -322,7 +299,7 @@ void CBansheeCeilAmbushSchedule::Leap( CBaseEntity* pTarget )
     float distance = vecJump.Length();
     if ( distance > 0.0f && distance > maxspd )
     {
-        vecJump *= (maxspd / distance);
+        vecJump *= ( maxspd / distance );
     }
 
     pOuter->GetMotor()->SetVelocity( vecJump );

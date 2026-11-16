@@ -6,7 +6,6 @@ public:
     CZMInput();
     ~CZMInput();
 
-
     enum ScrollState_t
     {
         SCROLL_NONE = 0,
@@ -22,7 +21,6 @@ public:
     };
 
     virtual void AdjustYaw( float speed, QAngle& viewangles ) override;
-
 
     void SetScreenScrollStatePitch( ScrollState_t state );
     void SetScreenScrollStateYaw( ScrollState_t state );

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "zmr_zombiebase.h"
 
 class CZMImmolator : public CZMBaseZombie
@@ -14,7 +13,6 @@ public:
     CZMImmolator();
     ~CZMImmolator();
 
-
     virtual void Precache() override;
     virtual void Spawn() override;
 
@@ -25,7 +23,6 @@ public:
     virtual void Ignite( float flFlameLifetime, bool bNPCOnly = false, float flSize = 0.0f, bool bCalledByLevelDesigner = false ) override;
     virtual void Event_Killed( const CTakeDamageInfo& info ) override;
 
-
     virtual bool ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) const override;
 
     virtual bool ShouldPlayIdleSound() const override;
@@ -33,10 +30,8 @@ public:
     virtual void AlertSound() override;
     virtual void DeathSound() override;
 
-
 private:
     void StartFires();
-
 
     void BurnHurtOthers();
     float m_flNextBurnDamageTime;

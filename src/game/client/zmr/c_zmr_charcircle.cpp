@@ -1,12 +1,10 @@
 #include "cbase.h"
 //#include "fx_quad.h"
 
-
 #include "c_zmr_charcircle.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 CZMCharCircle::CZMCharCircle( const char* material, float size )
 {
@@ -57,52 +55,48 @@ void CZMCharCircle::Draw()
         pos = p4;
         VectorYawRotate( pos, m_flYaw, p4 );
     }
-    
 
     CMatRenderContextPtr pRenderContext( materials );
 
-	IMesh* pMesh = pRenderContext->GetDynamicMesh( true, nullptr, nullptr, m_pMaterial );
-	CMeshBuilder meshBuilder;
+    IMesh* pMesh = pRenderContext->GetDynamicMesh( true, nullptr, nullptr, m_pMaterial );
+    CMeshBuilder meshBuilder;
 
     meshBuilder.Begin( pMesh, MATERIAL_QUADS, 1 );
 
     pos = m_vecOrigin + p1;
 
-	meshBuilder.Position3fv( pos.Base() );
-	meshBuilder.Normal3fv( normal.Base() );
-	meshBuilder.TexCoord2f( 0.0f, 1.0f, 1.0f );
-	meshBuilder.Color4fv( m_flColor );
-	meshBuilder.AdvanceVertex();
+    meshBuilder.Position3fv( pos.Base() );
+    meshBuilder.Normal3fv( normal.Base() );
+    meshBuilder.TexCoord2f( 0.0f, 1.0f, 1.0f );
+    meshBuilder.Color4fv( m_flColor );
+    meshBuilder.AdvanceVertex();
 
     pos = m_vecOrigin + p2;
 
-	meshBuilder.Position3fv( pos.Base() );
-	meshBuilder.Normal3fv( normal.Base() );
-	meshBuilder.TexCoord2f( 0.0f, 0.0f, 1.0f );
-	meshBuilder.Color4fv( m_flColor );
-	meshBuilder.AdvanceVertex();
-
+    meshBuilder.Position3fv( pos.Base() );
+    meshBuilder.Normal3fv( normal.Base() );
+    meshBuilder.TexCoord2f( 0.0f, 0.0f, 1.0f );
+    meshBuilder.Color4fv( m_flColor );
+    meshBuilder.AdvanceVertex();
 
     pos = m_vecOrigin + p3;
 
-	meshBuilder.Position3fv( pos.Base() );
-	meshBuilder.Normal3fv( normal.Base() );
-	meshBuilder.TexCoord2f( 0.0f, 0.0f, 0.0f );
-	meshBuilder.Color4fv( m_flColor );
-	meshBuilder.AdvanceVertex();
-
+    meshBuilder.Position3fv( pos.Base() );
+    meshBuilder.Normal3fv( normal.Base() );
+    meshBuilder.TexCoord2f( 0.0f, 0.0f, 0.0f );
+    meshBuilder.Color4fv( m_flColor );
+    meshBuilder.AdvanceVertex();
 
     pos = m_vecOrigin + p4;
 
-	meshBuilder.Position3fv( pos.Base() );
-	meshBuilder.Normal3fv( normal.Base() );
-	meshBuilder.TexCoord2f( 0.0f, 1.0f, 0.0f );
-	meshBuilder.Color4fv( m_flColor );
-	meshBuilder.AdvanceVertex();
+    meshBuilder.Position3fv( pos.Base() );
+    meshBuilder.Normal3fv( normal.Base() );
+    meshBuilder.TexCoord2f( 0.0f, 1.0f, 0.0f );
+    meshBuilder.Color4fv( m_flColor );
+    meshBuilder.AdvanceVertex();
 
-
-	meshBuilder.End();
-	pMesh->Draw();
+    meshBuilder.End();
+    pMesh->Draw();
 }
 
 void CZMCharCircle::SetPos( const Vector& origin )

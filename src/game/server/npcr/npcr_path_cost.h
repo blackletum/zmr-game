@@ -1,12 +1,11 @@
 #pragma once
 
-
 #include "nav_mesh.h"
 #include "nav_pathfind.h"
 
 namespace NPCR
 {
-#define PATHCOST_INVALID        -1.0f
+#define PATHCOST_INVALID -1.0f
     abstract_class CBasePathCost
     {
     public:
@@ -17,19 +16,17 @@ namespace NPCR
             m_flMaxWalkGap = 32.0f; // Just assume our hull diameter.
         }
 
-        float           GetStepHeight() const { return m_flStepHeight; }
-        virtual void    SetStepHeight( float h ) { m_flStepHeight = h; }
+        float GetStepHeight() const { return m_flStepHeight; }
+        virtual void SetStepHeight( float h ) { m_flStepHeight = h; }
 
-        float           GetMaxPathLength() const { return m_flMaxPathLength; }
-        void            SetMaxPathLength( float l ) { m_flMaxPathLength = l; }
+        float GetMaxPathLength() const { return m_flMaxPathLength; }
+        void SetMaxPathLength( float l ) { m_flMaxPathLength = l; }
 
         // This is the maximum gap we can walk over. Different from absolute max gap.
-        float           GetMaxWalkGap() const { return m_flMaxWalkGap; }
-        virtual void    SetMaxWalkGap( float g ) { m_flMaxWalkGap = g; }
+        float GetMaxWalkGap() const { return m_flMaxWalkGap; }
+        virtual void SetMaxWalkGap( float g ) { m_flMaxWalkGap = g; }
 
-
-        virtual float   GetJumpCostMultiplier() const { return 2.0f; }
-
+        virtual float GetJumpCostMultiplier() const { return 2.0f; }
 
         // NAV
         virtual float operator()( CNavArea* area, CNavArea* fromArea, const CNavLadder* ladder, const CFuncElevator* elevator, float length ) const = 0;
@@ -37,13 +34,11 @@ namespace NPCR
         // AI Graph
         virtual float operator()( const Vector& vecNodePos, const Vector& vecTestPos, int fCapBitMask ) const = 0;
 
-
         // Can we build a straight path.
         virtual bool CanBuildSimpleRoute( const Vector& vecStart, const Vector& vecGoal ) const;
 
-
         static bool ComputePortalPoints( const CNavArea* from, const CNavArea* to, Vector& fromPos, Vector& toPos );
-    
+
     private:
         float m_flStepHeight;
         float m_flMaxPathLength;
@@ -67,7 +62,6 @@ namespace NPCR
         //int     GetHullHeight() const { return m_flHullHeight; }
         //void    SetHullHeight( int h ) { m_flHullHeight = h; }
 
-        
         virtual void SetStepHeight( float h ) override
         {
             // Make sure height change is at least step height.
@@ -77,13 +71,12 @@ namespace NPCR
             CBasePathCost::SetStepHeight( h );
         }
 
-        int     GetMaxHeightChange() const { return m_flMaxHeightChange; }
-        void    SetMaxHeightChange( float h ) { m_flMaxHeightChange = h; }
-
+        int GetMaxHeightChange() const { return m_flMaxHeightChange; }
+        void SetMaxHeightChange( float h ) { m_flMaxHeightChange = h; }
 
         // How big of a gap we are allowed to cross. This should be the max jump length.
-        float   GetAbsMaxGap() const { return m_flAbsMaxGap; }
-        void    SetAbsMaxGap( float g ) { m_flAbsMaxGap = g; }
+        float GetAbsMaxGap() const { return m_flAbsMaxGap; }
+        void SetAbsMaxGap( float g ) { m_flAbsMaxGap = g; }
 
         virtual void SetMaxWalkGap( float g ) override
         {
@@ -117,7 +110,6 @@ namespace NPCR
         float m_flMaxHeightChange;
         float m_flAbsMaxGap;
         //float m_flHullHeight;
-
 
         Vector m_vecStart;
         CNavArea* m_pStartArea;

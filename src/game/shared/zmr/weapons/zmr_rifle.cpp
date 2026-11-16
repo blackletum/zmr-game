@@ -4,15 +4,14 @@
 #include "items.h"
 #endif
 
-#include "animation.h"
 #include "ai_activity.h"
+#include "animation.h"
 #include "in_buttons.h"
 
 #include "zmr_rifle.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 REGISTER_WEAPON_CONFIG( ZMWeaponConfig::ZMCONFIGSLOT_RIFLE, CZMBasePumpConfig );
 
@@ -77,7 +76,6 @@ Vector CZMWeaponRifle::GetBulletSpread() const
         cone.z = ratio * cone.z;
     }
 
-
     return cone;
 }
 
@@ -90,7 +88,6 @@ void CZMWeaponRifle::CheckToggleZoom()
 {
     CZMPlayer* pPlayer = GetPlayerOwner();
     if ( !pPlayer ) return;
-
 
     if ( pPlayer->m_afButtonPressed & IN_ATTACK2 )
     {
@@ -130,7 +127,6 @@ void CZMWeaponRifle::CheckUnZoom()
     bool bWasZoomed = IsZoomed();
     if ( bWasZoomed )
         m_bInZoom = false;
-
 
     CZMPlayer* pPlayer = GetPlayerOwner();
     if ( pPlayer && bWasZoomed )
@@ -174,7 +170,6 @@ Activity CZMWeaponRifle::GetPrimaryAttackActivity()
     if ( !pVM )
         return BaseClass::GetPrimaryAttackActivity();
 
-
     // If we have a zoomed-in attack, play that while zoomed.
     const Activity actShootZoomed = ACT_VM_PRIMARYATTACK_SILENCED;
 
@@ -192,7 +187,6 @@ Activity CZMWeaponRifle::GetPumpAct() const
     auto* pVM = pOwner->GetViewModel( m_nViewModelIndex );
     if ( !pVM )
         return BaseClass::GetPumpAct();
-
 
     // If we have a zoomed-in pump, play that while zoomed.
     const Activity actPumpZoomed = ACT_VM_RELOAD_SILENCED;

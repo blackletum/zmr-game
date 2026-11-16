@@ -7,7 +7,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CZombieSwatObjSchedule::CZombieSwatObjSchedule()
 {
     m_vecFaceTowards = vec3_origin;
@@ -21,7 +20,6 @@ void CZombieSwatObjSchedule::OnStart()
     m_SwatAct = ACT_INVALID;
     m_bDidSwat = false;
 
-
     CZMBaseZombie* pOuter = GetOuter();
 
     CBaseEntity* pSwat = pOuter->GetSwatObject();
@@ -30,7 +28,6 @@ void CZombieSwatObjSchedule::OnStart()
         End( "No object to swat!" );
         return;
     }
-
 
     m_hSwatObject.Set( pSwat );
 
@@ -45,12 +42,10 @@ void CZombieSwatObjSchedule::OnStart()
     pOuter->SetNextAttack( gpGlobals->curtime + wait );
     //pOuter->SetNextMove( gpGlobals->curtime + wait );
 
-
     m_FinishTimer.Start( wait );
 
-
     CBaseEntity* pEnemy = pOuter->GetEnemy();
-    m_vecFaceTowards = (pEnemy && pOuter->GetActivity() != ACT_MELEE_ATTACK1) ? pEnemy->WorldSpaceCenter() : pSwat->WorldSpaceCenter();
+    m_vecFaceTowards = ( pEnemy && pOuter->GetActivity() != ACT_MELEE_ATTACK1 ) ? pEnemy->WorldSpaceCenter() : pSwat->WorldSpaceCenter();
 }
 
 void CZombieSwatObjSchedule::OnUpdate()
@@ -60,7 +55,6 @@ void CZombieSwatObjSchedule::OnUpdate()
         End( "Successfully finished swatting!" );
         return;
     }
-
 
     CZMBaseZombie* pOuter = GetOuter();
 
@@ -100,10 +94,9 @@ void CZombieSwatObjSchedule::OnQueuedCommand( CBasePlayer* pPlayer, ZombieComman
         // Check if ZM wants for our swat to be interrupted.
         int flags = ToZMPlayer( pPlayer )->GetZMCommandInterruptFlags();
 
-        if ( !(flags & ZCO_SWAT) )
+        if ( !( flags & ZCO_SWAT ) )
             return;
     }
-
 
     TryEnd( "We were commanded to do something else!" );
 
@@ -130,12 +123,11 @@ void CZombieSwatObjSchedule::DoSwatting()
     // out of range.
     float range = pSwat->BoundingRadius() + pOuter->GetClawAttackRange() + 5.0f;
 
-    if ( pSwat->WorldSpaceCenter().DistToSqr( pOuter->GetAttackPos() ) > (range*range) )
+    if ( pSwat->WorldSpaceCenter().DistToSqr( pOuter->GetAttackPos() ) > ( range * range ) )
     {
         TryEnd( "Swatting object was suddenly too far during the swat event!" );
         return;
     }
-
 
     if ( pOuter->SwatObject( pSwat ) )
     {

@@ -8,7 +8,6 @@ public:
     CZMResourceSystem();
     ~CZMResourceSystem();
 
-
     void OnRoundStart();
     void GainResources( CZMPlayer* pPlayer );
 
@@ -24,7 +23,6 @@ protected:
     int GetSurvivorCount() const;
     int GetRealSurvivorCount() const;
     int GetMaxSurvivors() const;
-
 
     void ResetState();
 

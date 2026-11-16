@@ -3,7 +3,6 @@
 #include "npcr_basenpc.h"
 #include "npcr_component.h"
 
-
 namespace NPCR
 {
     class CBaseMotor : public CEventListener
@@ -11,7 +10,6 @@ namespace NPCR
     public:
         CBaseMotor( CBaseNPC* pNPC );
         ~CBaseMotor();
-        
 
         virtual const char* GetComponentName() const override { return "BaseMotor"; }
 
@@ -30,11 +28,10 @@ namespace NPCR
 
         bool CanStandOnNormal( const Vector& vecNormal ) const { return vecNormal.z >= GetSlopeLimit(); }
 
-
         const Vector& GetMoveDir() const { return m_vecMoveDir; }
         virtual const Vector& GetVelocity() const { return GetNPC()->GetVel(); }
         virtual void SetVelocity( const Vector& vecVel ) { GetNPC()->SetVel( vecVel ); }
-        
+
         virtual float GetHullHeight() const { return 72.0f; }
         virtual float GetHullWidth() const { return 26.0f; }
         virtual float GetMovementSpeed() const { return 100.0f; }
@@ -47,9 +44,8 @@ namespace NPCR
         virtual bool UsePitch() const { return false; }
         virtual float GetYawRate( float delta ) const { return 300.0f; }
 
-
-        virtual CBaseEntity*    GetGroundEntity() const { return m_hGroundEnt.Get(); }
-        virtual bool            IsOnGround() const { return m_bOnGround; }
+        virtual CBaseEntity* GetGroundEntity() const { return m_hGroundEnt.Get(); }
+        virtual bool IsOnGround() const { return m_bOnGround; }
 
         virtual void OnLandedGround( CBaseEntity* pGround ) override;
         virtual void OnLeftGround( CBaseEntity* pOldGround ) override;
@@ -59,26 +55,24 @@ namespace NPCR
         virtual void Climb();
 
         static Vector CalcJumpLaunchVelocity( const Vector& startPos, const Vector& endPos, float flGravity, float* pminHeight, float maxHorzVelocity, Vector* pvecApex );
-        
+
     protected:
         virtual bool ShouldAdjustVelocity() const { return m_bAdjustVel; }
 
         void UpdateMoving() { m_MoveTimer.Start( 0.2f ); }
         const Vector& GetGroundNormal() const { return m_vecGroundNormal; }
 
-
-        CBaseEntity*    UpdateGround();
-        Vector          HandleCollisions( const Vector& vecGoal );
-        void            MoveTowards( const Vector& vecNewPos );
-        bool            FixStuck( const trace_t& tr, Vector& vecValidPos ) const;
-
+        CBaseEntity* UpdateGround();
+        Vector HandleCollisions( const Vector& vecGoal );
+        void MoveTowards( const Vector& vecNewPos );
+        bool FixStuck( const trace_t& tr, Vector& vecValidPos ) const;
 
         Vector m_vecMoveDir;
         Vector m_vecDesiredMoveDir;
         bool m_bForceGravity;
         float m_flGroundZOffset;
         bool m_bDoStepDownTrace;
-        
+
     private:
         Vector m_vecGroundNormal;
         CountdownTimer m_MoveTimer;

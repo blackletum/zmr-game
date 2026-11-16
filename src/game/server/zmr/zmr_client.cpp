@@ -1,14 +1,13 @@
 #include "cbase.h"
-#include "gamerules.h"
-#include "teamplay_gamerules.h"
-#include "entitylist.h"
-#include "physics.h"
-#include "game.h"
-#include "player_resource.h"
 #include "engine/IEngineSound.h"
+#include "entitylist.h"
+#include "game.h"
+#include "gamerules.h"
+#include "physics.h"
+#include "player_resource.h"
+#include "teamplay_gamerules.h"
 
 #include "tier0/vprof.h"
-
 
 #include "zmr_gamerules.h"
 #include "zmr_player.h"
@@ -18,7 +17,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 /*
     NOTE: You must remove hl2mp/hl2mp_client.cpp from project.
 
@@ -26,12 +24,12 @@
 
 //ConVar sv_motd_unload_on_dismissal( "sv_motd_unload_on_dismissal", "0", 0, "If enabled, the MOTD contents will be unloaded when the player closes the MOTD." );
 
-extern CBaseEntity*	FindPickerEntityClass( CBasePlayer *pPlayer, char *classname );
-extern bool			g_fGameOver;
+extern CBaseEntity* FindPickerEntityClass( CBasePlayer* pPlayer, char* classname );
+extern bool g_fGameOver;
 
-void ClientPutInServer( edict_t *pEdict, const char *playername )
+void ClientPutInServer( edict_t* pEdict, const char* playername )
 {
-    CZMPlayer *pPlayer = CZMPlayer::CreatePlayer( "player", pEdict );
+    CZMPlayer* pPlayer = CZMPlayer::CreatePlayer( "player", pEdict );
 
     pPlayer->SetPlayerName( playername );
     pPlayer->SetPickPriority( 0 );
@@ -39,24 +37,23 @@ void ClientPutInServer( edict_t *pEdict, const char *playername )
 
 void FinishClientPutInServer( CZMPlayer* pPlayer )
 {
-	pPlayer->InitialSpawn();
-	pPlayer->Spawn();
+    pPlayer->InitialSpawn();
+    pPlayer->Spawn();
 
+    char sName[128];
+    Q_strncpy( sName, pPlayer->GetPlayerName(), sizeof( sName ) );
 
-	char sName[128];
-	Q_strncpy( sName, pPlayer->GetPlayerName(), sizeof( sName ) );
-	
-	// First parse the name and remove any %'s
-	for ( char *pApersand = sName; pApersand != nullptr && *pApersand != 0; pApersand++ )
-	{
-		// Replace it with a space
-		if ( *pApersand == '%' )
-				*pApersand = ' ';
-	}
+    // First parse the name and remove any %'s
+    for ( char* pApersand = sName; pApersand != nullptr && *pApersand != 0; pApersand++ )
+    {
+        // Replace it with a space
+        if ( *pApersand == '%' )
+            *pApersand = ' ';
+    }
 
-	// notify other clients of player joining the game
-	UTIL_ClientPrintAll( HUD_PRINTNOTIFY, "#Game_connected", sName[0] != 0 ? sName : "<unconnected>" );
-    
+    // notify other clients of player joining the game
+    UTIL_ClientPrintAll( HUD_PRINTNOTIFY, "#Game_connected", sName[0] != 0 ? sName : "<unconnected>" );
+
     /*
 	const ConVar *hostname = cvar->FindVar( "hostname" );
 	const char *title = (hostname) ? hostname->GetString() : "MESSAGE OF THE DAY";
@@ -74,89 +71,87 @@ void FinishClientPutInServer( CZMPlayer* pPlayer )
 
     if ( pRules )
     {
-        pRules-> OnClientFinishedPutInServer( pPlayer );
+        pRules->OnClientFinishedPutInServer( pPlayer );
     }
 }
 
-void ClientActive( edict_t *pEdict, bool bLoadGame )
+void ClientActive( edict_t* pEdict, bool bLoadGame )
 {
-	// Can't load games in MP!
-	Assert( !bLoadGame );
+    // Can't load games in MP!
+    Assert( !bLoadGame );
 
-
-	CZMPlayer* pPlayer = ToZMPlayer( CBaseEntity::Instance( pEdict ) );
+    CZMPlayer* pPlayer = ToZMPlayer( CBaseEntity::Instance( pEdict ) );
 
     Assert( pPlayer );
 
-
-	FinishClientPutInServer( pPlayer );
+    FinishClientPutInServer( pPlayer );
 }
 
-void respawn( CBaseEntity *pEdict, bool fCopyCorpse )
+void respawn( CBaseEntity* pEdict, bool fCopyCorpse )
 {
-	CZMPlayer* pPlayer = ToZMPlayer( pEdict );
+    CZMPlayer* pPlayer = ToZMPlayer( pEdict );
 
-	if ( pPlayer )
-	{
-		if ( gpGlobals->curtime > pPlayer->GetDeathTime() + DEATH_ANIMATION_TIME )
-		{		
-			//pPlayer->Spawn();
+    if ( pPlayer )
+    {
+        if ( gpGlobals->curtime > pPlayer->GetDeathTime() + DEATH_ANIMATION_TIME )
+        {
+            //pPlayer->Spawn();
             pPlayer->ChangeTeam( ZMTEAM_SPECTATOR );
-		}
-		else
-		{
-			pPlayer->SetNextThink( gpGlobals->curtime + 0.1f );
-		}
-	}
+        }
+        else
+        {
+            pPlayer->SetNextThink( gpGlobals->curtime + 0.1f );
+        }
+    }
 }
 
 void ClientGamePrecache( void )
 {
-	CBaseEntity::PrecacheModel("models/player.mdl");
-	CBaseEntity::PrecacheModel( "models/gibs/agibs.mdl" );
-	CBaseEntity::PrecacheModel ("models/weapons/v_hands.mdl");
+    CBaseEntity::PrecacheModel( "models/player.mdl" );
+    CBaseEntity::PrecacheModel( "models/gibs/agibs.mdl" );
+    CBaseEntity::PrecacheModel( "models/weapons/v_hands.mdl" );
 
-	CBaseEntity::PrecacheScriptSound( "HUDQuickInfo.LowAmmo" );
-	CBaseEntity::PrecacheScriptSound( "HUDQuickInfo.LowHealth" );
+    CBaseEntity::PrecacheScriptSound( "HUDQuickInfo.LowAmmo" );
+    CBaseEntity::PrecacheScriptSound( "HUDQuickInfo.LowHealth" );
 
-	CBaseEntity::PrecacheScriptSound( "FX_AntlionImpact.ShellImpact" );
-	CBaseEntity::PrecacheScriptSound( "Missile.ShotDown" );
-	CBaseEntity::PrecacheScriptSound( "Bullets.DefaultNearmiss" );
-	CBaseEntity::PrecacheScriptSound( "Bullets.GunshipNearmiss" );
-	CBaseEntity::PrecacheScriptSound( "Bullets.StriderNearmiss" );
-	
-	CBaseEntity::PrecacheScriptSound( "Geiger.BeepHigh" );
-	CBaseEntity::PrecacheScriptSound( "Geiger.BeepLow" );
+    CBaseEntity::PrecacheScriptSound( "FX_AntlionImpact.ShellImpact" );
+    CBaseEntity::PrecacheScriptSound( "Missile.ShotDown" );
+    CBaseEntity::PrecacheScriptSound( "Bullets.DefaultNearmiss" );
+    CBaseEntity::PrecacheScriptSound( "Bullets.GunshipNearmiss" );
+    CBaseEntity::PrecacheScriptSound( "Bullets.StriderNearmiss" );
+
+    CBaseEntity::PrecacheScriptSound( "Geiger.BeepHigh" );
+    CBaseEntity::PrecacheScriptSound( "Geiger.BeepLow" );
 }
 
-const char *GetGameDescription()
+const char* GetGameDescription()
 {
     return ( g_pGameRules ) ? g_pGameRules->GetGameDescription() : ZMR_GAMEDESC;
 }
 
 void InstallGameRules()
 {
-	CreateGameRulesObject( "CZMRules" );
+    CreateGameRulesObject( "CZMRules" );
 }
 
-CBaseEntity* FindEntity( edict_t *pEdict, char *classname)
+CBaseEntity* FindEntity( edict_t* pEdict, char* classname )
 {
-	// If no name was given set bits based on the picked
-	if (FStrEq(classname,"")) 
-	{
-		return (FindPickerEntityClass( static_cast<CBasePlayer*>(GetContainingEntity(pEdict)), classname ));
-	}
-	return nullptr;
+    // If no name was given set bits based on the picked
+    if ( FStrEq( classname, "" ) )
+    {
+        return ( FindPickerEntityClass( static_cast<CBasePlayer*>( GetContainingEntity( pEdict ) ), classname ) );
+    }
+    return nullptr;
 }
 
 void GameStartFrame( void )
 {
-	VPROF("GameStartFrame()");
-	if ( g_fGameOver )
-		return;
+    VPROF( "GameStartFrame()" );
+    if ( g_fGameOver )
+        return;
 
-	//gpGlobals->teamplay = (teamplay.GetInt() != 0);
+    //gpGlobals->teamplay = (teamplay.GetInt() != 0);
 
-	//extern void Bot_RunAll();
-	//Bot_RunAll();
+    //extern void Bot_RunAll();
+    //Bot_RunAll();
 }

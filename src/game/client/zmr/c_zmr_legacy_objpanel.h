@@ -1,7 +1,7 @@
 #pragma once
 
-#define ZM_OBJ_MAX_SIZE                 ( 4 * 1024 )
-#define ZM_OBJ_STRINGTABLE_ENTRY        "mapinfo"
+#define ZM_OBJ_MAX_SIZE          ( 4 * 1024 )
+#define ZM_OBJ_STRINGTABLE_ENTRY "mapinfo"
 
 namespace ZMLegacyObjPanel
 {

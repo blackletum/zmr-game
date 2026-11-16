@@ -15,20 +15,16 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
-
-#define CRITICAL_HEALTH         25
-
+#define CRITICAL_HEALTH 25
 
 class CZMHudHPBar : public CHudElement, public Panel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMHudHPBar, Panel );
 
-    CZMHudHPBar( const char *pElementName );
-
+    CZMHudHPBar( const char* pElementName );
 
     virtual void Init() override;
     virtual void VidInit() override;
@@ -37,7 +33,7 @@ public:
     virtual void OnThink() override;
     virtual void Paint() override;
 
-    void MsgFunc_Damage( bf_read &msg );
+    void MsgFunc_Damage( bf_read& msg );
 
 private:
     int m_nHealth;
@@ -46,13 +42,11 @@ private:
     int m_nTexFgCriticalId;
     int m_nTexFgId;
 
-	int m_nTexPanelBgId;
-
+    int m_nTexPanelBgId;
 
     void PaintString( const HFont, const wchar_t*, const Color& );
-	void PaintBg();
+    void PaintBg();
     void PaintBar();
-
 
     CPanelAnimationVar( Color, m_HealthColor, "HealthColor", "ZMFgColor" );
 
@@ -68,21 +62,19 @@ private:
     CPanelAnimationVarAliasType( float, m_flHealthX, "HealthX", "0", "proportional_float" );
     CPanelAnimationVarAliasType( float, m_flHealthY, "HealthY", "0", "proportional_float" );
 
-
     CPanelAnimationVar( float, m_flBlur, "Blur", "0" );
 
     CPanelAnimationVar( HFont, m_hFont, "HealthBarFont", "HudNumbers" );
     CPanelAnimationVar( HFont, m_hGlowFont, "HealthBarGlowFont", "HudNumbersGlow" );
     CPanelAnimationVar( HFont, m_hShadowFont, "HealthBarShadowFont", "HudNumbersShadow" );
 
-	CPanelAnimationVar( Color, m_BgColor, "BgColor", "ZMHudBgColor" );
+    CPanelAnimationVar( Color, m_BgColor, "BgColor", "ZMHudBgColor" );
 };
 
 DECLARE_HUDELEMENT( CZMHudHPBar );
 DECLARE_HUD_MESSAGE( CZMHudHPBar, Damage );
 
-
-CZMHudHPBar::CZMHudHPBar( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudHPBar" )
+CZMHudHPBar::CZMHudHPBar( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudHPBar" )
 {
     m_flBarSize = 0.0f;
     m_flBarX = 0.0f;
@@ -101,9 +93,7 @@ CZMHudHPBar::CZMHudHPBar( const char *pElementName ) : CHudElement( pElementName
 
     SetHiddenBits( HIDEHUD_HEALTH | HIDEHUD_PLAYERDEAD | HIDEHUD_NEEDSUIT );
 
-
     SetPaintBackgroundEnabled( false );
-
 
     m_nTexBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBgId, "zmr_effects/hpbar_bg", true, false );
@@ -113,7 +103,6 @@ CZMHudHPBar::CZMHudHPBar( const char *pElementName ) : CHudElement( pElementName
 
     m_nTexFgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexFgId, "zmr_effects/hpbar_fg", true, false );
-
 
     m_nTexPanelBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexPanelBgId, "zmr_effects/hud_bg_hp", true, false );
@@ -142,9 +131,7 @@ void CZMHudHPBar::OnThink()
     C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
     if ( !pPlayer ) return;
 
-
     int newhp = pPlayer->GetHealth();
-
 
     if ( newhp != m_nHealth )
     {
@@ -163,18 +150,14 @@ void CZMHudHPBar::OnThink()
 
 void CZMHudHPBar::Paint()
 {
-	PaintBg();
+    PaintBg();
     PaintBar();
-
 
     int hp = m_nHealth;
     if ( hp < 0 ) hp = 0;
 
-
     wchar_t szHp[8];
     V_snwprintf( szHp, ARRAYSIZE( szHp ), L"%i", hp );
-
-
 
     // Draw shadow.
     PaintString( m_hShadowFont, szHp, Color( 0, 0, 0, 255 ) );
@@ -207,7 +190,6 @@ void CZMHudHPBar::PaintBg()
     int offset_x = m_flBgX;
     int offset_y = m_flBgY;
 
-
     surface()->DrawSetColor( m_BgColor );
     surface()->DrawSetTexture( m_nTexPanelBgId );
     surface()->DrawTexturedRect( offset_x, offset_y, offset_x + size_x, offset_y + size_y );
@@ -223,26 +205,23 @@ void CZMHudHPBar::PaintBar()
     int offset_x = m_flBarX;
     int offset_y = m_flBarY;
 
-    
     surface()->DrawSetTexture( m_nTexBgId );
     surface()->DrawTexturedRect( offset_x, offset_y, offset_x + size_x, offset_y + size_y );
-
 
     float hp = (float)m_nHealth;
 
     if ( hp <= 0.0f ) return;
     if ( hp > 100.0f ) hp = 100.0f;
 
+    float frac = 1.0f - ( hp / 100.0f );
 
-    float frac = 1.0f - (hp / 100.0f);
-
-    int fill_y = (int)(m_flBarSize * frac);
+    int fill_y = (int)( m_flBarSize * frac );
 
     surface()->DrawSetTexture( ( m_nHealth < CRITICAL_HEALTH ) ? m_nTexFgCriticalId : m_nTexFgId );
     surface()->DrawTexturedSubRect( offset_x, offset_y + fill_y, offset_x + size_x, offset_y + size_y, 0.0f, frac, 1.0f, 1.0f );
 }
 
-void CZMHudHPBar::MsgFunc_Damage( bf_read &msg )
+void CZMHudHPBar::MsgFunc_Damage( bf_read& msg )
 {
     msg.ReadByte(); // armor
     int dmg = msg.ReadByte();
@@ -252,7 +231,6 @@ void CZMHudHPBar::MsgFunc_Damage( bf_read &msg )
     msg.ReadBitCoord();
     msg.ReadBitCoord();
     msg.ReadBitCoord();
-
 
     if ( dmg > 0 )
     {

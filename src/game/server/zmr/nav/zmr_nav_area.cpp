@@ -1,12 +1,11 @@
 #include "cbase.h"
 #include "vscript_server.h"
 
-#include "zmr_nav_mesh.h"
 #include "zmr_nav_area.h"
+#include "zmr_nav_mesh.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 bool CNavAreaScriptInstanceHelper::ToString( void* p, char* pBuf, int bufSize )
 {
@@ -122,9 +121,7 @@ void CZMRNavArea::UpdateBlocked( bool force, int teamID )
         return;
     }
 
-
     BaseClass::UpdateBlocked( force, teamID );
-
 
     /*m_BlockedTimer.Start( 1.0f );
 

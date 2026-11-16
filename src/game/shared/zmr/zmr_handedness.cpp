@@ -9,7 +9,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 #ifdef CLIENT_DLL
 ConVar zm_cl_lefthanded( "zm_cl_lefthanded", "0", FCVAR_ARCHIVE | FCVAR_USERINFO, "Use left-handed viewmodels?" );
 #endif

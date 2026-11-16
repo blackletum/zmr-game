@@ -1,14 +1,12 @@
 #pragma once
 
-
 #include "igamesystem.h"
-
 
 typedef int FMODSoundHandle_t;
 typedef int FMODChannelHandle_t;
 
-#define INVALID_FMODSOUND_HANDLE        ((FMODSoundHandle_t)-1)
-#define INVALID_FMODCHANNEL_HANDLE      ((FMODChannelHandle_t)-1)
+#define INVALID_FMODSOUND_HANDLE   ( ( FMODSoundHandle_t ) - 1 )
+#define INVALID_FMODCHANNEL_HANDLE ( ( FMODChannelHandle_t ) - 1 )
 
 namespace FMOD
 {
@@ -29,37 +27,34 @@ public:
 
     virtual void Update( float frametime ) override;
 
-
     static bool HasFMOD() { return s_pFMODSystem != nullptr; }
 
+    FMODSoundHandle_t RegisterSound( const char* relpath );
 
-    FMODSoundHandle_t   RegisterSound( const char* relpath );
-
-    float               GetMasterVolume() const;
-    void                SetMasterVolume( float volume );
-    bool                IsMuted() const;
+    float GetMasterVolume() const;
+    void SetMasterVolume( float volume );
+    bool IsMuted() const;
 
     FMODChannelHandle_t StartSound( FMODSoundHandle_t hndl, float fadeintime = 0.0f );
-    bool                StopSound( FMODChannelHandle_t hndl, float fadeouttime = 0.0f );
+    bool StopSound( FMODChannelHandle_t hndl, float fadeouttime = 0.0f );
 
-    bool                IsSoundPlaying( FMODChannelHandle_t hndl ) const;
-    bool                IsSoundReadyToPlay( FMODSoundHandle_t hndl ) const;
+    bool IsSoundPlaying( FMODChannelHandle_t hndl ) const;
+    bool IsSoundReadyToPlay( FMODSoundHandle_t hndl ) const;
 
 private:
     void Release();
 
-    FMODSoundHandle_t   CreateSoundHandle();
+    FMODSoundHandle_t CreateSoundHandle();
     FMODChannelHandle_t CreateChannelHandle();
 
     void SetMasterVolumeInternal( float volume );
 
     void UpdateFocusVolume();
 
+    CUtlVector<FMOD::Sound*> m_vpSounds;
+    CUtlVector<FMOD::Channel*> m_vpChannels;
 
-    CUtlVector<FMOD::Sound*>    m_vpSounds;
-    CUtlVector<FMOD::Channel*>  m_vpChannels;
-
-    static FMOD::System*        s_pFMODSystem;
+    static FMOD::System* s_pFMODSystem;
 
     float m_flMasterVolume;
     bool m_bMuted;

@@ -9,29 +9,26 @@ class C_NPCRNonPlayer : public C_BaseCombatCharacter
 public:
     DECLARE_CLASS( C_NPCRNonPlayer, C_BaseCombatCharacter );
 
-
     C_NPCRNonPlayer();
-
 
     virtual void PostDataUpdate( DataUpdateType_t updateType ) override;
 
     virtual bool IsNPCR() const override { return true; }
 
-
     // Shared - Implemented in npcr_nonplayer_shared
 public:
-    virtual int     GetAnimationRandomSeed();
+    virtual int GetAnimationRandomSeed();
 
-    bool            HasActivity( Activity act );
-    Activity        GetActivity() const { return m_iCurActivity; }
-    bool            SetActivity( Activity act );
+    bool HasActivity( Activity act );
+    Activity GetActivity() const { return m_iCurActivity; }
+    bool SetActivity( Activity act );
+
 private:
-    Activity    m_iCurActivity;
-    Activity    m_iLastActivity;
-    bool        m_bCurActivityLoops;
+    Activity m_iCurActivity;
+    Activity m_iLastActivity;
+    bool m_bCurActivityLoops;
+
 public:
-
-
     virtual void DispatchAnimEvents();
     virtual void HandleAnimEvent( animevent_t* pEvent );
 };

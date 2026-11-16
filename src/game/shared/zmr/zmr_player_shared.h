@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #ifndef CLIENT_DLL
 #include "zmr_player.h"
 #else
@@ -14,9 +12,7 @@
 #define C_ZMPlayer CZMPlayer
 #endif
 
-
 #include "shot_manipulator.h"
-
 
 struct ZMFireBulletsInfo_t;
 
@@ -27,13 +23,12 @@ public:
 
     virtual bool ShouldHitEntity( IHandleEntity* pHandleEntity, int contentsMask ) override;
 
+    int AddToIgnoreList( CBaseEntity* pIgnore );
+    bool RemoveFromIgnoreList( CBaseEntity* pIgnore );
+    void ClearIgnoreList();
 
-    int     AddToIgnoreList( CBaseEntity* pIgnore );
-    bool    RemoveFromIgnoreList( CBaseEntity* pIgnore );
-    void    ClearIgnoreList();
-
-    int     GetPenetrations() const { return m_nPenetrations; }
-    void    ClearPenetrations() { m_nPenetrations = 0; }
+    int GetPenetrations() const { return m_nPenetrations; }
+    void ClearPenetrations() { m_nPenetrations = 0; }
 
 private:
     CBaseEntity* m_pAttacker;

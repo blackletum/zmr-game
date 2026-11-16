@@ -9,9 +9,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-
 FMOD::System* CFMODSystem::s_pFMODSystem = nullptr;
-
 
 CFMODSystem::CFMODSystem() : CAutoGameSystemPerFrame( "ZMFModSystem" )
 {
@@ -35,7 +33,6 @@ void CFMODSystem::Release()
         }
     }
 
-
     if ( s_pFMODSystem )
     {
         s_pFMODSystem->close();
@@ -47,10 +44,9 @@ void CFMODSystem::Release()
 
 bool CFMODSystem::Init()
 {
-    FMOD_RESULT     result;
-    unsigned int    version;
-    void*           extradriverdata = nullptr;
-
+    FMOD_RESULT result;
+    unsigned int version;
+    void* extradriverdata = nullptr;
 
     // Should probably fail init here, but FMOD isn't used for anything critical
     // right now.
@@ -72,7 +68,6 @@ bool CFMODSystem::Init()
     {
         Warning( "FMOD lib version %08x doesn't match header version %08x!\n", version, FMOD_VERSION );
     }
-
 
     result = s_pFMODSystem->init( 32, FMOD_INIT_NORMAL, extradriverdata );
     if ( result != FMOD_OK )
@@ -98,9 +93,7 @@ void CFMODSystem::Update( float frametime )
     Assert( s_pFMODSystem );
     if ( !s_pFMODSystem ) return;
 
-
     UpdateFocusVolume();
-
 
     FMOD_RESULT result = s_pFMODSystem->update();
     if ( result != FMOD_OK )
@@ -125,10 +118,9 @@ void CFMODSystem::UpdateFocusVolume()
             SetMasterVolumeInternal( GetMasterVolume() );
             m_bMuted = false;
         }
-        
+
         return;
     }
-
 
     bool bInFocus = engine->IsActiveApp();
 
@@ -154,7 +146,6 @@ FMODSoundHandle_t CFMODSystem::RegisterSound( const char* path )
 {
     if ( !s_pFMODSystem ) return INVALID_FMODSOUND_HANDLE;
 
-
     char fullpath[MAX_PATH];
     filesystem->RelativePathToFullPath( path, "GAME", fullpath, sizeof( fullpath ), FILTER_NONE, nullptr );
 
@@ -168,9 +159,7 @@ FMODSoundHandle_t CFMODSystem::RegisterSound( const char* path )
         return INVALID_FMODSOUND_HANDLE;
     }
 
-
     auto hndl = CreateSoundHandle();
-
 
     result = pSound->setMode( FMOD_LOOP_NORMAL );
     if ( result != FMOD_OK )
@@ -178,12 +167,10 @@ FMODSoundHandle_t CFMODSystem::RegisterSound( const char* path )
         Warning( "Failed to set sound mode to loop normal! Error: %i | %s\n", result, FMOD_ErrorString( result ) );
     }
 
-
     m_vpSounds[hndl] = pSound;
 
     return hndl;
 }
-
 
 float CFMODSystem::GetMasterVolume() const
 {
@@ -220,7 +207,6 @@ FMODChannelHandle_t CFMODSystem::StartSound( FMODSoundHandle_t hndl, float fadei
     Assert( m_vpSounds.IsValidIndex( hndl ) && m_vpSounds[hndl] );
     Assert( s_pFMODSystem );
 
-
     FMOD::Channel* pChannel = nullptr;
 
     FMOD_RESULT result = s_pFMODSystem->playSound( m_vpSounds[hndl], nullptr, true, &pChannel );
@@ -229,7 +215,6 @@ FMODChannelHandle_t CFMODSystem::StartSound( FMODSoundHandle_t hndl, float fadei
         return INVALID_FMODCHANNEL_HANDLE;
     }
 
-
     auto channelhndl = CreateChannelHandle();
 
     if ( fadeintime > 0.0f )
@@ -237,7 +222,7 @@ FMODChannelHandle_t CFMODSystem::StartSound( FMODSoundHandle_t hndl, float fadei
         int samplerate = 0;
         s_pFMODSystem->getSoftwareFormat( &samplerate, nullptr, nullptr );
 
-        unsigned long long fadein = (unsigned long long)(fadeintime * samplerate);
+        unsigned long long fadein = (unsigned long long)( fadeintime * samplerate );
 
         unsigned long long dspclock = 0;
         pChannel->getDSPClock( nullptr, &dspclock );
@@ -246,10 +231,7 @@ FMODChannelHandle_t CFMODSystem::StartSound( FMODSoundHandle_t hndl, float fadei
         pChannel->addFadePoint( dspclock + fadein, 1.0f );
     }
 
-
-
     pChannel->setPaused( false );
-
 
     m_vpChannels[channelhndl] = pChannel;
 
@@ -261,9 +243,7 @@ bool CFMODSystem::StopSound( FMODChannelHandle_t hndl, float fadeouttime )
     Assert( m_vpChannels.IsValidIndex( hndl ) && m_vpChannels[hndl] );
     Assert( s_pFMODSystem );
 
-
     auto* pChannel = m_vpChannels[hndl];
-
 
     if ( fadeouttime > 0.0f )
     {
@@ -273,7 +253,7 @@ bool CFMODSystem::StopSound( FMODChannelHandle_t hndl, float fadeouttime )
         unsigned long long dspclock = 0;
         pChannel->getDSPClock( nullptr, &dspclock );
 
-        unsigned long long fadeout = (unsigned long long)(fadeouttime * samplerate);
+        unsigned long long fadeout = (unsigned long long)( fadeouttime * samplerate );
 
         unsigned long long dspend = dspclock + fadeout;
 
@@ -296,7 +276,6 @@ bool CFMODSystem::IsSoundPlaying( FMODChannelHandle_t hndl ) const
 {
     if ( !m_vpChannels.IsValidIndex( hndl ) || m_vpChannels[hndl] == nullptr )
         return false;
-
 
     bool playing = false;
     m_vpChannels[hndl]->isPlaying( &playing );
@@ -337,4 +316,3 @@ FMODChannelHandle_t CFMODSystem::CreateChannelHandle()
 }
 
 CFMODSystem g_FMODSystem;
-

@@ -1,12 +1,10 @@
 #pragma once
 
-
 #include "gamemovement.h"
 
 #include "func_ladder.h"
 
 #include "zmr_player_shared.h"
-
 
 enum LadderMoveRet_t
 {
@@ -23,7 +21,6 @@ public:
     typedef CGameMovement BaseClass;
 
     virtual void PlayerMove() override;
-
 
     virtual void TracePlayerBBox( const Vector& start, const Vector& end, unsigned int fMask, int collisionGroup, trace_t& pm ) override;
     virtual CBaseHandle TestPlayerPosition( const Vector& pos, int collisionGroup, trace_t& pm ) override;
@@ -45,12 +42,11 @@ public:
     virtual bool CheckJumpButton() override;
 
     // Lets dead players accelerate or otherwise spectators can't move in roaming mode. Thanks Valve.
-    virtual bool CanAccelerate() override { return !(player->GetWaterJumpTime()); }
+    virtual bool CanAccelerate() override { return !( player->GetWaterJumpTime() ); }
     virtual void Accelerate( Vector& wishdir, float wishspeed, float accel ) override;
 
     virtual float ClimbSpeed() const override;
     virtual bool LadderMove() override;
-
 
     virtual void PlayerRoughLandingEffects( float fvol ) override;
 
@@ -60,23 +56,21 @@ protected:
     //
     // HL2 ladder specific stuff
     //
-    CFuncLadder*    FindLadder( Vector& ladderOrigin, const CFuncLadder* skipLadder );
-    bool            CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos );
+    CFuncLadder* FindLadder( Vector& ladderOrigin, const CFuncLadder* skipLadder );
+    bool CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos );
 
-    bool            IsForceMoveActive();
+    bool IsForceMoveActive();
     // Start forcing player position
-    void            StartForcedMove( bool mounting, float transit_speed, const Vector& goalpos, CFuncLadder *ladder );
+    void StartForcedMove( bool mounting, float transit_speed, const Vector& goalpos, CFuncLadder* ladder );
     // Returns false when finished
-    bool            ContinueForcedMove();
-    bool            ExitLadderViaDismountNode( CFuncLadder* pLadder, bool strict );
+    bool ContinueForcedMove();
+    bool ExitLadderViaDismountNode( CFuncLadder* pLadder, bool strict );
 
+    LadderMove_t* GetLadderMove() const;
+    CFuncLadder* GetLadder() const;
 
-    LadderMove_t*   GetLadderMove() const;
-    CFuncLadder*    GetLadder() const;
-
-    void            SetLadder( CFuncLadder* pLadder );
-    void            ExitLadder();
-
+    void SetLadder( CFuncLadder* pLadder );
+    void ExitLadder();
 
     LadderMoveRet_t LadderMove_Brush();
     LadderMoveRet_t LadderMove_HL2();

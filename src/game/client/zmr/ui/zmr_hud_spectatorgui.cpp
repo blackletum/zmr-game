@@ -1,9 +1,9 @@
+#include "c_playerresource.h"
 #include "cbase.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "c_playerresource.h"
-#include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
+#include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
 
 #include "npcs/c_zmr_zombiebase.h"
@@ -12,14 +12,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
 
 DECLARE_HUDELEMENT( CZMHudSpectatorUI );
 
-
-CZMHudSpectatorUI::CZMHudSpectatorUI( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudSpectatorUI" )
+CZMHudSpectatorUI::CZMHudSpectatorUI( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudSpectatorUI" )
 {
     SetPaintBackgroundEnabled( false );
 
@@ -37,7 +34,6 @@ CZMHudSpectatorUI::CZMHudSpectatorUI( const char *pElementName ) : CHudElement( 
     m_nOldTargetHealth = 0;
 
     SetProportional( true );
-
 
     m_pNameLabel = nullptr;
     m_pInfoLabel = nullptr;
@@ -88,7 +84,6 @@ void CZMHudSpectatorUI::Reset()
 {
     SetBounds( 0, 0, ScreenWidth(), ScreenHeight() );
 
-
     // Center our labels because widescreens suck.
     int width = GetWide();
     int w;
@@ -127,11 +122,7 @@ void CZMHudSpectatorUI::OnThink()
         return;
     }
 
-    if (m_pOldTarget
-    &&  pLocal->GetObserverTarget() == m_pOldTarget
-    &&  pLocal->GetObserverMode() == m_nOldObserverMode
-    &&  m_pOldTarget->GetHealth() == m_nOldTargetHealth
-    &&  g_PR->GetTeam( m_iOldEntIndex ) == m_iOldTeam)
+    if ( m_pOldTarget && pLocal->GetObserverTarget() == m_pOldTarget && pLocal->GetObserverMode() == m_nOldObserverMode && m_pOldTarget->GetHealth() == m_nOldTargetHealth && g_PR->GetTeam( m_iOldEntIndex ) == m_iOldTeam )
         return;
 
     Update();
@@ -141,21 +132,20 @@ void CZMHudSpectatorUI::PaintBar( int y, int h, bool bFlip )
 {
     const int w = ScreenWidth();
 
-#define SIZE_X      512.0f
-#define SIZE_Y      256.0f
+#define SIZE_X 512.0f
+#define SIZE_Y 256.0f
 
     float tx0 = 0.0f;
     float ty0 = 0.0f;
     float tx1 = (float)w / SIZE_X;
     float ty1 = (float)h / SIZE_Y;
 
-
     if ( bFlip )
     {
-        tx0 = tx1; ty0 = ty1;
+        tx0 = tx1;
+        ty0 = ty1;
         tx1 = ty1 = 0.0f;
     }
-
 
     surface()->DrawSetColor( m_BarColor );
     surface()->DrawSetTexture( m_nTexPanelBgId );
@@ -171,13 +161,12 @@ void CZMHudSpectatorUI::PaintBorder( int border_y, int border_height, bool bFlip
     float tx1 = (float)w / SIZE_X;
     float ty1 = 1.0f;
 
-
     if ( bFlip )
     {
-        tx0 = tx1; ty0 = ty1;
+        tx0 = tx1;
+        ty0 = ty1;
         tx1 = ty1 = 0.0f;
     }
-
 
     surface()->DrawSetColor( m_BarColor );
     surface()->DrawSetTexture( m_nTexPanelBgTopId );
@@ -214,10 +203,8 @@ bool CZMHudSpectatorUI::UpdateTargetText()
 {
     if ( !g_PR ) return false;
 
-
     C_BasePlayer* pLocal = C_BasePlayer::GetLocalPlayer();
     C_BaseEntity* pEnt = pLocal->GetObserverTarget();
-
 
     m_pOldTarget = pEnt;
     m_iOldEntIndex = pEnt ? pEnt->entindex() : 0;
@@ -225,19 +212,15 @@ bool CZMHudSpectatorUI::UpdateTargetText()
     m_iOldTeam = pEnt ? g_PR->GetTeam( pEnt->entindex() ) : 0;
     m_nOldObserverMode = pLocal->GetObserverMode();
 
-
-    if (!pEnt
-    ||  (pLocal->GetObserverMode() != OBS_MODE_IN_EYE && pLocal->GetObserverMode() != OBS_MODE_CHASE) )
+    if ( !pEnt || ( pLocal->GetObserverMode() != OBS_MODE_IN_EYE && pLocal->GetObserverMode() != OBS_MODE_CHASE ) )
     {
         return false;
     }
-
 
     Color clr;
     const char* pszName = nullptr;
     bool bLocalization = false;
 
-    
     C_BasePlayer* pTargetPlayer = ToBasePlayer( pEnt );
     int health = 0;
 
@@ -261,10 +244,8 @@ bool CZMHudSpectatorUI::UpdateTargetText()
         clr = g_PR->GetTeamColor( ZMTEAM_ZM );
     }
 
-
-    if ( !pszName || !(*pszName) )
+    if ( !pszName || !( *pszName ) )
         return false;
-
 
     wchar_t buffer[162];
 
@@ -279,7 +260,7 @@ bool CZMHudSpectatorUI::UpdateTargetText()
         UTIL_MakeSafeName( pszName, safeName, sizeof( safeName ) );
         g_pVGuiLocalize->ConvertANSIToUnicode( safeName, buffer, sizeof( buffer ) );
     }
-    
+
     m_pNameLabel->SetText( buffer );
     m_pNameLabel->SetFgColor( clr );
 
@@ -292,7 +273,7 @@ bool CZMHudSpectatorUI::UpdateTargetText()
     {
         buffer[0] = L'\0';
     }
-    
+
     m_pInfoLabel->SetText( buffer );
     m_pInfoLabel->SetFgColor( clr );
 

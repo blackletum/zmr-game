@@ -1,9 +1,7 @@
 #pragma once
 
-
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Image.h>
-
 
 class CZMMainMenu;
 
@@ -13,7 +11,7 @@ public:
     typedef vgui::Button BaseClass;
     typedef CZMMainMenuBaseButton ThisClass;
     //DECLARE_CLASS( CZMMainMenuBaseButton, vgui::Button );
-    
+
     CZMMainMenuBaseButton( vgui::Panel* pParent, const char* name );
     ~CZMMainMenuBaseButton();
 
@@ -32,7 +30,6 @@ public:
     void LayoutImage();
 
     virtual CZMMainMenu* GetMainMenu();
-
 
     vgui::IImage* m_pImage;
     int m_iImageX;

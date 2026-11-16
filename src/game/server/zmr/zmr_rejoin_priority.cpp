@@ -5,11 +5,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_rejoin_priority_expire( "zm_sv_rejoin_priority_expire", "800", FCVAR_NOTIFY, "How long in seconds ZM pick priority is kept in cache." );
 
 extern ConVar zm_sv_debug_rejoindata;
-
 
 // Whenever a player disconnects, save their ZM pick priority.
 // This may be due to map change or just leaving.
@@ -39,7 +37,6 @@ public:
     }
 };
 
-
 class CZMRejoinPriority : public CZMRejoinListener
 {
 public:
@@ -48,6 +45,5 @@ public:
         return new CZMRejoinPriorityData( pPlayer->GetPickPriority() );
     }
 };
-
 
 static CZMRejoinPriority g_ZMRejoinPriority;

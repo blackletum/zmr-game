@@ -2,15 +2,13 @@
 
 #include "npcs/zmr_blockerfinder.h"
 #include "zmr_zombie_combat.h"
-#include "zmr_zombie_swat_goto.h"
 #include "zmr_zombie_main.h"
+#include "zmr_zombie_swat_goto.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_zombie_move_start_areafinddist( "zm_sv_zombie_move_start_areafinddist", "256" );
-
 
 CZombieMainSchedule::CZombieMainSchedule()
 {
@@ -43,7 +41,6 @@ void CZombieMainSchedule::OnStart()
 //    delete m_pPath;
 //}
 
-
 void CZombieMainSchedule::OnUpdate()
 {
     CZMBaseZombie* pOuter = GetOuter();
@@ -61,13 +58,13 @@ void CZombieMainSchedule::OnUpdate()
 
             switch ( pQueued->GetCommandType() )
             {
-            case COMMAND_MOVE :
+            case COMMAND_MOVE:
                 Command( pQueued->GetCommander(), pQueued->GetVectorTarget() );
                 break;
-            case COMMAND_SWAT :
+            case COMMAND_SWAT:
                 CommandSwat( pQueued->GetCommander(), pQueued->GetObjectTarget(), static_cast<CZMCommandSwat*>( pQueued )->BreakObject() );
                 break;
-            default :
+            default:
                 bRes = false;
                 break;
             }
@@ -76,7 +73,7 @@ void CZombieMainSchedule::OnUpdate()
                 pOuter->GetCommandQueue()->RemoveCommand( pQueued );
         }
     }
-            
+
     //
     // Update move path.
     // Commanded move / etc.
@@ -97,14 +94,12 @@ void CZombieMainSchedule::OnUpdate()
 
                 pOuter->SetSwatObject( pBlocker );
 
-
                 Intercept( m_pGotoSwatSched, "Clear the blocking entity!" );
                 return;
             }
 
             m_BlockerTimer.Start( 0.5f );
         }
-
 
         if ( pOuter->CanMove() )
         {
@@ -180,11 +175,9 @@ bool CZombieMainSchedule::Command( CZMPlayer* pCommander, const Vector& vecPos )
 {
     UpdateGoal( vecPos );
 
-
     CZMBaseZombie* pOuter = GetOuter();
     //pOuter->SetEnemy( nullptr );
     pOuter->UpdateLastTimeCommanded();
-
 
     Vector vecMyPos = pOuter->GetAbsOrigin();
 
@@ -202,7 +195,6 @@ bool CZombieMainSchedule::Command( CZMPlayer* pCommander, const Vector& vecPos )
     m_PathCost.SetStartPos( vecMyPos, pStart );
     m_PathCost.SetGoalPos( vecPos, pGoal );
 
-
     // Set the goal tolerance based on how far the zombie is.
     const float flToleranceMinDist = 32.0f;
     const float flToleranceMaxDist = 192.0f;
@@ -210,13 +202,12 @@ bool CZombieMainSchedule::Command( CZMPlayer* pCommander, const Vector& vecPos )
     const float flMaxTolerance = 32.0f;
 
     float tolerance = SimpleSplineRemapValClamped(
-        (vecPos - vecMyPos).Length(),
+        ( vecPos - vecMyPos ).Length(),
         flToleranceMinDist, flToleranceMaxDist,
         flMinTolerance,
         flMaxTolerance );
-            
-    m_pPath->SetGoalTolerance( tolerance );
 
+    m_pPath->SetGoalTolerance( tolerance );
 
     m_pPath->Compute( vecMyPos, vecPos, pStart, pGoal, m_PathCost );
 
@@ -236,16 +227,12 @@ bool CZombieMainSchedule::CommandSwat( CZMPlayer* pCommander, CBaseEntity* pEnt,
     if ( !pEnt )
         return false;
 
-
     CZMBaseZombie* pOuter = GetOuter();
     pOuter->UpdateLastTimeCommanded();
-            
+
     pOuter->SetSwatObject( pEnt );
 
-
-
     pOuter->OnCommanded( pCommander, COMMAND_SWAT );
-
 
     m_pGotoSwatSched->SetBreakObject( bBreak );
     Intercept( m_pGotoSwatSched, "Commanded to swat this object!" );

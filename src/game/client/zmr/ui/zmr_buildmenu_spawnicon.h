@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include "zmr_shareddefs.h"
 #include "zmr_imagerow.h"
+#include "zmr_shareddefs.h"
 
 //
 class CZMImageRowItemSpawn : public CZMImageRowItem
@@ -13,15 +12,12 @@ public:
     CZMImageRowItemSpawn( vgui::Panel* pParent, const char* name );
     ~CZMImageRowItemSpawn();
 
-
     virtual void ApplySettings( KeyValues* kv ) override;
     virtual void Paint() override;
     virtual void PaintBackground() override;
 
-
     // HACK:
     bool IsOldMenu() const { return m_FillColor[3] != 0; }
-
 
     void UpdateData( int count, ZombieClass_t type );
     void UpdateSpawnTime();
@@ -39,7 +35,6 @@ private:
     ZombieClass_t m_iZombieClass;
     bool m_bIsPrimary;
     float m_flDelay;
-
 
     // Old stuff
     Color m_FillColor;

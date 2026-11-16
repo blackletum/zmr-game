@@ -1,50 +1,44 @@
 #include "cbase.h"
 
 #include "baseviewport.h"
+#include "bone_setup.h"
 #include "clienteffectprecachesystem.h"
+#include "debugoverlay_shared.h"
 #include "dlight.h"
+#include "in_buttons.h"
 #include "r_efx.h"
 #include "takedamageinfo.h"
 #include "view.h"
-#include "bone_setup.h"
-#include "in_buttons.h"
-#include "debugoverlay_shared.h"
-
 
 #include "c_zmr_util.h"
 #include "ui/zmr_zmview_base.h"
 
-#include "npcs/c_zmr_zombiebase.h"
-#include "zmr_viewmodel.h"
+#include "c_zmr_colorcorrection.h"
 #include "c_zmr_entities.h"
-#include "zmr_softcollisions.h"
 #include "c_zmr_player_ragdoll.h"
 #include "c_zmr_teamkeys.h"
-#include "c_zmr_colorcorrection.h"
+#include "npcs/c_zmr_zombiebase.h"
+#include "zmr_softcollisions.h"
+#include "zmr_viewmodel.h"
 
 #include "c_zmr_flashlighteffect.h"
-#include "zmr_resource_system.h"
 #include "c_zmr_player.h"
 #include "c_zmr_zmvision.h"
+#include "zmr_resource_system.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern bool g_bRenderPostProcess;
 
-
 // ZMRTODO: Replace these
-#define MAT_HPCIRCLE        "effects/zm_healthring"
-#define MAT_INNERFLARE      "effects/yellowflare"
+#define MAT_HPCIRCLE   "effects/zm_healthring"
+#define MAT_INNERFLARE "effects/yellowflare"
 
 CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectZMPlayerEffect )
 CLIENTEFFECT_MATERIAL( MAT_HPCIRCLE )
 CLIENTEFFECT_MATERIAL( MAT_INNERFLARE )
 CLIENTEFFECT_REGISTER_END()
-
-
-
 
 ConVar cl_playermodel( "cl_playermodel", "none", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_SERVER_CAN_EXECUTE, "Your player model" );
 
@@ -61,19 +55,16 @@ ConVar zm_cl_zmmovemwheelmovespd( "zm_cl_zmmovemwheelmovespd", "1600", FCVAR_ARC
 ConVar zm_cl_zmmovejumpspd( "zm_cl_zmmovejumpspd", "1600", FCVAR_ARCHIVE );
 ConVar zm_cl_zmmovespdspd( "zm_cl_zmmovespdspd", "1600", FCVAR_ARCHIVE );
 
-
 // Yes, unfortunately because of how FOV is used, we need to change it on the server.
 ConVar zm_cl_fov( "zm_cl_fov", "90", FCVAR_USERINFO | FCVAR_ARCHIVE, "What is our default field of view when playing.", true, ZM_MIN_FOV, true, MAX_FOV );
 
 ConVar zm_cl_zmcontrolstyle( "zm_cl_zmcontrolstyle", "0", FCVAR_USERINFO | FCVAR_ARCHIVE, "How stubborn zombies will behave. 0 = Default, 1 = ZM 1.2.1 style" );
 ConVar zm_cl_zmunitcommandinterrupt( "zm_cl_zmunitcommandinterrupt", "0", FCVAR_USERINFO | FCVAR_ARCHIVE, "What commands you as the ZM can interrupt. 0 = None, 1 = Stop swat, 2 = Stop attack, 3 = Stop both", true, 0.0f, false, 0.0f );
 
-
-
 #undef CZMPlayer // We need to undefine it so we can get the server class.
 
 BEGIN_RECV_TABLE_NOBASE( C_ZMPlayer, DT_ZMLocalPlayerExclusive )
-    RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
+RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
 
     //RecvPropFloat( RECVINFO( m_angEyeAngles[0] ) ),
 END_RECV_TABLE()
@@ -91,8 +82,8 @@ BEGIN_RECV_TABLE_NOBASE( C_ZMPlayer, DT_ZMNonLocalPlayerExclusive )
 END_RECV_TABLE()
 
 IMPLEMENT_CLIENTCLASS_DT( C_ZMPlayer, DT_ZM_Player, CZMPlayer )
-    RecvPropDataTable( "zmlocaldata", 0, 0, &REFERENCE_RECV_TABLE(DT_ZMLocalPlayerExclusive) ),
-    RecvPropDataTable( "zmnonlocaldata", 0, 0, &REFERENCE_RECV_TABLE(DT_ZMNonLocalPlayerExclusive) ),
+    RecvPropDataTable( "zmlocaldata", 0, 0, &REFERENCE_RECV_TABLE( DT_ZMLocalPlayerExclusive ) ),
+    RecvPropDataTable( "zmnonlocaldata", 0, 0, &REFERENCE_RECV_TABLE( DT_ZMNonLocalPlayerExclusive ) ),
 
     RecvPropDataTable( RECVINFO_DT( m_ZMLocal ), 0, &REFERENCE_RECV_TABLE( DT_ZM_PlyLocal ) ),
 
@@ -104,7 +95,6 @@ END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA( C_ZMPlayer )
     DEFINE_PRED_FIELD_TOL( m_ZMLocal.m_flAccuracyRatio, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, 0.01f ),
-
 
     DEFINE_PRED_FIELD( m_flCycle, FIELD_FLOAT, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK ),
     //DEFINE_PRED_FIELD( m_fIsWalking, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
@@ -120,20 +110,18 @@ BEGIN_PREDICTION_DATA( C_ZMPlayer )
     DEFINE_PRED_ARRAY_TOL( m_flPoseParameter, FIELD_FLOAT, MAXSTUDIOPOSEPARAM, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK, 0.0f ),
 END_PREDICTION_DATA()
 
-
 CZMPlayerAnimState* CreateZMPlayerAnimState( C_ZMPlayer* pPlayer );
 
 C_ZMPlayer::C_ZMPlayer() : m_iv_angEyeAngles( "C_ZMPlayer::m_iv_angEyeAngles" )
 {
     AddVar( &m_angEyeAngles, &m_iv_angEyeAngles, LATCH_SIMULATION_VAR );
-	AddVar( &m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_SIMULATION_VAR );
-	AddVar( &m_Local.m_vecPunchAngleVel, &m_Local.m_iv_vecPunchAngleVel, LATCH_SIMULATION_VAR );
+    AddVar( &m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_SIMULATION_VAR );
+    AddVar( &m_Local.m_vecPunchAngleVel, &m_Local.m_iv_vecPunchAngleVel, LATCH_SIMULATION_VAR );
 
-	m_flZoomStart		= 0.0f;
-	m_flZoomEnd			= 0.0f;
-	m_flZoomRate		= 0.0f;
-	m_flZoomStartTime	= 0.0f;
-
+    m_flZoomStart = 0.0f;
+    m_flZoomEnd = 0.0f;
+    m_flZoomRate = 0.0f;
+    m_flZoomStartTime = 0.0f;
 
     //m_EntClientFlags |= ENTCLIENTFLAG_DONTUSEIK;
 
@@ -144,10 +132,7 @@ C_ZMPlayer::C_ZMPlayer() : m_iv_angEyeAngles( "C_ZMPlayer::m_iv_angEyeAngles" )
     m_iAttachmentRH = -1;
     m_iSpawnInterpCounter = 0;
 
-
     m_pPlayerAnimState = CreateZMPlayerAnimState( this );
-
-
 
     m_flNextUpMove = 0.0f;
     m_flUpMove = 0.0f;
@@ -162,7 +147,6 @@ C_ZMPlayer::~C_ZMPlayer()
     ReleaseFlashlight();
 
     m_pPlayerAnimState->Release();
-
 
     delete m_fxHealth;
     delete m_fxInner;
@@ -216,7 +200,6 @@ void C_ZMPlayer::PreThink()
         //}
     }
 
-
     // Don't let base class change our max speed (sprinting)
     float spd = MaxSpeed();
 
@@ -245,7 +228,7 @@ void C_ZMPlayer::UpdateClientSideAnimation()
 
 void C_ZMPlayer::CalculateIKLocks( float currentTime )
 {
-    if ( !m_pIk ) 
+    if ( !m_pIk )
         return;
 
     int targetCount = m_pIk->m_target.Count();
@@ -262,62 +245,62 @@ void C_ZMPlayer::CalculateIKLocks( float currentTime )
     for ( int i = 0; i < targetCount; i++ )
     {
         trace_t trace;
-        CIKTarget *pTarget = &m_pIk->m_target[i];
+        CIKTarget* pTarget = &m_pIk->m_target[i];
 
         if ( !pTarget->IsActive() )
             continue;
 
-        switch( pTarget->type )
+        switch ( pTarget->type )
         {
         case IK_GROUND:
-            {
-                pTarget->SetPos( Vector( pTarget->est.pos.x, pTarget->est.pos.y, GetRenderOrigin().z ));
-                pTarget->SetAngles( GetRenderAngles() );
-            }
-            break;
+        {
+            pTarget->SetPos( Vector( pTarget->est.pos.x, pTarget->est.pos.y, GetRenderOrigin().z ) );
+            pTarget->SetAngles( GetRenderAngles() );
+        }
+        break;
 
         case IK_ATTACHMENT:
+        {
+            C_BaseEntity* pEntity = nullptr;
+            float flDist = pTarget->est.radius;
+
+            // FIXME: make entity finding sticky!
+            // FIXME: what should the radius check be?
+            for ( CEntitySphereQuery sphere( pTarget->est.pos, 64 ); ( pEntity = sphere.GetCurrentEntity() ) != nullptr; sphere.NextEntity() )
             {
-                C_BaseEntity *pEntity = nullptr;
-                float flDist = pTarget->est.radius;
+                C_BaseAnimating* pAnim = pEntity->GetBaseAnimating();
+                if ( !pAnim )
+                    continue;
 
-                // FIXME: make entity finding sticky!
-                // FIXME: what should the radius check be?
-                for ( CEntitySphereQuery sphere( pTarget->est.pos, 64 ); ( pEntity = sphere.GetCurrentEntity() ) != nullptr; sphere.NextEntity() )
-                {
-                    C_BaseAnimating* pAnim = pEntity->GetBaseAnimating();
-                    if ( !pAnim )
-                        continue;
+                int iAttachment = pAnim->LookupAttachment( pTarget->offset.pAttachmentName );
+                if ( iAttachment <= 0 )
+                    continue;
 
-                    int iAttachment = pAnim->LookupAttachment( pTarget->offset.pAttachmentName );
-                    if ( iAttachment <= 0 )
-                        continue;
+                Vector origin;
+                QAngle angles;
+                pAnim->GetAttachment( iAttachment, origin, angles );
 
-                    Vector origin;
-                    QAngle angles;
-                    pAnim->GetAttachment( iAttachment, origin, angles );
+                // debugoverlay->AddBoxOverlay( origin, Vector( -1, -1, -1 ), Vector( 1, 1, 1 ), QAngle( 0, 0, 0 ), 255, 0, 0, 0, 0 );
 
-                    // debugoverlay->AddBoxOverlay( origin, Vector( -1, -1, -1 ), Vector( 1, 1, 1 ), QAngle( 0, 0, 0 ), 255, 0, 0, 0, 0 );
+                float d = ( pTarget->est.pos - origin ).Length();
 
-                    float d = (pTarget->est.pos - origin).Length();
+                if ( d >= flDist )
+                    continue;
 
-                    if ( d >= flDist )
-                        continue;
-
-                    flDist = d;
-                    pTarget->SetPos( origin );
-                    pTarget->SetAngles( angles );
-                    // debugoverlay->AddBoxOverlay( pTarget->est.pos, Vector( -pTarget->est.radius, -pTarget->est.radius, -pTarget->est.radius ), Vector( pTarget->est.radius, pTarget->est.radius, pTarget->est.radius), QAngle( 0, 0, 0 ), 0, 255, 0, 0, 0 );
-                }
-
-                if ( flDist >= pTarget->est.radius )
-                {
-                    // debugoverlay->AddBoxOverlay( pTarget->est.pos, Vector( -pTarget->est.radius, -pTarget->est.radius, -pTarget->est.radius ), Vector( pTarget->est.radius, pTarget->est.radius, pTarget->est.radius), QAngle( 0, 0, 0 ), 0, 0, 255, 0, 0 );
-                    // no solution, disable ik rule
-                    pTarget->IKFailed();
-                }
+                flDist = d;
+                pTarget->SetPos( origin );
+                pTarget->SetAngles( angles );
+                // debugoverlay->AddBoxOverlay( pTarget->est.pos, Vector( -pTarget->est.radius, -pTarget->est.radius, -pTarget->est.radius ), Vector( pTarget->est.radius, pTarget->est.radius, pTarget->est.radius), QAngle( 0, 0, 0 ), 0, 255, 0, 0, 0 );
             }
-            break;
+
+            if ( flDist >= pTarget->est.radius )
+            {
+                // debugoverlay->AddBoxOverlay( pTarget->est.pos, Vector( -pTarget->est.radius, -pTarget->est.radius, -pTarget->est.radius ), Vector( pTarget->est.radius, pTarget->est.radius, pTarget->est.radius), QAngle( 0, 0, 0 ), 0, 0, 255, 0, 0 );
+                // no solution, disable ik rule
+                pTarget->IKFailed();
+            }
+        }
+        break;
         }
     }
 
@@ -342,7 +325,6 @@ void C_ZMPlayer::TeamChange( int iNewTeam )
     // ZMRTODO: Test if there are any cases when TeamChange isn't fired!!!
     BaseClass::TeamChange( iNewTeam );
 
-
     // Update ZM entities' visibility.
     // How visibility works is when player enters a leaf that can see given entity, ShouldDraw is fired.
     // However, if the player changes their team and they remain in the same leaf, the previous ShouldDraw is "active".
@@ -363,14 +345,11 @@ void C_ZMPlayer::TeamChange( int iNewTeam )
         }
     }
 
-
     // Turn off nightvision.
     g_ZMVision.TurnOff();
 
-
     // Reset back to old team just in case something uses it.
     C_BaseEntity::ChangeTeam( iOldTeam );
-
 
     if ( iNewTeam == ZMTEAM_ZM )
     {
@@ -378,9 +357,7 @@ void C_ZMPlayer::TeamChange( int iNewTeam )
         ZMClientUtil::QueueTooltip( "zmmoving", 16.0f );
     }
 
-
     TeamChangeStatic( iNewTeam );
-
 
     m_flNextUpMove = 0.0f;
 }
@@ -391,16 +368,11 @@ void C_ZMPlayer::TeamChangeStatic( int iNewTeam )
     // All crucial things that don't rely on local player
     // should be put here.
 
-
     if ( g_pZMView )
         g_pZMView->SetVisible( iNewTeam == ZMTEAM_ZM );
 
-
     // Execute team config.
     CZMTeamKeysConfig::ExecuteTeamConfig( iNewTeam );
-
-
-
 
     if ( iNewTeam == ZMTEAM_ZM )
     {
@@ -410,7 +382,6 @@ void C_ZMPlayer::TeamChangeStatic( int iNewTeam )
     {
         engine->ClientCmd_Unrestricted( "exec survivor.cfg" );
     }
-
 
     ZMGetCCSystem()->OnTeamChange( iNewTeam );
 }
@@ -425,7 +396,6 @@ void C_ZMPlayer::UpdateFlashlight()
         return;
     }
 
-
     // Create the flashlight.
     if ( !m_pFlashlight )
     {
@@ -433,7 +403,6 @@ void C_ZMPlayer::UpdateFlashlight()
         if ( !m_pFlashlight )
             return;
     }
-
 
     // Update the light with the new position and direction.
     m_pFlashlight->TurnOn();
@@ -460,21 +429,19 @@ void C_ZMPlayer::Simulate()
 
     g_ZMVision.UpdateLight();
 
-
-	if ( gpGlobals->frametime != 0.0f  )
-	{
+    if ( gpGlobals->frametime != 0.0f )
+    {
         if ( ShouldMuzzleFlash() )
         {
             DisableMuzzleFlash();
-		
+
             ProcessMuzzleFlashEvent();
         }
 
-		//DoAnimationEvents( GetModelPtr() );
-	}
+        //DoAnimationEvents( GetModelPtr() );
+    }
 
     C_BaseEntity::Simulate();
-
 
     //
     // When we get teleported.
@@ -520,21 +487,18 @@ int C_ZMPlayer::DrawModel( int flags )
     // Again, ShouldDraw is not enough.
     if ( IsZM() ) return 0;
 
-
     C_ZMPlayer* pPlayer = C_ZMPlayer::GetLocalPlayer();
     if ( !pPlayer || !pPlayer->IsZM() )
     {
         return BaseClass::DrawModel( flags );
     }
 
-
     if ( !g_bRenderPostProcess )
     {
-        float ratio = (GetHealth() > 0 ? GetHealth() : 1) / 100.0f;
+        float ratio = ( GetHealth() > 0 ? GetHealth() : 1 ) / 100.0f;
 
         float g = ratio;
         float r = 1.0f - g;
-
 
         if ( m_fxInner )
         {
@@ -542,7 +506,6 @@ int C_ZMPlayer::DrawModel( int flags )
             m_fxInner->SetYaw( random->RandomFloat( 0.0f, 360.0f ) );
             m_fxInner->Draw();
         }
-
 
         if ( m_fxHealth )
         {
@@ -552,7 +515,6 @@ int C_ZMPlayer::DrawModel( int flags )
             m_fxHealth->Draw();
         }
     }
-
 
     return DrawModelAndEffects( flags );
 }
@@ -565,14 +527,13 @@ int C_ZMPlayer::DrawModelAndEffects( int flags )
     {
         const Vector clr( 1.0f, 0.0f, 0.0f );
 
-        static const Vector lightlvl[6] = 
-        {
+        static const Vector lightlvl[6] = {
             Vector( 0.7f, 0.7f, 0.7f ),
             Vector( 0.7f, 0.7f, 0.7f ),
             Vector( 0.7f, 0.7f, 0.7f ),
             Vector( 0.7f, 0.7f, 0.7f ),
             Vector( 0.7f, 0.7f, 0.7f ),
-            Vector( 0.7f, 0.7f, 0.7f ),
+            Vector( 0.7f, 0.7f, 0.7f )
         };
 
         g_pStudioRender->SetAmbientLightColors( lightlvl );
@@ -582,14 +543,11 @@ int C_ZMPlayer::DrawModelAndEffects( int flags )
         modelrender->SuppressEngineLighting( true );
     }
 
-
     int ret = 0;
 
     const Vector reset( 1.0f, 1.0f, 1.0f );
 
-
     ret = BaseClass::DrawModel( flags );
-
 
     if ( bNoLight )
     {
@@ -600,10 +558,10 @@ int C_ZMPlayer::DrawModelAndEffects( int flags )
     return ret;
 }
 
-ShadowType_t C_ZMPlayer::ShadowCastType() 
+ShadowType_t C_ZMPlayer::ShadowCastType()
 {
     if ( !IsVisible() )
-         return SHADOWS_NONE;
+        return SHADOWS_NONE;
 
     return SHADOWS_RENDER_TO_TEXTURE_DYNAMIC;
 }
@@ -613,9 +571,9 @@ bool C_ZMPlayer::ShouldReceiveProjectedTextures( int flags )
     Assert( flags & SHADOW_FLAGS_PROJECTED_TEXTURE_TYPE_MASK );
 
     if ( IsEffectActive( EF_NODRAW ) )
-         return false;
+        return false;
 
-    if( flags & SHADOW_FLAGS_FLASHLIGHT )
+    if ( flags & SHADOW_FLAGS_FLASHLIGHT )
     {
         return true;
     }
@@ -649,39 +607,39 @@ void C_ZMPlayer::SetLocalAngles( const QAngle& angles )
 float C_ZMPlayer::GetFOV()
 {
     float fov = C_BasePlayer::GetFOV() + GetZoom();
-    
+
     return MAX( GetMinFOV(), fov );
 }
 
 void C_ZMPlayer::Zoom( float fov, float flTime )
 {
-	m_flZoomStart		= GetZoom();
-	m_flZoomEnd			= fov;
-	m_flZoomRate		= flTime;
-	m_flZoomStartTime	= gpGlobals->curtime;
+    m_flZoomStart = GetZoom();
+    m_flZoomEnd = fov;
+    m_flZoomRate = flTime;
+    m_flZoomStartTime = gpGlobals->curtime;
 }
 
 float C_ZMPlayer::GetZoom()
 {
-	float fFOV = m_flZoomEnd;
+    float fFOV = m_flZoomEnd;
 
-	// See if we need to lerp the values
-	if ( ( m_flZoomStart != m_flZoomEnd ) && ( m_flZoomRate > 0.0f ) )
-	{
-		float deltaTime = ( gpGlobals->curtime - m_flZoomStartTime ) / m_flZoomRate;
+    // See if we need to lerp the values
+    if ( ( m_flZoomStart != m_flZoomEnd ) && ( m_flZoomRate > 0.0f ) )
+    {
+        float deltaTime = ( gpGlobals->curtime - m_flZoomStartTime ) / m_flZoomRate;
 
-		if ( deltaTime >= 1.0f )
-		{
-			// If we're past the zoom time, just take the new value and stop lerping
-			fFOV = m_flZoomStart = m_flZoomEnd;
-		}
-		else
-		{
-			fFOV = SimpleSplineRemapVal( deltaTime, 0.0f, 1.0f, m_flZoomStart, m_flZoomEnd );
-		}
-	}
+        if ( deltaTime >= 1.0f )
+        {
+            // If we're past the zoom time, just take the new value and stop lerping
+            fFOV = m_flZoomStart = m_flZoomEnd;
+        }
+        else
+        {
+            fFOV = SimpleSplineRemapVal( deltaTime, 0.0f, 1.0f, m_flZoomStart, m_flZoomEnd );
+        }
+    }
 
-	return fFOV;
+    return fFOV;
 }
 
 extern ConVar default_fov;
@@ -712,9 +670,9 @@ void C_ZMPlayer::UpdateIDTarget()
 
     // don't show IDs in chase spec mode
     if ( GetObserverMode() == OBS_MODE_CHASE )
-         return;
+        return;
 
-    C_BaseEntity* pIgnore = (IsObserver() && GetObserverTarget() && GetObserverMode() == OBS_MODE_IN_EYE) ? GetObserverTarget() : this;
+    C_BaseEntity* pIgnore = ( IsObserver() && GetObserverTarget() && GetObserverMode() == OBS_MODE_IN_EYE ) ? GetObserverTarget() : this;
 
     trace_t tr;
     Vector vecStart, vecEnd;
@@ -744,10 +702,10 @@ void C_ZMPlayer::TraceAttack( const CTakeDamageInfo& info, const Vector& vecDir,
     Vector vecOrigin = ptr->endpos - vecDir * 4;
 
     float flDistance = 0.0f;
-    
+
     if ( info.GetAttacker() )
     {
-        flDistance = (ptr->endpos - info.GetAttacker()->GetAbsOrigin()).Length();
+        flDistance = ( ptr->endpos - info.GetAttacker()->GetAbsOrigin() ).Length();
     }
 
     if ( m_takedamage )
@@ -755,7 +713,7 @@ void C_ZMPlayer::TraceAttack( const CTakeDamageInfo& info, const Vector& vecDir,
         AddMultiDamage( info, this );
 
         int blood = BloodColor();
-        
+
         C_BaseEntity* pAttacker = info.GetAttacker();
 
         if ( pAttacker && pAttacker->InSameTeam( this ) )
@@ -794,10 +752,7 @@ void C_ZMPlayer::CalcView( Vector& eyeOrigin, QAngle& eyeAngles, float& zNear, f
 {
     C_ZMPlayer* pPlayer = this;
 
-    if (IsObserver()
-    &&  GetObserverMode() == OBS_MODE_IN_EYE
-    &&  GetObserverTarget()
-    &&  GetObserverTarget()->IsPlayer() )
+    if ( IsObserver() && GetObserverMode() == OBS_MODE_IN_EYE && GetObserverTarget() && GetObserverTarget()->IsPlayer() )
     {
         pPlayer = ToZMPlayer( GetObserverTarget() );
     }
@@ -829,13 +784,12 @@ void C_ZMPlayer::DeathCam_Firstperson( C_ZMPlayer* pPlayer, Vector& eyeOrigin, Q
         return;
     }
 
-
     pRagdoll->GetAttachment( pPlayer->GetEyeAttachment(), eyeOrigin, eyeAngles );
 }
 
 void C_ZMPlayer::DeathCam_Thirdperson( C_ZMPlayer* pPlayer, Vector& eyeOrigin, QAngle& eyeAngles, float& zNear, float& zFar, float& fov )
 {
-    Vector origin = pPlayer->EyePosition();			
+    Vector origin = pPlayer->EyePosition();
 
     IRagdoll* pRagdoll = pPlayer->GetRepresentativeRagdoll();
 
@@ -848,8 +802,8 @@ void C_ZMPlayer::DeathCam_Thirdperson( C_ZMPlayer* pPlayer, Vector& eyeOrigin, Q
     BaseClass::CalcView( eyeOrigin, eyeAngles, zNear, zFar, fov );
 
     eyeOrigin = origin;
-        
-    Vector vForward; 
+
+    Vector vForward;
     AngleVectors( eyeAngles, &vForward );
 
     VectorNormalize( vForward );
@@ -894,29 +848,28 @@ int C_ZMPlayer::GetEyeAttachment() const
 CStudioHdr* C_ZMPlayer::OnNewModel( void )
 {
     CStudioHdr* hdr = BaseClass::OnNewModel();
-    
+
     Initialize();
 
     if ( m_pPlayerAnimState )
     {
         m_pPlayerAnimState->OnNewModel();
     }
-    
+
     return hdr;
 }
 
 void C_ZMPlayer::Initialize()
 {
-    CStudioHdr *hdr = GetModelPtr();
-    for ( int i = 0; i < hdr->GetNumPoseParameters() ; i++ )
+    CStudioHdr* hdr = GetModelPtr();
+    for ( int i = 0; i < hdr->GetNumPoseParameters(); i++ )
     {
         SetPoseParameter( hdr, i, 0.0 );
     }
 
-
     // This is used for deathcam. Should be safe since we're using the same model as the ragdoll.
     m_iAttachmentEyes = LookupAttachment( "eyes" );
-    
+
     if ( m_pFlashlight )
     {
         m_pFlashlight->SetRightHandAttachment( LookupAttachment( "anim_attachment_RH" ) );
@@ -996,11 +949,9 @@ void C_ZMPlayer::ReleaseFlashlight()
     m_pFlashlight = nullptr;
 }
 
-
-
-#define FLASH_NONE              0
-#define FLASH_LOCAL_ONLY        1
-#define FLASH_ALL_PLAYERS       2
+#define FLASH_NONE        0
+#define FLASH_LOCAL_ONLY  1
+#define FLASH_ALL_PLAYERS 2
 
 void UTIL_ParseColorFromString( const char* str, int clr[], int nColors );
 
@@ -1021,7 +972,6 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
     // How many units we push the light forward from player's eyes.
     const float flMuzzleflashFwd = 32.0f;
 
-
     int allowed = zm_cl_muzzleflash_light.GetInt();
 
     if ( allowed == FLASH_NONE )
@@ -1029,17 +979,14 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
         return;
     }
 
-
     float lifetime = zm_cl_muzzleflash_light_lifetime.GetFloat();
     if ( lifetime <= 0.0f )
     {
         return;
     }
 
-
     Vector pos = vec3_origin;
     bool bHasPos = false;
-    
 
     // Local player doesn't get rendered, so just estimate the position.
     if ( IsLocalPlayer() )
@@ -1054,7 +1001,6 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
         {
             return;
         }
-
 
         // ZMRTODO: Use the proper muzzle position.
         // This doesn't seem to work, because the attachment abs position
@@ -1074,18 +1020,15 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
 
         Vector fwd;
         EyeVectors( &fwd );
-        
+
         pos = EyePosition() + fwd * flMuzzleflashFwd;
         bHasPos = true;
     }
-    
 
     if ( !bHasPos )
     {
         pos = WorldSpaceCenter();
     }
-
-
 
     //
     // Perform the muzzleflash light
@@ -1096,18 +1039,14 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
     Vector vecLight = engine->GetLightForPoint( pos, false );
     float flBias = 0.3f;
 
-    float intensity = 1.0f - ((0.21f * vecLight.x) + (0.72f * vecLight.y) + (0.07f * vecLight.z) + flBias);
+    float intensity = 1.0f - ( ( 0.21f * vecLight.x ) + ( 0.72f * vecLight.y ) + ( 0.07f * vecLight.z ) + flBias );
     intensity = clamp( intensity, 0.0f, 1.0f );
 
-
     float flRadiusMult = intensity < 0.7f ? intensity : 1.0f;
-    
-    float radius = random->RandomInt(   zm_cl_muzzleflash_light_size_min.GetFloat(),
-                                        zm_cl_muzzleflash_light_size_max.GetFloat() ) * flRadiusMult;
 
-
-
-
+    float radius = random->RandomInt( zm_cl_muzzleflash_light_size_min.GetFloat(),
+                       zm_cl_muzzleflash_light_size_max.GetFloat() ) *
+                   flRadiusMult;
 
     float debugtime = zm_cl_muzzleflash_light_debug.GetFloat();
 
@@ -1116,15 +1055,13 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
         NDebugOverlay::Sphere( pos, radius, 255, 0, 0, false, debugtime );
     }
 
-
     int clr[3];
     UTIL_ParseColorFromString( zm_cl_muzzleflash_light_color.GetString(), clr, ARRAYSIZE( clr ) );
-
 
     // Dynamic light
     dlight_t* el = effects->CL_AllocDlight( LIGHT_INDEX_MUZZLEFLASH + index );
     el->origin = pos;
-    el->radius = radius; 
+    el->radius = radius;
     el->decay = el->radius / lifetime;
     el->die = gpGlobals->curtime + lifetime;
     el->color.r = (byte)clr[0];
@@ -1136,7 +1073,7 @@ void C_ZMPlayer::ProcessMuzzleFlashEvent()
 bool C_ZMPlayer::CreateMove( float delta, CUserCmd* cmd )
 {
     bool bResult = BaseClass::CreateMove( delta, cmd );
-    
+
     if ( IsZM() )
     {
         // Encode the real wanted movement speed to 1/100
@@ -1168,7 +1105,6 @@ bool C_ZMPlayer::CreateMove( float delta, CUserCmd* cmd )
             cmd->upmove -= zm_cl_zmmovespdspd.GetFloat() * 0.01f;
         }
 
-
         if ( g_pZMView && !g_pZMView->IsVisible() )
         {
             cmd->buttons |= IN_ZM_OBSERVERMODE;
@@ -1195,7 +1131,7 @@ void C_ZMPlayer::SetMouseWheelMove( float dir )
         // We want to be stopped.
         if ( m_flNextUpMove > gpGlobals->curtime )
         {
-            m_flNextUpMove = (gpGlobals->curtime + 0.1f);
+            m_flNextUpMove = ( gpGlobals->curtime + 0.1f );
         }
     }
 }

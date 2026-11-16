@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "npcr_component.h"
 
 class CSound;
@@ -35,13 +34,12 @@ namespace NPCR
         }
         ~KnownEntity() {}
 
+        CBaseEntity* GetEntity() const { return m_pEnt.Get(); }
 
-        CBaseEntity*    GetEntity() const { return m_pEnt.Get(); }
-
-        float   AcquiredTime() const { return m_flAcquiredTime; }
-        float   LastSeenTime() const { return m_flLastSeenTime; }
-        float   LastSensedTime() const { return m_flLastSensedTime; }
-        bool    CanSee() const { return m_bCanSee; }
+        float AcquiredTime() const { return m_flAcquiredTime; }
+        float LastSeenTime() const { return m_flLastSeenTime; }
+        float LastSensedTime() const { return m_flLastSensedTime; }
+        bool CanSee() const { return m_bCanSee; }
 
         void UpdateLastSeen()
         {
@@ -91,9 +89,7 @@ namespace NPCR
         CBaseSenses( CBaseNPC* pNPC );
         ~CBaseSenses();
 
-
         virtual const char* GetComponentName() const override { return "BaseSenses"; }
-
 
         virtual void Update() override;
 
@@ -108,7 +104,6 @@ namespace NPCR
 
         virtual int GetSoundMask() const;
         virtual bool CanHearSound( CSound* pSound ) const;
-
 
         virtual unsigned int GetVisionMask() const;
         virtual bool CanSeeThrough( CBaseEntity* pEnt ) const;
@@ -151,7 +146,6 @@ namespace NPCR
         KnownEntity* FindKnownOf( CBaseEntity* pEnt ) const;
 
         bool IsDebugging() const;
-
 
         CUtlVector<KnownEntity*> m_vKnownEnts;
         float m_flFovCos;

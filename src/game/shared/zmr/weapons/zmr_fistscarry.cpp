@@ -1,45 +1,40 @@
 #include "cbase.h"
 
 #ifdef CLIENT_DLL
-#include "vcollide_parse.h"
-#include "iviewrender_beams.h"
-#include "model_types.h"
 #include "clienteffectprecachesystem.h"
 #include "fx_interpvalue.h"
+#include "iviewrender_beams.h"
+#include "model_types.h"
+#include "vcollide_parse.h"
 #else
-#include "soundent.h"
-#include "ndebugoverlay.h"
 #include "ai_basenpc.h"
-#include "player_pickup.h"
-#include "physics_prop_ragdoll.h"
 #include "globalstate.h"
+#include "ndebugoverlay.h"
+#include "physics_prop_ragdoll.h"
+#include "player_pickup.h"
 #include "props.h"
+#include "soundent.h"
 #include "te_effect_dispatch.h"
 #include "util.h"
 #endif
 
-#include "in_buttons.h"
 #include "debugoverlay_shared.h"
+#include "in_buttons.h"
 
-
-#include "zmr_grabcontroller.h"
 #include "zmr_basemelee.h"
 #include "zmr_fistscarry.h"
-
+#include "zmr_grabcontroller.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define OBJECT_MOVE_DELTA  0.05f
+#define OBJECT_PUSH_MAXSPD 100.0f
+#define OBJECT_PULL_MAXSPD 50.0f
 
-#define OBJECT_MOVE_DELTA           0.05f
-#define OBJECT_PUSH_MAXSPD          100.0f
-#define OBJECT_PULL_MAXSPD          50.0f
+#define HOLD_ACTIVITY ACT_VM_RELOAD
 
-
-#define HOLD_ACTIVITY               ACT_VM_RELOAD
-
-
-ConVar	zm_sv_debug_carry( "zm_sv_debug_carry", "0", FCVAR_REPLICATED );
+ConVar zm_sv_debug_carry( "zm_sv_debug_carry", "0", FCVAR_REPLICATED );
 
 ConVar physcannon_minforce( "physcannon_minforce", "50", FCVAR_REPLICATED );
 ConVar physcannon_maxforce( "physcannon_maxforce", "300", FCVAR_REPLICATED );
@@ -47,7 +42,6 @@ ConVar physcannon_maxmass( "physcannon_maxmass", "40", FCVAR_REPLICATED );
 ConVar physcannon_tracelength( "physcannon_tracelength", "75", FCVAR_REPLICATED );
 ConVar physcannon_pullforce( "physcannon_pullforce", "3500", FCVAR_REPLICATED );
 ConVar physcannon_pushforce( "physcannon_pushforce", "3000", FCVAR_REPLICATED );
-
 
 //#define PHYSCANNON_BEAM_SPRITE "sprites/orangelight1.vmt"
 //#define PHYSCANNON_BEAM_SPRITE_NOZ "sprites/orangelight1_noz.vmt"
@@ -68,19 +62,17 @@ ConVar physcannon_pushforce( "physcannon_pushforce", "3000", FCVAR_REPLICATED );
 //CLIENTEFFECT_REGISTER_END()
 //#endif	// CLIENT_DLL
 
-
-
 class CTraceFilterNoOwnerTest : public CTraceFilterSimple
 {
 public:
     DECLARE_CLASS( CTraceFilterNoOwnerTest, CTraceFilterSimple );
-    
-    CTraceFilterNoOwnerTest( const IHandleEntity *passentity, int collisionGroup )
-        : CTraceFilterSimple( nullptr, collisionGroup ), m_pPassNotOwner(passentity)
+
+    CTraceFilterNoOwnerTest( const IHandleEntity* passentity, int collisionGroup )
+        : CTraceFilterSimple( nullptr, collisionGroup ), m_pPassNotOwner( passentity )
     {
     }
-    
-    virtual bool ShouldHitEntity( IHandleEntity *pHandleEntity, int contentsMask )
+
+    virtual bool ShouldHitEntity( IHandleEntity* pHandleEntity, int contentsMask )
     {
         if ( pHandleEntity != m_pPassNotOwner )
             return BaseClass::ShouldHitEntity( pHandleEntity, contentsMask );
@@ -89,35 +81,35 @@ public:
     }
 
 protected:
-    const IHandleEntity *m_pPassNotOwner;
+    const IHandleEntity* m_pPassNotOwner;
 };
 
 //-----------------------------------------------------------------------------
 // Purpose: Computes a local matrix for the player clamped to valid carry ranges
 //-----------------------------------------------------------------------------
 // when looking level, hold bottom of object 8 inches below eye level
-#define PLAYER_HOLD_LEVEL_EYES	-8
+#define PLAYER_HOLD_LEVEL_EYES -8
 
 // when looking down, hold bottom of object 0 inches from feet
-#define PLAYER_HOLD_DOWN_FEET	2
+#define PLAYER_HOLD_DOWN_FEET 2
 
 // when looking up, hold bottom of object 24 inches above eye level
-#define PLAYER_HOLD_UP_EYES		24
+#define PLAYER_HOLD_UP_EYES 24
 
 // use a +/-30 degree range for the entire range of motion of pitch
-#define PLAYER_LOOK_PITCH_RANGE	30
+#define PLAYER_LOOK_PITCH_RANGE 30
 
 // player can reach down 2ft below his feet (otherwise he'll hold the object above the bottom)
-#define PLAYER_REACH_DOWN_DISTANCE	24
+#define PLAYER_REACH_DOWN_DISTANCE 24
 
-static void ComputePlayerMatrix( CBasePlayer *pPlayer, matrix3x4_t &out )
+static void ComputePlayerMatrix( CBasePlayer* pPlayer, matrix3x4_t& out )
 {
     if ( !pPlayer )
         return;
 
     QAngle angles = pPlayer->EyeAngles();
     Vector origin = pPlayer->EyePosition();
-    
+
     // 0-360 / -180-180
     //angles.x = init ? 0 : AngleDistance( angles.x, 0 );
     //angles.x = clamp( angles.x, -PLAYER_LOOK_PITCH_RANGE, PLAYER_LOOK_PITCH_RANGE );
@@ -133,13 +125,12 @@ static void ComputePlayerMatrix( CBasePlayer *pPlayer, matrix3x4_t &out )
     }
     else
     {
-        zoffset = RemapVal( angles.x, 0, PLAYER_LOOK_PITCH_RANGE, PLAYER_HOLD_LEVEL_EYES, PLAYER_HOLD_DOWN_FEET + (feet - eyes) );
+        zoffset = RemapVal( angles.x, 0, PLAYER_LOOK_PITCH_RANGE, PLAYER_HOLD_LEVEL_EYES, PLAYER_HOLD_DOWN_FEET + ( feet - eyes ) );
     }
     origin.z += zoffset;
     angles.x = 0;
     AngleMatrix( angles, origin, out );
 }
-
 
 BEGIN_NETWORK_TABLE( CZMWeaponHands, DT_ZM_WeaponHands )
 #ifdef CLIENT_DLL
@@ -150,7 +141,7 @@ BEGIN_NETWORK_TABLE( CZMWeaponHands, DT_ZM_WeaponHands )
     RecvPropFloat( RECVINFO( m_attachedAnglesPlayerSpace[2] ) ),
 #else
     SendPropEHandle( SENDINFO( m_hAttachedObject ) ),
-    SendPropVector(SENDINFO( m_attachedPositionObjectSpace ), -1, SPROP_COORD),
+    SendPropVector( SENDINFO( m_attachedPositionObjectSpace ), -1, SPROP_COORD ),
     SendPropAngle( SENDINFO_VECTORELEM( m_attachedAnglesPlayerSpace, 0 ), 11 ),
     SendPropAngle( SENDINFO_VECTORELEM( m_attachedAnglesPlayerSpace, 1 ), 11 ),
     SendPropAngle( SENDINFO_VECTORELEM( m_attachedAnglesPlayerSpace, 2 ), 11 ),
@@ -164,14 +155,11 @@ BEGIN_PREDICTION_DATA( CZMWeaponHands )
 END_PREDICTION_DATA()
 #endif
 
-
-
 LINK_ENTITY_TO_CLASS( weapon_zm_fistscarry, CZMWeaponHands );
 #ifdef GAME_DLL
 LINK_ENTITY_TO_CLASS( weapon_zm_carry, CZMWeaponHands );
 #endif
 PRECACHE_WEAPON_REGISTER( weapon_zm_fistscarry );
-
 
 CZMWeaponHands::CZMWeaponHands()
 {
@@ -197,7 +185,7 @@ void CZMWeaponHands::ItemPreFrame()
 #endif
 
     // Update the object if the weapon is switched on.
-    if( IsCarryingObject() )
+    if ( IsCarryingObject() )
     {
         UpdateObject();
     }
@@ -208,7 +196,6 @@ void CZMWeaponHands::ItemPostFrame()
     auto* pOwner = GetPlayerOwner();
     if ( !pOwner )
         return;
-
 
     if ( pOwner->m_nButtons & IN_ATTACK )
     {
@@ -222,7 +209,6 @@ void CZMWeaponHands::ItemPostFrame()
     {
         TertiaryAttack();
     }
-
 
     CheckForTarget();
     WeaponIdle();
@@ -243,13 +229,10 @@ void CZMWeaponHands::PrimaryAttack()
         return;
     }
 
-
     if ( m_flNextPrimaryAttack > gpGlobals->curtime )
         return;
 
-
     Swing( false );
-
 
     float delay = GetPrimaryFireRate();
 
@@ -265,12 +248,10 @@ void CZMWeaponHands::SecondaryAttack()
     if ( !IsAbleToPickupObjects() )
         return;
 
-
     auto* pOwner = GetPlayerOwner();
-    
+
     if ( !pOwner )
         return;
-
 
     if ( IsCarryingObject() )
     {
@@ -313,16 +294,14 @@ void CZMWeaponHands::SecondaryAttack()
             // Puller must be on ground.
             if ( !bDone && pOwner->GetFlags() & FL_ONGROUND )
             {
-               PullObject( pEnt );
+                PullObject( pEnt );
 
+                if ( GetActivity() != HOLD_ACTIVITY )
+                    SendWeaponAnim( HOLD_ACTIVITY );
 
-               if ( GetActivity() != HOLD_ACTIVITY )
-                   SendWeaponAnim( HOLD_ACTIVITY );
+                m_flTimeWeaponIdle = gpGlobals->curtime + 0.2f;
 
-               m_flTimeWeaponIdle = gpGlobals->curtime + 0.2f;
-
-
-               m_flNextSecondaryAttack = gpGlobals->curtime + OBJECT_MOVE_DELTA;
+                m_flNextSecondaryAttack = gpGlobals->curtime + OBJECT_MOVE_DELTA;
             }
         }
     }
@@ -337,12 +316,11 @@ void CZMWeaponHands::TertiaryAttack()
         return;
 
     auto* pOwner = GetPlayerOwner();
-    
+
     if ( !pOwner )
         return;
 
-
-    if( IsCarryingObject() )
+    if ( IsCarryingObject() )
     {
         //
         // Punch the object being held
@@ -352,7 +330,6 @@ void CZMWeaponHands::TertiaryAttack()
         return;
     }
 
-    
     //
     // Push object in front of us
     //
@@ -368,12 +345,10 @@ void CZMWeaponHands::TertiaryAttack()
         PushObject( pEntity, hitPos );
     }
 
-
     if ( GetActivity() != HOLD_ACTIVITY )
         SendWeaponAnim( HOLD_ACTIVITY );
 
     m_flTimeWeaponIdle = gpGlobals->curtime + 0.2f;
-
 
     m_flNextPrimaryAttack = gpGlobals->curtime + 0.2f;
     m_flNextSecondaryAttack = gpGlobals->curtime + OBJECT_MOVE_DELTA;
@@ -415,10 +390,8 @@ bool CZMWeaponHands::Deploy()
 {
     bool bReturn = BaseClass::Deploy();
 
-
     // Reset attack times to allow instant pickup.
     m_flNextSecondaryAttack = gpGlobals->curtime;
-
 
     auto* pOwner = GetPlayerOwner();
 
@@ -446,7 +419,7 @@ void CZMWeaponHands::Drop( const Vector& vecVelocity )
 }
 
 bool CZMWeaponHands::CanHolster() const
-{ 
+{
     // Don't holster this weapon if we're holding onto something
     if ( IsCarryingObject() )
         return false;
@@ -459,18 +432,17 @@ Activity CZMWeaponHands::GetIdleActivity() const
     return IsCarryingObject() ? HOLD_ACTIVITY : ACT_VM_IDLE;
 }
 
-bool CZMWeaponHands::Holster( CBaseCombatWeapon *pSwitchingTo )
+bool CZMWeaponHands::Holster( CBaseCombatWeapon* pSwitchingTo )
 {
     // Don't holster this weapon if we're holding onto something
     if ( IsCarryingObject() )
         return false;
 
-
     return BaseClass::Holster( pSwitchingTo );
 }
 
 #ifndef CLIENT_DLL
-void CZMWeaponHands::Physgun_OnPhysGunPickup( CBaseEntity *pEntity, CBasePlayer *pOwner, PhysGunPickup_t reason )
+void CZMWeaponHands::Physgun_OnPhysGunPickup( CBaseEntity* pEntity, CBasePlayer* pOwner, PhysGunPickup_t reason )
 {
     // If the target is debris, convert it to non-debris
     if ( pEntity->GetCollisionGroup() == COLLISION_GROUP_DEBRIS )
@@ -490,7 +462,6 @@ bool CZMWeaponHands::PushObject( CBaseEntity* pEnt, const Vector& vecHitPos )
     if ( !pOwner )
         return false;
 
-
     //CTakeDamageInfo info;
     //info.SetAttacker( pOwner );
     //info.SetInflictor( this );
@@ -499,10 +470,8 @@ bool CZMWeaponHands::PushObject( CBaseEntity* pEnt, const Vector& vecHitPos )
     //pEntity->DispatchTraceAttack( info, forward, &tr );
     //ApplyMultiDamage();
 
-
     Vector forward;
     pOwner->EyeVectors( &forward );
-
 
     if ( !Pickup_OnAttemptPhysGunPickup( pEnt, pOwner, PUNTED_BY_CANNON ) )
         return false;
@@ -511,11 +480,10 @@ bool CZMWeaponHands::PushObject( CBaseEntity* pEnt, const Vector& vecHitPos )
     if ( !pObj )
         return false;
 
-    if ( (pObj->GetGameFlags() & FVPHYSICS_CONSTRAINT_STATIC) )
+    if ( ( pObj->GetGameFlags() & FVPHYSICS_CONSTRAINT_STATIC ) )
         return false;
 
-
-    if( forward.z < 0 )
+    if ( forward.z < 0 )
     {
         if ( forward.z < -0.6f ) // Basically aiming down, don't push up/down. Also fixes prop climbing :)
             forward.z = 0;
@@ -523,29 +491,25 @@ bool CZMWeaponHands::PushObject( CBaseEntity* pEnt, const Vector& vecHitPos )
             forward.z *= -0.65f;
         forward.NormalizeInPlace();
     }
-                
+
     // NOTE: Do this first to enable motion (if disabled) - so forces will work
     // Tell the object it's been punted
     Physgun_OnPhysGunPickup( pEnt, pOwner, PUNTED_BY_CANNON );
-
-
 
     Vector vel, veldir;
     AngularImpulse temp;
     pObj->GetVelocity( &vel, &temp );
     veldir = vel.Normalized();
 
-
     Vector objdir = pEnt->WorldSpaceCenter() - pOwner->EyePosition();
     objdir.NormalizeInPlace();
-
 
     const float flMaxPushSpd = OBJECT_PUSH_MAXSPD;
 
     float spd = vel.Length() * objdir.Dot( veldir );
     spd = clamp( spd, 0.0f, flMaxPushSpd );
-    
-    float ratio = (flMaxPushSpd - spd) / flMaxPushSpd;
+
+    float ratio = ( flMaxPushSpd - spd ) / flMaxPushSpd;
 
     pObj->ApplyForceCenter( forward * physcannon_pushforce.GetFloat() * ratio );
     pObj->ApplyForceOffset( forward * 30.0f, vecHitPos );
@@ -557,29 +521,29 @@ bool CZMWeaponHands::PushObject( CBaseEntity* pEnt, const Vector& vecHitPos )
 //
 // Applies throw velocity
 //
-void CZMWeaponHands::ApplyVelocityBasedForce( CBaseEntity *pEntity, const Vector &forward )
+void CZMWeaponHands::ApplyVelocityBasedForce( CBaseEntity* pEntity, const Vector& forward )
 {
-    IPhysicsObject *pPhysicsObject = pEntity->VPhysicsGetObject();
-    Assert(pPhysicsObject); // Shouldn't ever get here with a non-vphysics object.
-    if (!pPhysicsObject)
+    IPhysicsObject* pPhysicsObject = pEntity->VPhysicsGetObject();
+    Assert( pPhysicsObject ); // Shouldn't ever get here with a non-vphysics object.
+    if ( !pPhysicsObject )
         return;
 
     float flForceMax = physcannon_maxforce.GetFloat();
     float flForce = flForceMax;
 
     float mass = pPhysicsObject->GetMass();
-    if (mass > 100)
+    if ( mass > 100 )
     {
         // ZMRCHANGES
-        mass = MIN(mass, 150); // Was 1000
+        mass = MIN( mass, 150 ); // Was 1000
         float flForceMin = physcannon_minforce.GetFloat();
-        flForce = SimpleSplineRemapVal(mass, 50, 150, flForceMax, flForceMin); // Was 100, 600
+        flForce = SimpleSplineRemapVal( mass, 50, 150, flForceMax, flForceMin ); // Was 100, 600
     }
 
     Vector vVel = forward * flForce;
     // FIXME: Josh needs to put a real value in for PHYSGUN_FORCE_PUNTED
     AngularImpulse aVel = RandomAngularImpulse( -600, 600 );
-        
+
     pPhysicsObject->AddVelocity( &vVel, &aVel );
 }
 
@@ -588,7 +552,7 @@ float CZMWeaponHands::PickupDistance() const
     return physcannon_tracelength.GetFloat();
 }
 
-bool CZMWeaponHands::AttachObject( CBaseEntity *pObject )
+bool CZMWeaponHands::AttachObject( CBaseEntity* pObject )
 {
     if ( IsCarryingObject() )
         return false;
@@ -596,18 +560,16 @@ bool CZMWeaponHands::AttachObject( CBaseEntity *pObject )
     if ( !CanPickupObject( pObject ) )
         return false;
 
-
     m_grabController.SetIgnorePitch( false );
     m_grabController.SetAngleAlignment( 0 );
 
-    IPhysicsObject *pPhysics = pObject->VPhysicsGetObject();
+    IPhysicsObject* pPhysics = pObject->VPhysicsGetObject();
 
     // Must be valid
     if ( !pPhysics )
         return false;
 
     auto* pOwner = GetPlayerOwner();
-
 
     if ( pOwner )
     {
@@ -634,7 +596,6 @@ bool CZMWeaponHands::AttachObject( CBaseEntity *pObject )
     // Don't drop again for a slight delay, in case they were pulling objects near them
     m_flNextSecondaryAttack = gpGlobals->curtime + 0.4f;
 
-
     SendWeaponAnim( HOLD_ACTIVITY );
 
     return true;
@@ -642,18 +603,15 @@ bool CZMWeaponHands::AttachObject( CBaseEntity *pObject )
 
 CBaseEntity* CZMWeaponHands::FindObject( Vector* pvecHitPos ) const
 {
-    const int iMask = MASK_SHOT|CONTENTS_GRATE;
+    const int iMask = MASK_SHOT | CONTENTS_GRATE;
     const Vector vecHull = Vector( 8, 8, 8 );
-
-
 
     auto* pPlayer = GetPlayerOwner();
     if ( !pPlayer )
         return nullptr;
-    
+
     Vector forward;
     pPlayer->EyeVectors( &forward );
-
 
     Vector start = pPlayer->Weapon_ShootPosition();
     Vector end = start + forward * PickupDistance();
@@ -674,7 +632,6 @@ CBaseEntity* CZMWeaponHands::FindObject( Vector* pvecHitPos ) const
     if ( !IsValidTargetObject( pEntity ) )
         return nullptr;
 
-
     if ( pvecHitPos )
         *pvecHitPos = tr.endpos;
 
@@ -683,9 +640,9 @@ CBaseEntity* CZMWeaponHands::FindObject( Vector* pvecHitPos ) const
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
+bool CGrabController::UpdateObject( CBasePlayer* pPlayer, float flError )
 {
-    CBaseEntity *pEntity = GetAttached();
+    CBaseEntity* pEntity = GetAttached();
     if ( !pEntity )
         return false;
     if ( ComputeError() > flError )
@@ -711,7 +668,7 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
     Vector forward, right, up;
     QAngle playerAngles = pPlayer->EyeAngles();
 
-    float pitch = AngleDistance(playerAngles.x,0);
+    float pitch = AngleDistance( playerAngles.x, 0 );
     playerAngles.x = clamp( pitch, -75, 75 );
     AngleVectors( playerAngles, &forward, &right, &up );
 
@@ -728,7 +685,7 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
     Vector start = pPlayer->Weapon_ShootPosition();
     Vector end = start + ( forward * distance );
 
-    trace_t	tr;
+    trace_t tr;
     CTraceFilterSkipTwoEntities traceFilter( pPlayer, pEntity, COLLISION_GROUP_NONE );
     Ray_t ray;
     ray.Init( start, end );
@@ -736,7 +693,7 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
 
     if ( tr.fraction < 0.5 )
     {
-        end = start + forward * (radius*0.5f);
+        end = start + forward * ( radius * 0.5f );
     }
     else if ( tr.fraction <= 1.0f )
     {
@@ -746,10 +703,10 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
     Vector playerMins, playerMaxs, nearest;
     pPlayer->CollisionProp()->WorldSpaceAABB( &playerMins, &playerMaxs );
     Vector playerLine = pPlayer->CollisionProp()->WorldSpaceCenter();
-    CalcClosestPointOnLine( end, playerLine+Vector(0,0,playerMins.z), playerLine+Vector(0,0,playerMaxs.z), nearest, nullptr );
+    CalcClosestPointOnLine( end, playerLine + Vector( 0, 0, playerMins.z ), playerLine + Vector( 0, 0, playerMaxs.z ), nearest, nullptr );
 
     Vector delta = end - nearest;
-    float len = VectorNormalize(delta);
+    float len = VectorNormalize( delta );
     if ( len < radius )
     {
         end = nearest + radius * delta;
@@ -770,14 +727,13 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
 #endif
         NDebugOverlay::Axis( end, vec3_angle, 8.0f, true, 0.0f );
 
-        NDebugOverlay::BoxAngles( GetAttached()->WorldSpaceCenter(), 
-                            -Vector( radius, radius, radius), 
-                            Vector( radius, radius, radius ),
-                            angles,
-                            r, g, b, 0,
-                            0.0f );
+        NDebugOverlay::BoxAngles( GetAttached()->WorldSpaceCenter(),
+            -Vector( radius, radius, radius ),
+            Vector( radius, radius, radius ),
+            angles,
+            r, g, b, 0,
+            0.0f );
     }
-
 
     matrix3x4_t attachedToWorld;
     Vector offset;
@@ -791,7 +747,7 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
 
 void CZMWeaponHands::UpdateObject()
 {
-    CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+    CBasePlayer* pPlayer = ToBasePlayer( GetOwner() );
     Assert( pPlayer );
 
     float flError = 12;
@@ -809,7 +765,6 @@ void CZMWeaponHands::DetachObject( bool bLaunch )
     if ( !IsCarryingObject() )
         return;
 
-
     CBaseEntity* pObject = m_grabController.GetAttached();
 
     m_grabController.DetachEntity( bLaunch );
@@ -825,7 +780,6 @@ void CZMWeaponHands::DetachObject( bool bLaunch )
     {
         pObject->SetOwnerEntity( nullptr );
     }
-
 
 #ifdef GAME_DLL
     auto* pOwner = GetPlayerOwner();
@@ -849,11 +803,10 @@ void CZMWeaponHands::DetachObject( bool bLaunch )
     m_flTimeWeaponIdle = gpGlobals->curtime + 0.1f;
 }
 
-
 #ifdef CLIENT_DLL
 void CZMWeaponHands::ManagePredictedObject()
 {
-    CBaseEntity *pAttachedObject = m_hAttachedObject.Get();
+    CBaseEntity* pAttachedObject = m_hAttachedObject.Get();
 
     if ( m_hAttachedObject )
     {
@@ -861,9 +814,8 @@ void CZMWeaponHands::ManagePredictedObject()
         if ( pAttachedObject != GetGrabController().GetAttached() )
         {
             IPhysicsObject* pPhysics;
-            
-            pPhysics = pAttachedObject->VPhysicsGetObject();
 
+            pPhysics = pAttachedObject->VPhysicsGetObject();
 
             m_bResetPhysicsObject = false;
             if ( !pPhysics )
@@ -913,11 +865,9 @@ bool CZMWeaponHands::CheckForTarget()
     if ( IsCarryingObject() )
         return false;
 
-
     Activity act = GetActivity();
     if ( act != ACT_VM_IDLE && act != HOLD_ACTIVITY && GetWeaponIdleTime() > gpGlobals->curtime )
         return false;
-
 
     Vector fwd;
     pOwner->EyeVectors( &fwd );
@@ -925,8 +875,8 @@ bool CZMWeaponHands::CheckForTarget()
     Vector startPos = pOwner->Weapon_ShootPosition();
     Vector endPos = startPos + fwd * PickupDistance();
 
-    trace_t	tr;
-    UTIL_TraceHull( startPos, endPos, -Vector(4,4,4), Vector(4,4,4), MASK_SHOT|CONTENTS_GRATE, pOwner, COLLISION_GROUP_NONE, &tr );
+    trace_t tr;
+    UTIL_TraceHull( startPos, endPos, -Vector( 4, 4, 4 ), Vector( 4, 4, 4 ), MASK_SHOT | CONTENTS_GRATE, pOwner, COLLISION_GROUP_NONE, &tr );
 
     CBaseEntity* pEnt = tr.m_pEnt;
     if ( tr.fraction != 1.0f && pEnt && CanPickupObject( pEnt ) )
@@ -945,7 +895,6 @@ bool CZMWeaponHands::CheckForTarget()
 void CZMWeaponHands::Hit( trace_t& traceHit, Activity iHitActivity )
 {
     BaseClass::Hit( traceHit, iHitActivity );
-
 
     AddViewKick();
 
@@ -1013,24 +962,20 @@ bool CZMWeaponHands::PullObject( CBaseEntity* pEnt )
     IPhysicsObject* pObj = pEnt->VPhysicsGetObject();
     if ( !pObj ) return false;
 
-
     Vector vel, veldir;
     AngularImpulse temp;
     pObj->GetVelocity( &vel, &temp );
     veldir = vel.Normalized();
 
-
     Vector pull = start - pEnt->WorldSpaceCenter();
     VectorNormalize( pull );
 
-    
     const float flMaxPullSpd = OBJECT_PULL_MAXSPD;
-
 
     float spd = vel.Length() * pull.Dot( veldir );
     spd = clamp( spd, 0.0f, flMaxPullSpd );
-    
-    float ratio = (flMaxPullSpd - spd) / flMaxPullSpd;
+
+    float ratio = ( flMaxPullSpd - spd ) / flMaxPullSpd;
 
     // Nudge it towards us
     pObj->ApplyForceCenter( pull * physcannon_pullforce.GetFloat() * ratio );
@@ -1042,12 +987,9 @@ void CZMWeaponHands::LaunchObject()
 {
     Assert( GetHeldObject() == m_grabController.GetAttached() );
 
-
     DetachObject( true );
 
-
     SendWeaponAnim( ACT_VM_SECONDARYATTACK );
-
 
     m_flNextPrimaryAttack = gpGlobals->curtime + 0.25f;
     m_flNextSecondaryAttack = gpGlobals->curtime + 0.5f;
@@ -1066,19 +1008,17 @@ bool CZMWeaponHands::CanPickupObject( CBaseEntity* pEnt ) const
     if ( pEnt->IsEFlagSet( EFL_NO_PHYSCANNON_INTERACTION ) )
         return false;
 
-
     auto* pOwner = GetPlayerOwner();
-    
+
     if ( !pOwner )
         return false;
 
     if ( pOwner->GetGroundEntity() == pEnt )
         return false;
 
-    IPhysicsObject* pObj = pEnt->VPhysicsGetObject();	
+    IPhysicsObject* pObj = pEnt->VPhysicsGetObject();
     if ( !pObj )
         return false;
-
 
     if ( pObj->GetGameFlags() & FVPHYSICS_PLAYER_HELD )
         return false;
@@ -1098,7 +1038,7 @@ bool CZMWeaponHands::CanPickupObject( CBaseEntity* pEnt ) const
         {
             for ( link = root->nextLink; link != root; link = link->nextLink )
             {
-                if ( link->entity && (link->entity->IsBaseZombie() || link->entity->IsPlayer()) )
+                if ( link->entity && ( link->entity->IsBaseZombie() || link->entity->IsPlayer() ) )
                 {
                     return false;
                 }
@@ -1107,22 +1047,19 @@ bool CZMWeaponHands::CanPickupObject( CBaseEntity* pEnt ) const
     }
 #endif
 
-
     const float flMassLimit = physcannon_maxmass.GetFloat();
-
 
     // Must be under our threshold weight
     if ( flMassLimit >= 0.0f && pObj->GetMass() > flMassLimit )
         return false;
 
+    if ( pObj->GetGameFlags() & FVPHYSICS_NO_PLAYER_PICKUP )
+        return false;
+    if ( pObj->IsHinged() )
+        return false;
 
-	if ( pObj->GetGameFlags() & FVPHYSICS_NO_PLAYER_PICKUP )
-		return false;
-	if ( pObj->IsHinged() )
-		return false;
-
-	if ( !pObj->IsMoveable() )
-	{
+    if ( !pObj->IsMoveable() )
+    {
 #ifdef GAME_DLL
         // Allow pickup of phys props that are motion enabled on player pickup
         CPhysicsProp* pProp = dynamic_cast<CPhysicsProp*>( pEnt );
@@ -1130,34 +1067,32 @@ bool CZMWeaponHands::CanPickupObject( CBaseEntity* pEnt ) const
         if ( !pProp && !pBox )
             return false;
 
-        if ( pProp && !(pProp->HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON )) )
+        if ( pProp && !( pProp->HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON ) ) )
             return false;
 
-        if ( pBox && !(pBox->HasSpawnFlags( SF_PHYSBOX_ENABLE_ON_PHYSCANNON )) )
+        if ( pBox && !( pBox->HasSpawnFlags( SF_PHYSBOX_ENABLE_ON_PHYSCANNON ) ) )
             return false;
 #else
         return false;
 #endif
-	}
+    }
 
     return true;
 }
 
-
-
 //
 // EXTERNAL API
 //
-void PhysCannonForceDrop( CBaseCombatWeapon *pActiveWeapon, CBaseEntity *pOnlyIfHoldingThis )
+void PhysCannonForceDrop( CBaseCombatWeapon* pActiveWeapon, CBaseEntity* pOnlyIfHoldingThis )
 {
-    CZMWeaponHands *pCannon = dynamic_cast<CZMWeaponHands *>(pActiveWeapon);
+    CZMWeaponHands* pCannon = dynamic_cast<CZMWeaponHands*>( pActiveWeapon );
     if ( pCannon )
     {
         pCannon->ForceDrop( pOnlyIfHoldingThis );
     }
 }
 
-bool PlayerPickupControllerIsHoldingEntity( CBaseEntity *pPickupControllerEntity, CBaseEntity *pHeldEntity )
+bool PlayerPickupControllerIsHoldingEntity( CBaseEntity* pPickupControllerEntity, CBaseEntity* pHeldEntity )
 {
     Assert( 0 );
     //CPlayerPickupController *pController = dynamic_cast<CPlayerPickupController *>(pPickupControllerEntity);
@@ -1166,21 +1101,21 @@ bool PlayerPickupControllerIsHoldingEntity( CBaseEntity *pPickupControllerEntity
     return false;
 }
 
-float PhysCannonGetHeldObjectMass( CBaseCombatWeapon *pActiveWeapon, IPhysicsObject *pHeldObject )
+float PhysCannonGetHeldObjectMass( CBaseCombatWeapon* pActiveWeapon, IPhysicsObject* pHeldObject )
 {
-    CZMWeaponHands* pCarry = dynamic_cast<CZMWeaponHands *>(pActiveWeapon);
+    CZMWeaponHands* pCarry = dynamic_cast<CZMWeaponHands*>( pActiveWeapon );
 
     return pCarry ? pCarry->GetHeldObjectMass() : 0.0f;
 }
 
-CBaseEntity *PhysCannonGetHeldEntity( CBaseCombatWeapon *pActiveWeapon )
+CBaseEntity* PhysCannonGetHeldEntity( CBaseCombatWeapon* pActiveWeapon )
 {
-    CZMWeaponHands* pCarry = dynamic_cast<CZMWeaponHands *>(pActiveWeapon);
+    CZMWeaponHands* pCarry = dynamic_cast<CZMWeaponHands*>( pActiveWeapon );
 
     return pCarry ? pCarry->GetGrabController().GetAttached() : nullptr;
 }
 
-float PlayerPickupGetHeldObjectMass( CBaseEntity *pPickupControllerEntity, IPhysicsObject *pHeldObject )
+float PlayerPickupGetHeldObjectMass( CBaseEntity* pPickupControllerEntity, IPhysicsObject* pHeldObject )
 {
     Assert( 0 );
     //float mass = 0.0f;
@@ -1202,24 +1137,24 @@ float PlayerPickupGetHeldObjectMass( CBaseEntity *pPickupControllerEntity, IPhys
 //DECLARE_CLIENT_EFFECT( "PhyscannonImpact", CallbackPhyscannonImpact );
 #endif
 
-void PlayerPickupObject( CBasePlayer *pPlayer, CBaseEntity *pObject )
+void PlayerPickupObject( CBasePlayer* pPlayer, CBaseEntity* pObject )
 {
     Assert( 0 );
     PlayerAttemptPickup( pPlayer, pObject );
-//#ifndef CLIENT_DLL
-//    
-//    //Don't pick up if we don't have a phys object.
-//    if ( pObject->VPhysicsGetObject() == nullptr )
-//         return;
-//
-//    CPlayerPickupController *pController = (CPlayerPickupController *)CBaseEntity::Create( "player_pickup", pObject->GetAbsOrigin(), vec3_angle, pPlayer );
-//    
-//    if ( !pController )
-//        return;
-//
-//    pController->Init( pPlayer, pObject );
-//
-//#endif
+    //#ifndef CLIENT_DLL
+    //
+    //    //Don't pick up if we don't have a phys object.
+    //    if ( pObject->VPhysicsGetObject() == nullptr )
+    //         return;
+    //
+    //    CPlayerPickupController *pController = (CPlayerPickupController *)CBaseEntity::Create( "player_pickup", pObject->GetAbsOrigin(), vec3_angle, pPlayer );
+    //
+    //    if ( !pController )
+    //        return;
+    //
+    //    pController->Init( pPlayer, pObject );
+    //
+    //#endif
 }
 
 void PlayerAttemptPickup( CBasePlayer* pPlayer, CBaseEntity* pEntity )
@@ -1235,21 +1170,18 @@ void PlayerAttemptPickup( CBasePlayer* pPlayer, CBaseEntity* pEntity )
     if ( !pWeapon->CanPickupObject( pEntity ) )
         return;
 
-
     if ( pPlayer->GetActiveWeapon() != pWeapon )
     {
         if ( !pPlayer->Weapon_Switch( pWeapon ) )
             return;
     }
 
-
     pWeapon->TryPickupObject( pEntity );
 }
 
 #ifdef GAME_DLL
-void PhysCannonBeginUpgrade( CBaseAnimating *pAnim )
+void PhysCannonBeginUpgrade( CBaseAnimating* pAnim )
 {
-
 }
 
 bool PlayerHasMegaPhysCannon( void )
@@ -1257,7 +1189,7 @@ bool PlayerHasMegaPhysCannon( void )
     return false;
 }
 
-bool PhysCannonAccountableForObject( CBaseCombatWeapon *pPhysCannon, CBaseEntity *pObject )
+bool PhysCannonAccountableForObject( CBaseCombatWeapon* pPhysCannon, CBaseEntity* pObject )
 {
     // BRJ: FIXME! This can't be implemented trivially, so I'm leaving it to Steve or Adrian
     Assert( 0 );

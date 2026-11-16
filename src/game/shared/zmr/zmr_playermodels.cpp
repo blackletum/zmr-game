@@ -3,25 +3,19 @@
 
 #include <networkstringtabledefs.h>
 
-
 #include "zmr_playermodels.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_playermodels( "zm_sv_debug_playermodels", "0", FCVAR_REPLICATED );
 
+#define PLAYERMODEL_FILE        "resource/zmplayermodels.txt"
+#define PLAYERMODEL_FILE_CUSTOM "resource/zmplayermodels_custom.txt"
 
-#define PLAYERMODEL_FILE            "resource/zmplayermodels.txt"
-#define PLAYERMODEL_FILE_CUSTOM     "resource/zmplayermodels_custom.txt"
-
-#define DEF_PLAYER_MODEL            "models/male_pi.mdl"
-
-
+#define DEF_PLAYER_MODEL "models/male_pi.mdl"
 
 INetworkStringTable* g_pZMCustomPlyModels = nullptr;
-
 
 //
 CZMPlayerModelData::CZMPlayerModelData( const KeyValues* kv, bool bIsCustom )
@@ -57,11 +51,10 @@ KeyValues* CZMPlayerModelData::GetArmBodygroups() const
             return pKV;
         }
     }
-    
+
     return nullptr;
 }
 //
-
 
 //
 CZMPlayerModelSystem::CZMPlayerModelSystem()
@@ -99,7 +92,6 @@ void CZMPlayerModelSystem::ParseCustomModels( ZMPlayerModelList_t& list )
     if ( !g_pZMCustomPlyModels )
         return;
 
-
     char buffer[512];
 
     int nMdls = g_pZMCustomPlyModels->GetNumStrings();
@@ -110,7 +102,6 @@ void CZMPlayerModelSystem::ParseCustomModels( ZMPlayerModelList_t& list )
         char* sep = Q_strrchr( buffer, ';' );
         if ( !sep )
             continue;
-
 
         *sep = 0;
 
@@ -127,7 +118,6 @@ void CZMPlayerModelSystem::SaveCustomModelsToStringTable()
     {
         return;
     }
-
 
     int num = 0;
 
@@ -162,13 +152,11 @@ int CZMPlayerModelSystem::LoadModelsFromFile()
         return m_vPlayerModels.Count();
 #endif
 
-
 #ifdef CLIENT_DLL
     // Only load once from file for client.
     if ( m_vPlayerModels.Count() )
         return m_vPlayerModels.Count();
 #endif
-
 
     LoadStockModels();
 #ifdef GAME_DLL
@@ -182,7 +170,6 @@ int CZMPlayerModelSystem::LoadModelsFromFile()
     {
         AddFallbackModel();
     }
-
 
     if ( IsDebugging() )
     {
@@ -203,7 +190,6 @@ int CZMPlayerModelSystem::LoadStockModels()
         return 0;
     }
 
-
     int ret = LoadModelData( kv, m_vPlayerModels, false );
 
     return ret;
@@ -216,7 +202,6 @@ int CZMPlayerModelSystem::LoadCustomModels()
     {
         return 0;
     }
-
 
     int ret = LoadModelData( kv, m_vPlayerModels, true );
 
@@ -269,7 +254,6 @@ int CZMPlayerModelSystem::LoadModelData( KeyValues* kv, ZMPlayerModelList_t& lis
 {
     if ( !kv ) return 0;
 
-
     int num = 0;
 
     KeyValues* pKey = kv->GetFirstSubKey();
@@ -309,7 +293,6 @@ CZMPlayerModelData* CZMPlayerModelSystem::GetRandomPlayerModel() const
     {
         return nullptr;
     }
-
 
     int index = random->RandomInt( 0, count - 1 );
     return m_vPlayerModels[index];

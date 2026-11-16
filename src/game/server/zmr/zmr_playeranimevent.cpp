@@ -5,7 +5,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 IMPLEMENT_SERVERCLASS_ST_NOBASE( CTEPlayerAnimEvent, DT_TEPlayerAnimEvent )
     SendPropEHandle( SENDINFO( m_hPlayer ) ),
     SendPropInt( SENDINFO( m_iEvent ), Q_log2( PLAYERANIMEVENT_COUNT ) + 1, SPROP_UNSIGNED ),
@@ -18,7 +17,7 @@ void TE_PlayerAnimEvent( CBasePlayer* pPlayer, PlayerAnimEvent_t playerAnim, int
 
     //Tony; use prediction rules.
     filter.UsePredictionRules();
-    
+
     g_TEPlayerAnimEvent.m_hPlayer = pPlayer;
     g_TEPlayerAnimEvent.m_iEvent = playerAnim;
     g_TEPlayerAnimEvent.m_nData = nData;

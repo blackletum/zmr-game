@@ -1,61 +1,56 @@
-#include "cbase.h"
 #include "ammodef.h"
+#include "cbase.h"
 #ifdef CLIENT_DLL
 #include "prediction.h"
 #include "ui/zmr_hud_itemhistory.h"
 #include "view.h"
 #endif
+#include "animation.h"
 #include "datacache/imdlcache.h"
 #include "eventlist.h"
-#include "animation.h"
 #include "in_buttons.h"
 
 #include <vphysics/constraints.h>
 
-
+#include "weapons/zmr_base.h"
+#include "zmr_ammodef.h"
 #include "zmr_gamerules.h"
 #include "zmr_handedness.h"
-#include "zmr_viewmodel.h"
-#include "zmr_ammodef.h"
-#include "weapons/zmr_base.h"
 #include "zmr_shareddefs.h"
+#include "zmr_viewmodel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace ZMWeaponConfig;
 
-
 #ifdef CLIENT_DLL
-void UTIL_ClipPunchAngleOffset( QAngle &in, const QAngle &punch, const QAngle &clip )
+void UTIL_ClipPunchAngleOffset( QAngle& in, const QAngle& punch, const QAngle& clip )
 {
-	QAngle result = in + punch;
+    QAngle result = in + punch;
 
-	//Clip each component
-	for ( int i = 0; i < 3; i++ )
-	{
-		if ( result[i] > clip[i] )
-		{
-			result[i] = clip[i];
-		}
-		else if ( result[i] < -clip[i] )
-		{
-			result[i] = -clip[i];
-		}
+    // Clip each component
+    for ( int i = 0; i < 3; i++ )
+    {
+        if ( result[i] > clip[i] )
+        {
+            result[i] = clip[i];
+        }
+        else if ( result[i] < -clip[i] )
+        {
+            result[i] = -clip[i];
+        }
 
-		// Return the result
-		in[i] = result[i] - punch[i];
-	}
+        // Return the result
+        in[i] = result[i] - punch[i];
+    }
 }
-
 
 ConVar zm_cl_glow_weapon( "zm_cl_glow_weapon", "1 .2 .2", FCVAR_ARCHIVE );
 ConVar zm_cl_glow_weapon_enabled( "zm_cl_glow_weapon_enabled", "1", FCVAR_ARCHIVE );
 
 extern ConVar zm_sv_glow_item_enabled;
 #endif
-
 
 #ifndef CLIENT_DLL
 static ConVar zm_sv_weaponreserveammo( "zm_sv_weaponreserveammo", "1", FCVAR_NOTIFY | FCVAR_ARCHIVE, "When player drops their weapon, their ammo gets dropped with the weapon as well." );
@@ -64,9 +59,6 @@ static ConVar zm_sv_weaponreserveammo( "zm_sv_weaponreserveammo", "1", FCVAR_NOT
 ConVar zm_sv_bulletsusemainview( "zm_sv_bulletsusemainview", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "When on, clients will use their current view's origin and angles instead of networked ones to determine the source of bullets." );
 
 ConVar zm_sv_debug_weapons( "zm_sv_debug_weapons", "0", FCVAR_REPLICATED );
-
-
-
 
 BEGIN_NETWORK_TABLE( CZMBaseWeapon, DT_ZM_BaseWeapon )
 #ifdef CLIENT_DLL
@@ -113,7 +105,6 @@ BEGIN_DATADESC( CZMBaseWeapon )
     DEFINE_KEYFIELD( m_sScriptFileName, FIELD_STRING, "customscriptfile" ),
 END_DATADESC()
 
-
 LINK_ENTITY_TO_CLASS( weapon_zm_base, CZMBaseWeapon );
 #endif
 
@@ -122,11 +113,8 @@ CZMBaseWeapon::CZMBaseWeapon()
     // Enable base class stuff by default since we'll be checking these ourselves.
     m_bAltFiresUnderwater = m_bFiresUnderwater = true;
 
-
-
-	SetPredictionEligible( true );
-	AddSolidFlags( FSOLID_TRIGGER ); // Nothing collides with these but it gets touches.
-
+    SetPredictionEligible( true );
+    AddSolidFlags( FSOLID_TRIGGER ); // Nothing collides with these but it gets touches.
 
     SetConfigSlot( ZMCONFIGSLOT_INVALID );
     SetSlotFlag( ZMWEAPONSLOT_NONE );
@@ -173,12 +161,9 @@ void CZMBaseWeapon::FreeWeaponSlot()
     if ( GetSlotFlag() == ZMWEAPONSLOT_NOLIMIT )
         return;
 
-    
-
     CZMPlayer* pPlayer = GetPlayerOwner();
 
     if ( !pPlayer ) return;
-
 
     pPlayer->RemoveWeaponSlotFlag( GetSlotFlag() );
 }
@@ -209,10 +194,8 @@ void CZMBaseWeapon::ItemPostFrame()
     if ( !pOwner )
         return;
 
-
     // This sets the m_nButtons on player.
     UpdateAutoFire();
-
 
     const int buttons = pOwner->m_nButtons;
     bool bHoldingAttack = buttons & IN_ATTACK;
@@ -224,11 +207,8 @@ void CZMBaseWeapon::ItemPostFrame()
         m_bHoldingAfterFiring = false;
     }
 
-    
-
     // Track the duration of the fire
     m_fFireDuration = bHoldingAttack ? ( m_fFireDuration + gpGlobals->frametime ) : 0.0f;
-
 
     //
     // Handle reloading
@@ -250,7 +230,7 @@ void CZMBaseWeapon::ItemPostFrame()
     //
     // Primary attack
     //
-    if ( bHoldingAttack && (m_flNextPrimaryAttack <= gpGlobals->curtime) )
+    if ( bHoldingAttack && ( m_flNextPrimaryAttack <= gpGlobals->curtime ) )
     {
         PrimaryAttack();
     }
@@ -260,12 +240,11 @@ void CZMBaseWeapon::ItemPostFrame()
     //
     bool bAutoReload = UsesClipsForAmmo1() && Clip1() == 0 && pOwner->GetAmmoCount( GetPrimaryAmmoType() ) > 0;
 
-    if ( (bHoldingReload || bAutoReload) && m_flNextPrimaryAttack <= gpGlobals->curtime && UsesClipsForAmmo1() && !m_bInReload2 ) 
+    if ( ( bHoldingReload || bAutoReload ) && m_flNextPrimaryAttack <= gpGlobals->curtime && UsesClipsForAmmo1() && !m_bInReload2 )
     {
         Reload();
         m_fFireDuration = 0.0f;
     }
-
 
     //
     // Check weapon idle anims.
@@ -289,9 +268,7 @@ Activity CZMBaseWeapon::GetPrimaryAttackActivity()
         return ACT_VM_PRIMARYATTACK;
 
     // If we have last bullet, play fitting animation if we have it.
-    bool bUseLastAct =  !IsMeleeWeapon()
-                    &&  m_iClip1 == 1
-                    &&  ::SelectHeaviestSequence( pVM->GetModelPtr(), ACT_VM_PRIMARYATTACK_EMPTY ) != ACTIVITY_NOT_AVAILABLE;
+    bool bUseLastAct = !IsMeleeWeapon() && m_iClip1 == 1 && ::SelectHeaviestSequence( pVM->GetModelPtr(), ACT_VM_PRIMARYATTACK_EMPTY ) != ACTIVITY_NOT_AVAILABLE;
 
     return bUseLastAct ? ACT_VM_PRIMARYATTACK_EMPTY : ACT_VM_PRIMARYATTACK;
 }
@@ -306,7 +283,7 @@ bool CZMBaseWeapon::Deploy()
 
 bool CZMBaseWeapon::DefaultDeploy()
 {
-    // Weapons that don't autoswitch away when they run out of ammo 
+    // Weapons that don't autoswitch away when they run out of ammo
     // can still be deployed when they have no ammo.
     if ( !HasAnyAmmo() && AllowsAutoSwitchFrom() )
         return false;
@@ -323,17 +300,16 @@ bool CZMBaseWeapon::DefaultDeploy()
         pOwner->SetNextAttack( gpGlobals->curtime + SequenceDuration() );
     }
 
-
     // Can't shoot again until we've finished deploying
     m_flNextPrimaryAttack = gpGlobals->curtime + SequenceDuration();
-    m_flNextSecondaryAttack	= m_flNextPrimaryAttack;
+    m_flNextSecondaryAttack = m_flNextPrimaryAttack;
 
     //m_flHudHintMinDisplayTime = 0;
 
     //m_bAltFireHudHintDisplayed = false;
     //m_bReloadHudHintDisplayed = false;
     //m_flHudHintPollTime = gpGlobals->curtime + 5.0f;
-    
+
     WeaponSound( DEPLOY );
 
     SetWeaponVisible( true );
@@ -351,7 +327,6 @@ bool CZMBaseWeapon::Holster( CBaseCombatWeapon* pSwitchingTo )
 
     m_flNextClipFillTime = 0.0f;
     m_bCanCancelReload = false;
-
 
     SetThink( nullptr );
 
@@ -390,9 +365,7 @@ bool CZMBaseWeapon::UsesDryActivity( Activity act )
         return false;
     }
 
-    return  !IsMeleeWeapon()
-        &&  m_iClip1 == 0
-        &&  ::SelectHeaviestSequence( pVM->GetModelPtr(), act ) != ACTIVITY_NOT_AVAILABLE; // Do we have that activity?
+    return !IsMeleeWeapon() && m_iClip1 == 0 && ::SelectHeaviestSequence( pVM->GetModelPtr(), act ) != ACTIVITY_NOT_AVAILABLE; // Do we have that activity?
 }
 
 void CZMBaseWeapon::WeaponIdle()
@@ -424,7 +397,7 @@ bool CZMBaseWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
             //
             // Play empty sound
             //
-            if ( pOwner->m_nButtons & (IN_ATTACK|IN_ATTACK2) && m_flNextEmptySoundTime <= gpGlobals->curtime )
+            if ( pOwner->m_nButtons & ( IN_ATTACK | IN_ATTACK2 ) && m_flNextEmptySoundTime <= gpGlobals->curtime )
             {
                 WeaponSound( EMPTY );
                 m_flNextEmptySoundTime = gpGlobals->curtime + 1.0f;
@@ -440,7 +413,7 @@ bool CZMBaseWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
     if ( UsesClipsForAmmo1() )
     {
         // need to reload primary clip?
-        int primary	= MIN(iClipSize1 - m_iClip1, pOwner->GetAmmoCount(m_iPrimaryAmmoType));
+        int primary = MIN( iClipSize1 - m_iClip1, pOwner->GetAmmoCount( m_iPrimaryAmmoType ) );
         if ( primary != 0 )
         {
             bReload = true;
@@ -450,7 +423,7 @@ bool CZMBaseWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
     if ( UsesClipsForAmmo2() )
     {
         // need to reload secondary clip?
-        int secondary = MIN(iClipSize2 - m_iClip2, pOwner->GetAmmoCount(m_iSecondaryAmmoType));
+        int secondary = MIN( iClipSize2 - m_iClip2, pOwner->GetAmmoCount( m_iSecondaryAmmoType ) );
         if ( secondary != 0 )
         {
             bReload = true;
@@ -466,7 +439,6 @@ bool CZMBaseWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
 #endif
     SendWeaponAnim( iActivity );
 
-
     MDLCACHE_CRITICAL_SECTION();
 
     float flConfigReloadTime = GetReloadTime();
@@ -476,17 +448,15 @@ bool CZMBaseWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
     if ( flReloadTime == -1.0f )
         flReloadTime = flConfigReloadTime;
 
-
     float flReadyTime = GetFirstInstanceOfAnimEventTime( GetSequence(), (int)AE_WPN_PRIMARYATTACK );
     if ( flReadyTime == -1.0f )
         flReadyTime = flConfigReloadTime;
-    
+
     // Weapon has shorter ready time than clip fill time! Fix your config!
     if ( flReadyTime < flReloadTime )
         flReadyTime = flReloadTime;
 
     m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + flReadyTime;
-
 
     m_flNextClipFillTime = gpGlobals->curtime + flReloadTime;
 
@@ -533,7 +503,7 @@ bool CZMBaseWeapon::ShouldCancelReload() const
         return false;
 
     CZMPlayer* pOwner = GetPlayerOwner();
-    if  ( !pOwner )
+    if ( !pOwner )
         return false;
 
     return pOwner->GetAmmoCount( m_iPrimaryAmmoType ) <= 0;
@@ -567,11 +537,9 @@ void CZMBaseWeapon::IncrementClip()
     m_flNextClipFillTime = 0.0f;
     m_bCanCancelReload = false;
 
-
     auto* pOwner = GetPlayerOwner();
     if ( !pOwner )
         return;
-    
 
     int nPrimAmmo = pOwner->GetAmmoCount( m_iPrimaryAmmoType );
     int nSecAmmo = pOwner->GetAmmoCount( m_iSecondaryAmmoType );
@@ -579,9 +547,9 @@ void CZMBaseWeapon::IncrementClip()
     // If I use primary clips, reload primary
     if ( UsesClipsForAmmo1() && nPrimAmmo > 0 && GetMaxClip1() > m_iClip1 )
     {
-        int primary	= m_bReloadsSingly ? 1 : MIN( GetMaxClip1() - m_iClip1, nPrimAmmo );	
+        int primary = m_bReloadsSingly ? 1 : MIN( GetMaxClip1() - m_iClip1, nPrimAmmo );
         m_iClip1 += primary;
-        pOwner->RemoveAmmo( primary, m_iPrimaryAmmoType);
+        pOwner->RemoveAmmo( primary, m_iPrimaryAmmoType );
     }
 
     // If I use secondary clips, reload secondary
@@ -597,11 +565,10 @@ bool CZMBaseWeapon::Reload()
 {
     if ( !CanAct( WEPACTION_RELOAD ) ) return false;
 
-
     bool ret = DefaultReload(
-                    GetMaxClip1(),
-                    GetMaxClip2(),
-                    UsesDryActivity( ACT_VM_RELOAD_EMPTY ) ? ACT_VM_RELOAD_EMPTY : ACT_VM_RELOAD );
+        GetMaxClip1(),
+        GetMaxClip2(),
+        UsesDryActivity( ACT_VM_RELOAD_EMPTY ) ? ACT_VM_RELOAD_EMPTY : ACT_VM_RELOAD );
 
     if ( ret )
     {
@@ -623,9 +590,8 @@ void CZMBaseWeapon::AddViewKick()
 
     if ( !pPlayer ) return;
 
-
     Vector min, max;
-    
+
     if ( !IsInSecondaryAttack() )
     {
         min = GetWeaponConfig()->primary.vecViewPunch_Min;
@@ -637,14 +603,12 @@ void CZMBaseWeapon::AddViewKick()
         max = GetWeaponConfig()->secondary.vecViewPunch_Max;
     }
 
+    QAngle punch;
+    punch.x = SharedRandomFloat( "gunx", min.x, max.x );
+    punch.y = SharedRandomFloat( "guny", min.y, max.y );
+    punch.z = SharedRandomFloat( "gunz", min.z, max.z );
 
-
-	QAngle punch;
-	punch.x = SharedRandomFloat( "gunx", min.x, max.x );
-	punch.y = SharedRandomFloat( "guny", min.y, max.y );
-	punch.z = SharedRandomFloat( "gunz", min.z, max.z );;
-
-	pPlayer->ViewPunch( punch );
+    pPlayer->ViewPunch( punch );
 }
 
 //
@@ -695,7 +659,6 @@ const char* CZMBaseWeapon::GetViewModel( int vmIndex ) const
         return modelinfo->GetModelName( modelinfo->GetModel( m_iViewModelIndex ) );
     }
 #endif
-
 
     const char* pszModel = GetWeaponConfig()->pszModel_View;
 
@@ -818,16 +781,16 @@ float CZMBaseWeapon::GetMaxPenetrationDist() const
 
 Vector CZMBaseWeapon::GetBulletSpread() const
 {
-    return (!IsInSecondaryAttack())
-                ? GetWeaponConfig()->primary.vecSpread
-                : GetWeaponConfig()->secondary.vecSpread;
+    return ( !IsInSecondaryAttack() )
+             ? GetWeaponConfig()->primary.vecSpread
+             : GetWeaponConfig()->secondary.vecSpread;
 }
 
 float CZMBaseWeapon::GetFireRate()
 {
-    float flConfigFireRate = (!IsInSecondaryAttack())
-                                ? GetWeaponConfig()->primary.flFireRate
-                                : GetWeaponConfig()->secondary.flFireRate;
+    float flConfigFireRate = ( !IsInSecondaryAttack() )
+                               ? GetWeaponConfig()->primary.flFireRate
+                               : GetWeaponConfig()->secondary.flFireRate;
 
     // If the fire rate is not set, use sequence duration
     if ( !CZMBaseWeaponConfig::IsValidFirerate( flConfigFireRate ) )
@@ -853,35 +816,30 @@ float CZMBaseWeapon::GetReloadTime() const
 
 int CZMBaseWeapon::GetBulletsPerShot() const
 {
-    return (!IsInSecondaryAttack())
-        ? GetWeaponConfig()->primary.nBulletsPerShot
-        : GetWeaponConfig()->secondary.nBulletsPerShot;
+    return ( !IsInSecondaryAttack() )
+             ? GetWeaponConfig()->primary.nBulletsPerShot
+             : GetWeaponConfig()->secondary.nBulletsPerShot;
 }
 //
 
-
-
-void CZMBaseWeapon::FireBullets( const FireBulletsInfo_t &info )
+void CZMBaseWeapon::FireBullets( const FireBulletsInfo_t& info )
 {
     if ( !GetOwner() ) return;
 
+    FireBulletsInfo_t modinfo = info;
 
-	FireBulletsInfo_t modinfo = info;
-
-
-    float flConfigDamage = (!IsInSecondaryAttack())
-                                ? GetWeaponConfig()->primary.flDamage
-                                : GetWeaponConfig()->primary.flDamage;
+    float flConfigDamage = ( !IsInSecondaryAttack() )
+                             ? GetWeaponConfig()->primary.flDamage
+                             : GetWeaponConfig()->primary.flDamage;
 
 #ifndef CLIENT_DLL
     modinfo.m_flDamage = ( m_nOverrideDamage > -1 ) ? (float)m_nOverrideDamage : flConfigDamage;
 #else
     modinfo.m_flDamage = flConfigDamage;
 #endif
-    
-	modinfo.m_iPlayerDamage = (int)modinfo.m_flDamage;
-    
-    
+
+    modinfo.m_iPlayerDamage = (int)modinfo.m_flDamage;
+
 #ifndef CLIENT_DLL
     GetPlayerOwner()->CopyWeaponDamage( this, modinfo );
 #endif
@@ -895,7 +853,6 @@ void CZMBaseWeapon::FireBullets( int numShots, int iAmmoType, float flMaxDist )
     if ( !pPlayer )
         return;
 
-
     FireBulletsInfo_t info;
 
     // This fixes a problem of the client's shooting being off.
@@ -903,20 +860,20 @@ void CZMBaseWeapon::FireBullets( int numShots, int iAmmoType, float flMaxDist )
 #ifdef CLIENT_DLL
     if ( zm_sv_bulletsusemainview.GetBool() )
     {
-        info.m_vecSrc           = MainViewOrigin();
-        info.m_vecDirShooting   = MainViewForward();
+        info.m_vecSrc = MainViewOrigin();
+        info.m_vecDirShooting = MainViewForward();
     }
     else
 #endif
     {
-        info.m_vecSrc           = pPlayer->Weapon_ShootPosition();
-        info.m_vecDirShooting   = pPlayer->CBasePlayer::GetAutoaimVector( AUTOAIM_SCALE_DEFAULT );
+        info.m_vecSrc = pPlayer->Weapon_ShootPosition();
+        info.m_vecDirShooting = pPlayer->CBasePlayer::GetAutoaimVector( AUTOAIM_SCALE_DEFAULT );
     }
 
     info.m_iShots = numShots;
 
     // ZMRTODO: See if this has any truth to it.
-    // To make the firing framerate independent, we may have to fire more than one bullet here on low-framerate systems, 
+    // To make the firing framerate independent, we may have to fire more than one bullet here on low-framerate systems,
     // especially if the weapon we're firing has a really fast rate of fire.
     /*float fireRate = GetFireRate();
 
@@ -929,7 +886,6 @@ void CZMBaseWeapon::FireBullets( int numShots, int iAmmoType, float flMaxDist )
         if ( !fireRate )
             break;
     }*/
-
 
     info.m_flDistance = flMaxDist;
     info.m_iAmmoType = iAmmoType;
@@ -952,7 +908,6 @@ float CZMBaseWeapon::GetFirstInstanceOfAnimEventTime( int iSeq, int iAnimEvent, 
     mstudioseqdesc_t& seqdesc = hdr->pSeqdesc( iSeq );
     if ( !seqdesc.numevents )
         return -1.0f;
-
 
     mstudioevent_t* pevent = seqdesc.pEvent( 0 );
 
@@ -1005,9 +960,8 @@ void CZMBaseWeapon::PrimaryAttack()
 {
     if ( !CanAct( WEPACTION_ATTACK ) ) return;
 
-
     // If my clip is empty (and I use clips) start reload
-    if ( UsesClipsForAmmo1() && !m_iClip1 ) 
+    if ( UsesClipsForAmmo1() && !m_iClip1 )
     {
         // Try dry firing.
         if ( DryFire( false ) )
@@ -1016,7 +970,6 @@ void CZMBaseWeapon::PrimaryAttack()
         Reload();
         return;
     }
-
 
     Shoot();
 
@@ -1057,7 +1010,6 @@ void CZMBaseWeapon::Shoot( int iAmmoType, int nBullets, int nAmmo, float flMaxRa
     CZMPlayer* pPlayer = GetPlayerOwner();
     if ( !pPlayer ) return;
 
-
     // IMPORTANT: We NEED to set the animation first and foremost!
     // Certain methods will check for secondary fire by
     // comparing the weapon activity.
@@ -1065,7 +1017,6 @@ void CZMBaseWeapon::Shoot( int iAmmoType, int nBullets, int nAmmo, float flMaxRa
         PrimaryAttackEffects( SINGLE );
     else
         SecondaryAttackEffects( SINGLE );
-
 
     if ( iAmmoType == -1 )
         iAmmoType = m_iPrimaryAmmoType;
@@ -1078,13 +1029,9 @@ void CZMBaseWeapon::Shoot( int iAmmoType, int nBullets, int nAmmo, float flMaxRa
 
     int& iClip = (int&)m_iClip1;
 
-
     Assert( nBullets > 0 );
 
-
-
     // ZMRTODO: Add burst firing here.
-
 
     // Make sure we don't fire more than the amount in the clip
     if ( UsesClipsForAmmo1() )
@@ -1100,7 +1047,6 @@ void CZMBaseWeapon::Shoot( int iAmmoType, int nBullets, int nAmmo, float flMaxRa
 
     Assert( nAmmo > 0 );
 
-    
     // I still barely understand how you're suppose to handle prediction.
     // You cannot put the ENTIRE method behind this, because then none of the predictable variables seem to change on the client.
     // If you don't check this, then this will get called multiple times, in this case firing bullets multiple times.
@@ -1117,7 +1063,7 @@ void CZMBaseWeapon::Shoot( int iAmmoType, int nBullets, int nAmmo, float flMaxRa
     if ( !iClip && pPlayer->GetAmmoCount( iAmmoType ) <= 0 )
     {
         // HEV suit - indicate out of ammo condition
-        pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 ); 
+        pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
     }
 
     // Add our view kick in
@@ -1133,7 +1079,6 @@ void CZMBaseWeapon::PrimaryAttackEffects( WeaponSound_t wpnsound )
     CZMPlayer* pPlayer = GetPlayerOwner();
     if ( !pPlayer )
         return;
-
 
     // IMPORTANT: Always needs to be called
     SendWeaponAnim( GetPrimaryAttackActivity() );
@@ -1155,7 +1100,6 @@ void CZMBaseWeapon::SecondaryAttackEffects( WeaponSound_t wpnsound )
     CZMPlayer* pPlayer = GetPlayerOwner();
     if ( !pPlayer )
         return;
-
 
     // IMPORTANT: Always needs to be called
     SendWeaponAnim( GetSecondaryAttackActivity() );
@@ -1188,7 +1132,6 @@ void CZMBaseWeapon::PlayAISound() const
 void CZMBaseWeapon::SecondaryAttack()
 {
     if ( !CanAct( WEPACTION_ATTACK2 ) ) return;
-
 
     BaseClass::SecondaryAttack();
 }
@@ -1231,7 +1174,6 @@ void CZMBaseWeapon::SetWeaponVisible( bool visible )
                 vmarms->SetDrawVM( false );
 #endif
             }
-
         }
     }
     else
@@ -1260,7 +1202,6 @@ void CZMBaseWeapon::AssignWeaponConfigSlot()
         SetConfigSlot( slot );
     }
 
-
     const char* customscript =
 #ifdef CLIENT_DLL
         m_sScriptFileName;
@@ -1284,50 +1225,45 @@ void CZMBaseWeapon::Precache()
 {
     AssignWeaponConfigSlot();
 
-	m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
+    m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
 
-
-	// Get the ammo indexes for the ammo's specified in the data file
+    // Get the ammo indexes for the ammo's specified in the data file
     const char* pszPrimAmmo = GetWeaponConfig()->pszAmmoName;
-	if ( pszPrimAmmo && pszPrimAmmo[0] != '\0' )
-	{
-		m_iPrimaryAmmoType = GetWeaponConfig()->GetPrimaryAmmoIndex();
-		if (m_iPrimaryAmmoType == -1)
-		{
-			Msg("ERROR: Weapon (%s) using undefined primary ammo type (%s)\n", GetClassname(), GetWeaponConfig()->pszAmmoName );
-		}
- 	}
+    if ( pszPrimAmmo && pszPrimAmmo[0] != '\0' )
+    {
+        m_iPrimaryAmmoType = GetWeaponConfig()->GetPrimaryAmmoIndex();
+        if ( m_iPrimaryAmmoType == -1 )
+        {
+            Msg( "ERROR: Weapon (%s) using undefined primary ammo type (%s)\n", GetClassname(), GetWeaponConfig()->pszAmmoName );
+        }
+    }
 
 #if defined( CLIENT_DLL )
-	gWR.LoadWeaponSprites( GetWeaponFileInfoHandle() );
+    gWR.LoadWeaponSprites( GetWeaponFileInfoHandle() );
 #endif
 
-
-	// Precache sounds, too
-	for ( int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i )
-	{
-		auto* pszSound = GetShootSound( i );
-		if ( pszSound && pszSound[0] )
-		{
-			if ( !CBaseEntity::PrecacheScriptSound( pszSound ) && !PrecacheSound( pszSound ) )
+    // Precache sounds, too
+    for ( int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i )
+    {
+        auto* pszSound = GetShootSound( i );
+        if ( pszSound && pszSound[0] )
+        {
+            if ( !CBaseEntity::PrecacheScriptSound( pszSound ) && !PrecacheSound( pszSound ) )
             {
                 Warning( "Failed to precache weapon sound called '%s' from '%s'!\n", GetWeaponConfig()->pszConfigFilePath, pszSound );
             }
-		}
-	}
-
-
+        }
+    }
 
     //
     // Only set m_iViewModelIndex/m_iWorldModelIndex
     // as the server unless we're overriding the model.
     //
 #ifdef GAME_DLL
-	// Precache models (preload to avoid hitch)
-	m_iViewModelIndex = 0;
-	m_iWorldModelIndex = 0;
+    // Precache models (preload to avoid hitch)
+    m_iViewModelIndex = 0;
+    m_iWorldModelIndex = 0;
 #endif
-
 
     // Make sure we precache all models.
     // It's possible to only precache the override model and the default one is left out.
@@ -1351,7 +1287,6 @@ void CZMBaseWeapon::Precache()
     {
         m_iWorldModelIndex = PrecacheModel( GetWeaponConfig()->pszModel_World );
     }
-
 
     if ( m_OverrideViewModel != NULL_STRING )
     {
@@ -1400,14 +1335,9 @@ void CZMBaseWeapon::UpdateGlow()
         return;
     }
 
-
     C_ZMPlayer* pPlayer = C_ZMPlayer::GetLocalPlayer();
 
-    if (pPlayer
-    &&  GetOwner() == nullptr
-    &&  pPlayer->IsHuman()
-    &&  pPlayer->GetAbsOrigin().DistToSqr( GetAbsOrigin() ) < ITEM_GLOW_DIST_SQR
-    &&  !(pPlayer->GetWeaponSlotFlags() & GetSlotFlag()) )
+    if ( pPlayer && GetOwner() == nullptr && pPlayer->IsHuman() && pPlayer->GetAbsOrigin().DistToSqr( GetAbsOrigin() ) < ITEM_GLOW_DIST_SQR && !( pPlayer->GetWeaponSlotFlags() & GetSlotFlag() ) )
     {
         if ( !IsClientSideGlowEnabled() )
             SetClientSideGlowEnabled( true );
@@ -1435,21 +1365,17 @@ ShadowType_t CZMBaseWeapon::ShadowCastType()
     if ( IsEffectActive( EF_NODRAW | EF_NOSHADOW ) )
         return SHADOWS_NONE;
 
-
     auto* pOwner = GetPlayerOwner();
     if ( !pOwner ) // Not carried
         return SHADOWS_RENDER_TO_TEXTURE;
-
 
     // Player's shadow isn't drawn either.
     if ( pOwner->ShadowCastType() == SHADOWS_NONE )
         return SHADOWS_NONE;
 
-
     // In firstperson?
     if ( pOwner->IsLocalPlayer() && !C_BasePlayer::ShouldDrawLocalPlayer() )
         return SHADOWS_NONE;
-
 
     // In thirdperson
     // Draw if active
@@ -1461,22 +1387,21 @@ void CZMBaseWeapon::OnDataChanged( DataUpdateType_t type )
     CBaseAnimating::OnDataChanged( type );
 
     if ( GetPredictable() && !ShouldPredict() )
-	    ShutdownPredictable();
+        ShutdownPredictable();
 
     //
     // Override BaseCombatWeapon::OnDataChanged
     //
-    
 
     // If it's being carried by the *local* player, on the first update,
     // find the registered weapon for this ID
-    
+
     auto* pOwner = GetPlayerOwner();
 
     if ( pOwner && pOwner->IsLocalPlayer() && !C_ZMPlayer::ShouldDrawLocalPlayer() )
     {
         // If I was just picked up, or created & immediately carried, add myself to this client's list of weapons
-        if ( (m_iState != WEAPON_NOT_CARRIED) && (m_iOldState == WEAPON_NOT_CARRIED) )
+        if ( ( m_iState != WEAPON_NOT_CARRIED ) && ( m_iOldState == WEAPON_NOT_CARRIED ) )
         {
             // Tell the HUD this weapon's been picked up
             if ( ShouldDrawPickup() )
@@ -1492,7 +1417,7 @@ void CZMBaseWeapon::OnDataChanged( DataUpdateType_t type )
     else // weapon carried by other player or not at all
     {
         int overrideModelIndex = CalcOverrideModelIndex();
-        if( overrideModelIndex != -1 && overrideModelIndex != GetModelIndex() )
+        if ( overrideModelIndex != -1 && overrideModelIndex != GetModelIndex() )
         {
             SetModelIndex( overrideModelIndex );
         }
@@ -1511,7 +1436,7 @@ void CZMBaseWeapon::OnDataChanged( DataUpdateType_t type )
 bool CZMBaseWeapon::ShouldPredict()
 {
     if ( CBaseCombatWeapon::GetOwner() && CBaseCombatWeapon::GetOwner() == C_BasePlayer::GetLocalPlayer() )
-	    return true;
+        return true;
 
     return BaseClass::ShouldPredict();
 }
@@ -1534,26 +1459,23 @@ CZMPlayer* CZMBaseWeapon::GetPlayerOwner() const
 
 void CZMBaseWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 0.0f */ )
 {
-	const char* pszSound = GetShootSound( sound_type ); 
-	if ( !pszSound || !pszSound[0] )
-		return;
-
+    const char* pszSound = GetShootSound( sound_type );
+    if ( !pszSound || !pszSound[0] )
+        return;
 
     auto* pOwner = GetOwner();
     Assert( pOwner );
 
     Vector origin = pOwner->WorldSpaceCenter();
 
-	CSoundParameters params;
-	bool bIsSoundScript = GetParametersForSound( pszSound, params, nullptr );
-
+    CSoundParameters params;
+    bool bIsSoundScript = GetParametersForSound( pszSound, params, nullptr );
 
 #ifdef CLIENT_DLL
-	CBroadcastRecipientFilter filter;
-	if ( !te->CanPredict() )
-		return;
+    CBroadcastRecipientFilter filter;
+    if ( !te->CanPredict() )
+        return;
 #else
-
 
     CPASAttenuationFilter filter( pOwner, params.soundlevel );
     if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
@@ -1564,7 +1486,7 @@ void CZMBaseWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 
 
     if ( bIsSoundScript )
     {
-        EmitSound( filter, pOwner->entindex(), pszSound, &origin, soundtime ); 
+        EmitSound( filter, pOwner->entindex(), pszSound, &origin, soundtime );
     }
     else
     {
@@ -1574,7 +1496,6 @@ void CZMBaseWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 
 
         EmitSound( filter, pOwner->entindex(), snd );
     }
-    
 }
 
 void CZMBaseWeapon::SetViewModel()
@@ -1586,12 +1507,10 @@ void CZMBaseWeapon::SetViewModel()
     if ( !vm ) return;
 
     Assert( vm->ViewModelIndex() == m_nViewModelIndex );
-    
 
     // Use the model index instead of GetViewModel()...
     // This makes sure we don't have to network the model path to the client.
     const char* pszModel = nullptr;
-
 
     const model_t* pModel = modelinfo->GetModel( m_iViewModelIndex );
     if ( pModel )
@@ -1600,7 +1519,7 @@ void CZMBaseWeapon::SetViewModel()
     }
 
     // Our networked index isn't valid, use the shared version.
-    if ( !pszModel || !(*pszModel) )
+    if ( !pszModel || !( *pszModel ) )
     {
         pszModel = GetViewModel( m_nViewModelIndex );
     }
@@ -1626,60 +1545,60 @@ bool CZMBaseWeapon::IsTemplate()
 
 void CZMBaseWeapon::Materialize()
 {
-	if ( IsEffectActive( EF_NODRAW ) )
-	{
-		RemoveEffects( EF_NODRAW );
-	}
+    if ( IsEffectActive( EF_NODRAW ) )
+    {
+        RemoveEffects( EF_NODRAW );
+    }
 
     Assert( VPhysicsGetObject() );
 
-	SetPickupTouch();
+    SetPickupTouch();
 
-	SetThink( nullptr );
+    SetThink( nullptr );
 }
 #endif
 
 void CZMBaseWeapon::FallInit()
 {
 #ifndef CLIENT_DLL
-	SetModel( GetWorldModel() );
-	VPhysicsDestroyObject();
+    SetModel( GetWorldModel() );
+    VPhysicsDestroyObject();
 
-	if ( VPhysicsInitNormal( SOLID_BBOX, GetSolidFlags() | FSOLID_TRIGGER, false ) )
-	{
-		// Constrain the weapon in place
-		if ( HasSpawnFlags( SF_WEAPON_START_CONSTRAINED ) )
-		{
-			auto* pReferenceObject = g_PhysWorldObject;
-			auto* pAttachedObject = VPhysicsGetObject();
+    if ( VPhysicsInitNormal( SOLID_BBOX, GetSolidFlags() | FSOLID_TRIGGER, false ) )
+    {
+        // Constrain the weapon in place
+        if ( HasSpawnFlags( SF_WEAPON_START_CONSTRAINED ) )
+        {
+            auto* pReferenceObject = g_PhysWorldObject;
+            auto* pAttachedObject = VPhysicsGetObject();
 
-			if ( pReferenceObject && pAttachedObject )
-			{
-				constraint_fixedparams_t fixed;
-				fixed.Defaults();
-				fixed.InitWithCurrentObjectState( pReferenceObject, pAttachedObject );
-					
-				fixed.constraint.forceLimit	= lbs2kg( 1000 );
-				fixed.constraint.torqueLimit = lbs2kg( 1000 );
+            if ( pReferenceObject && pAttachedObject )
+            {
+                constraint_fixedparams_t fixed;
+                fixed.Defaults();
+                fixed.InitWithCurrentObjectState( pReferenceObject, pAttachedObject );
 
-				ReleaseConstraint();
+                fixed.constraint.forceLimit = lbs2kg( 1000 );
+                fixed.constraint.torqueLimit = lbs2kg( 1000 );
 
-				m_pConstraint = physenv->CreateFixedConstraint( pReferenceObject, pAttachedObject, nullptr, fixed );
+                ReleaseConstraint();
 
-				m_pConstraint->SetGameData( (void*)this );
-			}
-		}
-	}
+                m_pConstraint = physenv->CreateFixedConstraint( pReferenceObject, pAttachedObject, nullptr, fixed );
+
+                m_pConstraint->SetGameData( (void*)this );
+            }
+        }
+    }
     else
     {
         Assert( 0 );
     }
 
-	SetPickupTouch();
-	
-	SetThink( &CZMBaseWeapon::FallThink );
+    SetPickupTouch();
 
-	SetNextThink( gpGlobals->curtime + 0.1f );
+    SetThink( &CZMBaseWeapon::FallThink );
+
+    SetNextThink( gpGlobals->curtime + 0.1f );
 #endif
 }
 
@@ -1695,27 +1614,26 @@ void CZMBaseWeapon::ReleaseConstraint()
 
 void CZMBaseWeapon::FallThink()
 {
-	SetNextThink( gpGlobals->curtime + 0.1f );
-
+    SetNextThink( gpGlobals->curtime + 0.1f );
 
     auto* pPhys = VPhysicsGetObject();
 
-	bool shouldMaterialize = false;
+    bool shouldMaterialize = false;
 
-	if ( pPhys )
-	{
-		shouldMaterialize = pPhys->IsAsleep();
-	}
-	else
-	{
+    if ( pPhys )
+    {
+        shouldMaterialize = pPhys->IsAsleep();
+    }
+    else
+    {
         Assert( 0 );
-		shouldMaterialize = true;
-	}
+        shouldMaterialize = true;
+    }
 
-	if ( shouldMaterialize )
-	{
-		Materialize(); 
-	}
+    if ( shouldMaterialize )
+    {
+        Materialize();
+    }
 }
 #endif
 
@@ -1731,7 +1649,6 @@ void CZMBaseWeapon::OnPickedUp( CBaseCombatCharacter* pNewOwner )
 #ifndef CLIENT_DLL
     RemoveEffects( EF_ITEM_BLINK );
 
-
     auto* pZMPlayer = ToZMPlayer( pNewOwner );
     if ( pZMPlayer )
     {
@@ -1744,7 +1661,6 @@ void CZMBaseWeapon::OnPickedUp( CBaseCombatCharacter* pNewOwner )
 
             CBaseEntity::EmitSound( filter, pNewOwner->entindex(), "ZMPlayer.PickupWeapon" );
         }
-
 
         m_OnPlayerPickup.FireOutput( pNewOwner, this );
 
@@ -1761,7 +1677,6 @@ void CZMBaseWeapon::OnPickedUp( CBaseCombatCharacter* pNewOwner )
     // Someone picked me up, so make it so that I can't be removed.
     SetRemoveable( false );
 #else
-
 
     //{
     //    // Tell the HUD this weapon's been picked up
@@ -1784,20 +1699,19 @@ void CZMBaseWeapon::OnPickedUp( CBaseCombatCharacter* pNewOwner )
 void CZMBaseWeapon::DoMachineGunKick( float dampEasy, float maxVerticleKickAngle, float fireDurationTime, float slideLimitTime )
 {
     //Get the view kick
-    CZMPlayer *pPlayer = GetPlayerOwner();
+    CZMPlayer* pPlayer = GetPlayerOwner();
 
     if ( pPlayer == nullptr ) return;
 
-
-    #define	KICK_MIN_X			0.2f // Degrees
-    #define	KICK_MIN_Y			0.2f // Degrees
-    #define	KICK_MIN_Z			0.1f // Degrees
+#define KICK_MIN_X 0.2f // Degrees
+#define KICK_MIN_Y 0.2f // Degrees
+#define KICK_MIN_Z 0.1f // Degrees
 
     QAngle vecScratch;
     int iSeed = CBaseEntity::GetPredictionRandomSeed() & 255;
-	
+
     //Find how far into our accuracy degradation we are
-    float duration	= ( fireDurationTime > slideLimitTime ) ? slideLimitTime : fireDurationTime;
+    float duration = ( fireDurationTime > slideLimitTime ) ? slideLimitTime : fireDurationTime;
     float kickPerc = duration / slideLimitTime;
 
     // do this to get a hard discontinuity, clear out anything under 10 degrees punch
@@ -1812,13 +1726,13 @@ void CZMBaseWeapon::DoMachineGunKick( float dampEasy, float maxVerticleKickAngle
 
     //Wibble left and right
     if ( RandomInt( -1, 1 ) >= 0 )
-	    vecScratch.y *= -1;
+        vecScratch.y *= -1;
 
     iSeed++;
 
     //Wobble up and down
     if ( RandomInt( -1, 1 ) >= 0 )
-	    vecScratch.z *= -1;
+        vecScratch.z *= -1;
 
     //Clip this to our desired min/max
     UTIL_ClipPunchAngleOffset( vecScratch, pPlayer->m_Local.m_vecPunchAngle, QAngle( 24.0f, 3.0f, 1.0f ) );
@@ -1830,8 +1744,8 @@ void CZMBaseWeapon::DoMachineGunKick( float dampEasy, float maxVerticleKickAngle
 
 bool CZMBaseWeapon::CanBeSelected()
 {
-	if ( !VisibleInWeaponSelection() )
-		return false;
+    if ( !VisibleInWeaponSelection() )
+        return false;
 
     return true;
 }
@@ -1841,12 +1755,10 @@ void CZMBaseWeapon::Drop( const Vector& vecVelocity )
 #ifndef CLIENT_DLL
     FreeWeaponSlot();
 
-
     SaveReserveAmmo( GetOwner() );
 #endif
 
     BaseClass::Drop( vecVelocity );
-
 
     // ZMRTODO: See if this works as intended -> drop it so player changes weapon and then remove.
 #ifndef CLIENT_DLL
@@ -1855,7 +1767,6 @@ void CZMBaseWeapon::Drop( const Vector& vecVelocity )
         UTIL_Remove( this );
     }
 #endif
-
 
     // Reset reloading
     m_bInReload2 = false;
@@ -1878,7 +1789,7 @@ void CZMBaseWeapon::Equip( CBaseCombatCharacter* pCharacter )
             {
                 Msg( "Adding slot flag %i\n", GetSlotFlag() );
             }
-            
+
             pPlayer->AddWeaponSlotFlag( GetSlotFlag() );
         }
     }
@@ -1905,7 +1816,7 @@ float CZMBaseWeapon::CalcViewmodelBob()
     return 0.0f;
 }
 
-void CZMBaseWeapon::AddViewmodelBob( CBaseViewModel *viewmodel, Vector &origin, QAngle &angles )
+void CZMBaseWeapon::AddViewmodelBob( CBaseViewModel* viewmodel, Vector& origin, QAngle& angles )
 {
 }
 
@@ -1915,7 +1826,6 @@ void CZMBaseWeapon::SaveReserveAmmo( CBaseCombatCharacter* pOwner )
     if ( !pOwner ) return;
 
     if ( !zm_sv_weaponreserveammo.GetBool() ) return;
-
 
     // Add player's ammo to me.
     int type = GetPrimaryAmmoType();
@@ -1938,7 +1848,6 @@ void CZMBaseWeapon::TransferReserveAmmo( CBaseCombatCharacter* pOwner )
     if ( !pOwner ) return;
 
     if ( !zm_sv_weaponreserveammo.GetBool() ) return;
-
 
     // Give player our reserve ammo.
     if ( GetReserveAmmo() > 0 )
@@ -1971,7 +1880,6 @@ bool CZMBaseWeapon::CanAct( ZMWepActionType_t type ) const
     // We're not using this right now, remove this if we do.
     Assert( type != WEPACTION_GENERIC );
 
-
     // Don't attack during a reload!
     if ( IsInReload() && type >= WEPACTION_ATTACK && type <= WEPACTION_ATTACK3 )
     {
@@ -1986,28 +1894,25 @@ bool CZMBaseWeapon::CanAct( ZMWepActionType_t type ) const
             return false;
     }
 
-
     auto* pOwner = GetOwner();
 
     if ( !pOwner )
         return false;
 
-
     int flags = GetWeaponConfig()->fFlags;
-
 
     // Ladder
     if ( pOwner->GetMoveType() == MOVETYPE_LADDER )
     {
         switch ( type )
         {
-        case WEPACTION_RELOAD :
-            return (flags & ZMWeaponConfig::WEPFLAG_RELOAD_ONLADDER) ? true : false;
-        case WEPACTION_ATTACK :
-        case WEPACTION_ATTACK2 :
-        case WEPACTION_ATTACK3 :
-            return (flags & ZMWeaponConfig::WEPFLAG_ATTACK_ONLADDER) ? true : false;
-        default :
+        case WEPACTION_RELOAD:
+            return ( flags & ZMWeaponConfig::WEPFLAG_RELOAD_ONLADDER ) ? true : false;
+        case WEPACTION_ATTACK:
+        case WEPACTION_ATTACK2:
+        case WEPACTION_ATTACK3:
+            return ( flags & ZMWeaponConfig::WEPFLAG_ATTACK_ONLADDER ) ? true : false;
+        default:
             break;
         }
     }
@@ -2016,11 +1921,11 @@ bool CZMBaseWeapon::CanAct( ZMWepActionType_t type ) const
     {
         switch ( type )
         {
-        case WEPACTION_ATTACK :
-        case WEPACTION_ATTACK2 :
-        case WEPACTION_ATTACK3 :
-            return (flags & ZMWeaponConfig::WEPFLAG_ATTACK_INWATER) ? true : false;
-        default :
+        case WEPACTION_ATTACK:
+        case WEPACTION_ATTACK2:
+        case WEPACTION_ATTACK3:
+            return ( flags & ZMWeaponConfig::WEPFLAG_ATTACK_INWATER ) ? true : false;
+        default:
             break;
         }
     }

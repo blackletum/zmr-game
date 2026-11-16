@@ -2,7 +2,6 @@
 
 #include "zmr_revolver.h"
 
-
 #ifdef CLIENT_DLL
 #define CZMWeaponSnubnose C_ZMWeaponSnubnose
 #endif
@@ -10,14 +9,12 @@
 class CZMWeaponSnubnose : public CZMWeaponRevolver
 {
 public:
-	DECLARE_CLASS( CZMWeaponSnubnose, CZMWeaponRevolver );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
-
+    DECLARE_CLASS( CZMWeaponSnubnose, CZMWeaponRevolver );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponSnubnose();
 };
-
 
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMWeaponSnubnose, DT_ZM_WeaponSnubnose )
 

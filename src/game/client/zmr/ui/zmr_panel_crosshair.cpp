@@ -1,11 +1,9 @@
 #include "cbase.h"
 
-
 #include "zmr_panel_crosshair.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 DECLARE_BUILD_FACTORY( CZMPanelCrosshair );
 
@@ -39,7 +37,6 @@ void CZMPanelCrosshair::Paint()
         return;
     }
 
-
     CZMBaseDynamicCrosshair* pDynamic = dynamic_cast<CZMBaseDynamicCrosshair*>( m_pDrawCrosshair );
     if ( pDynamic )
     {
@@ -51,7 +48,6 @@ void CZMPanelCrosshair::Paint()
                 1.0f ) );
     }
 
-
     int cx, cy;
     GetSize( cx, cy );
     cx /= 2;
@@ -60,9 +56,7 @@ void CZMPanelCrosshair::Paint()
     // Make sure to draw the crosshair in the center of our panel element.
     m_pDrawCrosshair->SetOverrideCenter( cx, cy );
 
-
     m_pDrawCrosshair->Draw();
-
 
     m_pDrawCrosshair->SetOverrideCenter( -1, -1 );
 

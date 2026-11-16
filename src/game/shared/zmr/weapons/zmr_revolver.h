@@ -2,7 +2,6 @@
 
 #include "zmr_base.h"
 
-
 #ifdef CLIENT_DLL
 #define CZMWeaponRevolver C_ZMWeaponRevolver
 #endif
@@ -10,19 +9,16 @@
 class CZMWeaponRevolver : public CZMBaseWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponRevolver, CZMBaseWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
-
+    DECLARE_CLASS( CZMWeaponRevolver, CZMBaseWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponRevolver();
 
-
     virtual bool Deploy() override;
 
-
     virtual Vector GetBulletSpread() const override;
-    
+
     virtual void AddViewKick() override;
 
     virtual void PrimaryAttack() override;

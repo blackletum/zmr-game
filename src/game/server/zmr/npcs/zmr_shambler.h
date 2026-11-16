@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include "zmr_zombiebase.h"
 
 class CZMShambler : public CZMBaseZombie
@@ -18,15 +16,13 @@ public:
     virtual void Precache() override;
     virtual void Spawn() override;
 
-    virtual void    HandleAnimEvent( animevent_t* pEvent ) override;
+    virtual void HandleAnimEvent( animevent_t* pEvent ) override;
 
-    virtual bool        CanBreakObject( CBaseEntity* pEnt, bool bSwat = false ) const override;
-    virtual bool        CanSwatPhysicsObjects() const override { return true; }
-    virtual Activity    GetSwatActivity( CBaseEntity* pEnt, bool bBreak = true ) const override;
-
+    virtual bool CanBreakObject( CBaseEntity* pEnt, bool bSwat = false ) const override;
+    virtual bool CanSwatPhysicsObjects() const override { return true; }
+    virtual Activity GetSwatActivity( CBaseEntity* pEnt, bool bBreak = true ) const override;
 
     virtual bool ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) const override;
-
 
     virtual bool ShouldPlayIdleSound() const override;
     virtual float IdleSound() override;

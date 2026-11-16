@@ -3,13 +3,10 @@
 #include "ai_hull.h"
 
 #include "ai_navtype.h"
-#include "ai_waypoint.h"
 #include "ai_node.h"
-
+#include "ai_waypoint.h"
 
 #include "npcr_path_cost.h"
-
-
 
 namespace NPCR
 {
@@ -25,10 +22,9 @@ namespace NPCR
         virtual bool BuildGraphPath() { return false; }
 
         AI_Waypoint_t* FindGraphPath( int startID, int endID, const CBasePathCost& cost );
-        
-        
+
         virtual Hull_t GetGraphHullType() const { return HULL_HUMAN; }
-        
+
     private:
         AI_Waypoint_t* MakeRouteFromParents( int* parentArray, int endID );
         Navigation_t ComputeWaypointType( CAI_Node* pParentNode, int destID );

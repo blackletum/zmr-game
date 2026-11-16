@@ -1,16 +1,15 @@
 #include "cbase.h"
 #include <vgui/ILocalize.h>
 
+#include "zmr_buildmenu_new.h"
 #include "zmr_buildmenu_spawnicon.h"
 #include "zmr_imagerow.h"
 #include "zmr_radial.h"
-#include "zmr_buildmenu_new.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-
 
 static void SortZMQueueImages( Panel* pPanel, CUtlVector<CZMImageRowItem*>* pImages )
 {
@@ -44,7 +43,6 @@ static CZMImageRowItem* CreateRowItem( Panel* pParent )
     return new CZMImageRowItemSpawn( pParent, "" );
 }
 
-
 CZMBuildMenuNew::CZMBuildMenuNew( Panel* pParent ) : CZMBuildMenuBase( pParent, "ZMBuildMenuNew" )
 {
     SetPaintBackgroundEnabled( false );
@@ -55,11 +53,9 @@ CZMBuildMenuNew::CZMBuildMenuNew( Panel* pParent ) : CZMBuildMenuBase( pParent, 
     SetMouseInputEnabled( true );
     DisableMouseInputForThisPanel( true ); // Only THIS panel can't be clicked. Children work fine.
 
-
     m_iCurTooltip = -1;
 
     LoadControlSettings( "resource/ui/zmbuildmenunew.res" );
-
 
     m_pRadial = dynamic_cast<CZMRadialPanel*>( FindChildByName( "ZMRadialPanel1" ) );
     Assert( m_pRadial );
@@ -71,7 +67,6 @@ CZMBuildMenuNew::CZMBuildMenuNew( Panel* pParent ) : CZMBuildMenuBase( pParent, 
     m_pImageList->SetImagesSize( 32 );
     m_pImageList->SetLayoutFunc( SortZMQueueImages );
     m_pImageList->SetCreateFunc( CreateRowItem );
-
 
     const char* queueImages[ZMCLASS_MAX] = {
         "zombies/queue_shambler",
@@ -101,7 +96,6 @@ void CZMBuildMenuNew::Paint()
     CMatRenderContextPtr pRenderContext( materials );
     pRenderContext->SetStencilReferenceValue( 0 );
 
-
     BaseClass::Paint();
 }
 
@@ -109,13 +103,11 @@ void CZMBuildMenuNew::ShowPanel( bool state )
 {
     if ( IsVisible() == state ) return;
 
-    
     if ( state )
     {
         // Notify the server we've opened this menu.
         engine->ClientCmd( VarArgs( "zm_cmd_openmenu %i", GetSpawnIndex() ) );
     }
-
 
     SetVisible( state );
 }
@@ -124,9 +116,7 @@ void CZMBuildMenuNew::OnThink()
 {
     if ( !IsVisible() ) return;
 
-
     MoveToFront();
-
 
     // Update world position.
     int x, y;
@@ -134,7 +124,6 @@ void CZMBuildMenuNew::OnThink()
     GetScreenPos( x, y );
 
     SetPos( x, y );
-
 
     UpdateButtons();
 }
@@ -145,7 +134,6 @@ void CZMBuildMenuNew::UpdateButtons()
     int i, j;
     int flags = GetZombieFlags();
 
-
     // ZMRTODO: Add resource check.
     for ( i = 0; i < ZMCLASS_MAX; i++ )
     {
@@ -153,14 +141,13 @@ void CZMBuildMenuNew::UpdateButtons()
             disabled[i] = false;
         else
         {
-            disabled[i] = ( flags & (1 << i) ) ? false : true;
+            disabled[i] = ( flags & ( 1 << i ) ) ? false : true;
         }
     }
-    
 
     // HACK: Hardcode the first 10 buttons. Make sure they are also in the right order.
     CUtlVector<CZMRadialButton*>* pButtons = m_pRadial->GetButtons();
-    Assert( pButtons->Count() >= ((int)ZMCLASS_MAX * 2) );
+    Assert( pButtons->Count() >= ( (int)ZMCLASS_MAX * 2 ) );
 
     for ( i = 0; i < (int)ZMCLASS_MAX * 2; i++ )
     {
@@ -192,7 +179,7 @@ void CZMBuildMenuNew::OnImageRowPressed( KeyValues* kv )
 {
     // Clear the specific pos on the queue.
     int index = kv->GetInt( "index", -1 );
-    
+
     if ( m_pImageList->GetImageByIndex( index ) != nullptr )
     {
         char buffer[128];
@@ -204,7 +191,7 @@ void CZMBuildMenuNew::OnImageRowPressed( KeyValues* kv )
 void CZMBuildMenuNew::OnRadialOver( KeyValues* kv )
 {
     CZMRadialButton* pButton = static_cast<CZMRadialButton*>( kv->GetPtr( "button" ) );
-    
+
     if ( pButton )
     {
         if ( pButton->GetLabel() )
@@ -256,13 +243,12 @@ void CZMBuildMenuNew::ShowMenu( C_ZMEntZombieSpawn* pSpawn )
             m_pRadial->GetYPos() + m_pRadial->GetTall() - frac );
     }
 
-
     BaseClass::ShowMenu( pSpawn );
 }
 
 void CZMBuildMenuNew::UpdateMenu( C_ZMEntZombieSpawn* pSpawn )
 {
-	BaseClass::UpdateMenu( pSpawn );
+    BaseClass::UpdateMenu( pSpawn );
 
     if ( m_pRadial && m_pRadial->GetLastButton() && m_pRadial->GetLastButton()->GetLabel() )
     {
@@ -275,14 +261,12 @@ void CZMBuildMenuNew::UpdateQueue( const ZMQueueSlotData_t queue[], int size )
     // Recreate the queue.
     char buf[64];
 
-
     for ( int i = 0; i < size; i++ )
     {
         ZombieClass_t zclass = queue[i].zclass;
         int count = queue[i].nCount;
 
         Assert( C_ZMBaseZombie::IsValidClass( zclass ) );
-
 
         auto* pImg = m_pQueueImages[(int)zclass];
 
@@ -294,15 +278,11 @@ void CZMBuildMenuNew::UpdateQueue( const ZMQueueSlotData_t queue[], int size )
 
             pItem = static_cast<CZMImageRowItemSpawn*>( m_pImageList->GetItemByIndex( index ) );
 
-
             if ( index == 0 )
                 pItem->SetPrimary();
         }
-        
-
 
         Q_snprintf( buf, sizeof( buf ), "%ix", (int)queue[i].nCount );
-
 
         pItem->SetImage( pImg );
         pItem->SetText( buf );

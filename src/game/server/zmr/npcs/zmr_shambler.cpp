@@ -1,13 +1,12 @@
+#include "activitylist.h"
 #include "cbase.h"
 #include "npcevent.h"
-#include "activitylist.h"
 
 #include "zmr_gamerules.h"
 #include "zmr_shambler.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 extern ConVar zm_sk_shambler_health;
 extern ConVar zm_sk_shambler_dmg_oneslash;
@@ -17,7 +16,6 @@ extern ConVar zm_sk_shambler_hitmult_legs;
 extern ConVar zm_sk_shambler_hitmult_stomach;
 extern ConVar zm_sk_shambler_hitmult_chest;
 extern ConVar zm_sk_shambler_hitmult_arms;
-
 
 LINK_ENTITY_TO_CLASS( npc_zombie, CZMShambler );
 PRECACHE_REGISTER( npc_zombie );
@@ -37,7 +35,6 @@ void CZMShambler::Precache()
 {
     if ( !IsPrecacheAllowed() )
         return;
-    
 
     PrecacheScriptSound( "Zombie.FootstepRight" );
     PrecacheScriptSound( "Zombie.FootstepLeft" );
@@ -56,14 +53,12 @@ void CZMShambler::Precache()
     PrecacheScriptSound( "NPC_BaseZombie.Moan3" );
     PrecacheScriptSound( "NPC_BaseZombie.Moan4" );
 
-
     CZMBaseZombie::Precache();
 }
 
 void CZMShambler::Spawn()
 {
     SetMaxHealth( zm_sk_shambler_health.GetInt() );
-
 
     BaseClass::Spawn();
 }
@@ -74,7 +69,7 @@ void CZMShambler::HandleAnimEvent( animevent_t* pEvent )
     {
         Vector right, forward;
         AngleVectors( GetLocalAngles(), &forward, &right, nullptr );
-        
+
         right = right * 100;
         forward = forward * 200;
 
@@ -103,7 +98,7 @@ void CZMShambler::HandleAnimEvent( animevent_t* pEvent )
     if ( pEvent->event == AE_ZOMBIE_ATTACK_BOTH )
     {
         Vector forward;
-        QAngle qaPunch( 45, random->RandomInt(-5,5), random->RandomInt(-5,5) );
+        QAngle qaPunch( 45, random->RandomInt( -5, 5 ), random->RandomInt( -5, 5 ) );
         AngleVectors( GetLocalAngles(), &forward );
         forward = forward * 200;
         ClawAttack( GetClawAttackRange(), zm_sk_shambler_dmg_bothslash.GetInt(), qaPunch, forward );
@@ -138,17 +133,15 @@ Activity CZMShambler::GetSwatActivity( CBaseEntity* pEnt, bool bBreak ) const
         return ACT_MELEE_ATTACK1;
     }
 
-
-    float   flDot;
-    Vector  vecRight, vecDirToObj;
-    float   z;
+    float flDot;
+    Vector vecRight, vecDirToObj;
+    float z;
 
     const Vector vecMyCenter = WorldSpaceCenter();
     const Vector vecObjCenter = pEnt->WorldSpaceCenter();
 
-
     AngleVectors( GetLocalAngles(), nullptr, &vecRight, nullptr );
-    
+
     vecDirToObj = vecObjCenter - vecMyCenter;
     VectorNormalize( vecDirToObj );
 
@@ -158,13 +151,12 @@ Activity CZMShambler::GetSwatActivity( CBaseEntity* pEnt, bool bBreak ) const
 
     flDot = DotProduct( vecRight, vecDirToObj );
 
-
     z = vecMyCenter.z - vecObjCenter.z;
 
-    if( flDot >= 0 )
+    if ( flDot >= 0 )
     {
         // Right
-        if( z < 0 )
+        if ( z < 0 )
         {
             return ACT_ZOM_SWATRIGHTMID;
         }
@@ -174,7 +166,7 @@ Activity CZMShambler::GetSwatActivity( CBaseEntity* pEnt, bool bBreak ) const
     else
     {
         // Left
-        if( z < 0 )
+        if ( z < 0 )
         {
             return ACT_ZOM_SWATLEFTMID;
         }
@@ -189,24 +181,23 @@ bool CZMShambler::ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) 
     if ( res )
         return res;
 
-
     switch ( iHitGroup )
     {
-    case HITGROUP_LEFTARM :
-    case HITGROUP_RIGHTARM :
+    case HITGROUP_LEFTARM:
+    case HITGROUP_RIGHTARM:
         info.ScaleDamage( zm_sk_shambler_hitmult_arms.GetFloat() );
         return true;
-    case HITGROUP_CHEST :
+    case HITGROUP_CHEST:
         info.ScaleDamage( zm_sk_shambler_hitmult_chest.GetFloat() );
         return true;
-    case HITGROUP_STOMACH :
+    case HITGROUP_STOMACH:
         info.ScaleDamage( zm_sk_shambler_hitmult_stomach.GetFloat() );
         return true;
-    case HITGROUP_LEFTLEG :
-    case HITGROUP_RIGHTLEG :
+    case HITGROUP_LEFTLEG:
+    case HITGROUP_RIGHTLEG:
         info.ScaleDamage( zm_sk_shambler_hitmult_legs.GetFloat() );
         return true;
-    default :
+    default:
         break;
     }
 

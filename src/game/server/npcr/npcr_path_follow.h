@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include "npcr_path.h"
 #include "npcr_basenpc.h"
+#include "npcr_path.h"
 
 namespace NPCR
 {
@@ -35,7 +34,6 @@ namespace NPCR
             m_vecAvoidDelta = vec3_origin;
         }
 
-
         virtual bool IsValid() const override
         {
             return CBaseNavPath::IsValid() && m_pGoal;
@@ -43,9 +41,7 @@ namespace NPCR
 
         virtual void Invalidate() override;
 
-
         virtual void OnNewGoal( CBaseNPC* pNPC );
-
 
         virtual const NavLink_t* GetGoalLink() const { return m_pGoal; }
         virtual const NavLink_t* GetCurLink() const { return m_pCurLink; }
@@ -53,12 +49,11 @@ namespace NPCR
         // The minimum distance to goal that we stop trying to avoid.
         virtual float GetAvoidMinDistance() const { return 24.0f; }
 
+        float GetGoalTolerance() const { return m_flGoalTolerance; }
+        void SetGoalTolerance( float tolerance ) { m_flGoalTolerance = tolerance; }
 
-        float   GetGoalTolerance() const { return m_flGoalTolerance; }
-        void    SetGoalTolerance( float tolerance ) { m_flGoalTolerance = tolerance; }
-
-        float   GetMoveTolerance() const { return m_flMoveTolerance; }
-        void    SetMoveTolerance( float tolerance ) { m_flMoveTolerance = tolerance; }
+        float GetMoveTolerance() const { return m_flMoveTolerance; }
+        void SetMoveTolerance( float tolerance ) { m_flMoveTolerance = tolerance; }
 
         virtual void OnPathCreated() override
         {
@@ -68,32 +63,28 @@ namespace NPCR
 
         virtual void Update( CBaseNPC* pNPC );
 
-
         virtual void Draw();
-
 
         virtual bool ShouldDecelerateToGoal() const override;
 
     protected:
-        virtual void    UpdateMove( CBaseNPC* pNPC );
-        void            GroundMove( CBaseNPC* pNPC );
+        virtual void UpdateMove( CBaseNPC* pNPC );
+        void GroundMove( CBaseNPC* pNPC );
 
-        void                FollowPath( CBaseNPC* pNPC );
-        virtual PathRes_t   CheckGoal( CBaseNPC* pNPC ) const;
-        int                 CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos );
-        int                 CheckStuck( CBaseNPC* pNPC, Vector& vecGoalPos );
+        void FollowPath( CBaseNPC* pNPC );
+        virtual PathRes_t CheckGoal( CBaseNPC* pNPC ) const;
+        int CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos );
+        int CheckStuck( CBaseNPC* pNPC, Vector& vecGoalPos );
 
-        void                StartCheckingStuck( CBaseNPC* pNPC );
-        void                StopCheckingStuck();
+        void StartCheckingStuck( CBaseNPC* pNPC );
+        void StopCheckingStuck();
 
-
-        virtual bool        ShouldFailNavJump( CBaseNPC* pNPC ) const;
+        virtual bool ShouldFailNavJump( CBaseNPC* pNPC ) const;
 
         void ClearAvoidState()
         {
             m_AvoidTimer.Invalidate();
         }
-
 
         const NavLink_t* m_pCurLink; // The link that we are currently using. (ie. goal-1)
         const NavLink_t* m_pGoal; // The link we are going towards.

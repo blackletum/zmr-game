@@ -12,14 +12,12 @@
 #include "zmr_obj_manager.h"
 #endif
 
-
 #ifdef CLIENT_DLL
-#define CZMRules C_ZMRules
+#define CZMRules          C_ZMRules
 #define CZMGameRulesProxy C_ZMGameRulesProxy
 #endif
 
 extern ConVar zm_sv_zombiemax;
-
 
 enum
 {
@@ -28,11 +26,10 @@ enum
     AFK_PUNISH_KICK
 };
 
-
 class CZMViewVectors : public CViewVectors
 {
 public:
-    CZMViewVectors( 
+    CZMViewVectors(
         Vector vView,
         Vector vHullMin,
         Vector vHullMax,
@@ -47,17 +44,15 @@ public:
         Vector vZMView,
         Vector vRatHullMin,
         Vector vRatHullMax,
-        Vector vRatView ) :
-            CViewVectors( 
-                vView,
-                vHullMin,
-                vHullMax,
-                vDuckHullMin,
-                vDuckHullMax,
-                vDuckView,
-                vObsHullMin,
-                vObsHullMax,
-                vDeadViewHeight )
+        Vector vRatView ) : CViewVectors( vView,
+                                vHullMin,
+                                vHullMax,
+                                vDuckHullMin,
+                                vDuckHullMax,
+                                vDuckView,
+                                vObsHullMin,
+                                vObsHullMax,
+                                vDeadViewHeight )
     {
         m_vZMHullMin = vZMHullMin;
         m_vZMHullMax = vZMHullMax;
@@ -77,29 +72,27 @@ public:
     Vector m_vRatView;
 };
 
-
 class CZMGameRulesProxy : public CGameRulesProxy // CGameRulesProxy CHL2MPGameRulesProxy
 {
 public:
-	DECLARE_CLASS( CZMGameRulesProxy, CGameRulesProxy );
-	DECLARE_NETWORKCLASS();
+    DECLARE_CLASS( CZMGameRulesProxy, CGameRulesProxy );
+    DECLARE_NETWORKCLASS();
 };
 
 class CZMRules : public CTeamplayRules //CHL2MPRules CTeamplayRules
 {
 public:
-	DECLARE_CLASS( CZMRules, CTeamplayRules );
+    DECLARE_CLASS( CZMRules, CTeamplayRules );
 
     // This makes datatables able to access our private vars.
 #ifdef CLIENT_DLL
-	DECLARE_CLIENTCLASS_NOBASE();
+    DECLARE_CLIENTCLASS_NOBASE();
 #else
-	DECLARE_SERVERCLASS_NOBASE(); 
+    DECLARE_SERVERCLASS_NOBASE();
 #endif
 
     CZMRules();
     ~CZMRules();
-
 
     virtual bool ShouldCollide( int collisionGroup0, int collisionGroup1 ) override;
 
@@ -108,8 +101,7 @@ public:
 
     static float GetMapRemainingTime();
 
-
-    virtual bool IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer ) override;
+    virtual bool IsConnectedUserInfoChangeAllowed( CBasePlayer* pPlayer ) override;
 
 #ifndef CLIENT_DLL
     virtual void Precache() override;
@@ -117,7 +109,6 @@ public:
     virtual bool FShouldSwitchWeapon( CBasePlayer* pPlayer, CBaseCombatWeapon* pWeapon ) override;
     virtual int PlayerRelationship( CBaseEntity* pPlayer, CBaseEntity* pTarget ) override;
     virtual bool ClientCommand( CBaseEntity* pEdict, const CCommand& args ) override;
-
 
     void ExecuteMapConfigs();
 
@@ -144,8 +135,8 @@ public:
     virtual int GetAutoAimMode() override { return AUTOAIM_NONE; };
 
     virtual int ItemShouldRespawn( CItem* pItem ) override;
-	virtual bool CanHaveAmmo( CBaseCombatCharacter* pPlayer, int iAmmoIndex ) override; // can this player take more of this ammo?
-	virtual bool CanHaveAmmo( CBaseCombatCharacter* pPlayer, const char* szName ) override;
+    virtual bool CanHaveAmmo( CBaseCombatCharacter* pPlayer, int iAmmoIndex ) override; // can this player take more of this ammo?
+    virtual bool CanHaveAmmo( CBaseCombatCharacter* pPlayer, const char* szName ) override;
     virtual bool CanHavePlayerItem( CBasePlayer* pPlayer, CBaseCombatWeapon* pWeapon ) override;
 
     virtual const char* SetDefaultPlayerTeam( CBasePlayer* pPlayer ) override;
@@ -153,7 +144,7 @@ public:
     virtual CBaseEntity* GetPlayerSpawnSpot( CBasePlayer* pPlayer ) override;
 
     virtual bool IsSpawnPointValid( CBaseEntity* pSpawn, CBasePlayer* pPlayer ) override;
-    
+
     virtual void ClientDisconnected( edict_t* pPlayer ) override;
     virtual void PlayerKilled( CBasePlayer* pPlayer, const CTakeDamageInfo& info ) override;
 
@@ -162,7 +153,6 @@ public:
 
     virtual void InitDefaultAIRelationships() override;
     virtual bool FAllowNPCs() override;
-
 
     static int IncPopCount( ZombieClass_t );
     static void DecPopCount( int cost );
@@ -178,11 +168,9 @@ public:
     void ResetWorld();
     void RestoreMap();
 
-
     bool ShouldLateSpawn( CZMPlayer* pPlayer );
     inline float GetRoundStartTime() const { return m_flRoundStartTime; };
     inline bool IsInRoundEnd() const { return m_bInRoundEnd; };
-
 
     static int GetNumAliveHumans();
 
@@ -215,8 +203,6 @@ private:
     CNetworkVar( int, m_nRounds ); // Number of "valid" rounds played. If the round is short, it will be skipped.
     CNetworkVar( int, m_nRealRounds ); // The real number of rounds played. Each round start is counted.
 
-    
-
 #ifndef CLIENT_DLL
     inline void SetZombiePop( int n ) { m_nZombiePop = n; };
 
@@ -225,12 +211,10 @@ private:
     CZMPlayer* ChooseZM();
     void BeginRound( CZMPlayer* pZM );
 
-
     int m_flRoundRestartTime;
     int m_flRoundStartTime;
     bool m_bInRoundEnd;
     int m_nRoundMaxHumansAlive;
-
 
     CZMEntLoadout* m_pLoadoutEnt;
     CZMEntObjectivesManager* m_pObjManager;
@@ -240,5 +224,5 @@ private:
 
 inline CZMRules* ZMRules()
 {
-	return static_cast<CZMRules*>( g_pGameRules );
+    return static_cast<CZMRules*>( g_pGameRules );
 }

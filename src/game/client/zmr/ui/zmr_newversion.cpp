@@ -6,12 +6,10 @@
 #include "cdll_client_int.h"
 #include "ienginevgui.h"
 
-
 #include "c_zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 class CZMNewVerMenu : public vgui::Frame
 {
@@ -21,7 +19,6 @@ public:
     CZMNewVerMenu( vgui::VPANEL parent );
     ~CZMNewVerMenu();
 };
-
 
 static vgui::DHANDLE<CZMNewVerMenu> g_hZMNewVer;
 
@@ -39,22 +36,18 @@ CON_COMMAND( OpenZMNewVersion, "" )
         g_hZMNewVer.Set( new CZMNewVerMenu( parent ) );
     }
 
-
     auto* pPanel = g_hZMNewVer.Get();
-
 
     // Center
     int x, y, w, h;
     vgui::surface()->GetWorkspaceBounds( x, y, w, h );
-    
+
     int mw = pPanel->GetWide();
     int mh = pPanel->GetTall();
     pPanel->SetPos( x + w / 2 - mw / 2, y + h / 2 - mh / 2 );
 
-
     pPanel->Activate();
 }
-
 
 CZMNewVerMenu::CZMNewVerMenu( vgui::VPANEL parent ) : BaseClass( nullptr, "ZMNewVerMenu" )
 {

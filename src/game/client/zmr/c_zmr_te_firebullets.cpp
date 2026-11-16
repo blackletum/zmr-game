@@ -1,22 +1,20 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 //=============================================================================//
 
-#include "cbase.h"
-#include "c_basetempentity.h"
-#include <cliententitylist.h>
 #include "ammodef.h"
+#include "c_basetempentity.h"
 #include "c_te_effect_dispatch.h"
+#include "cbase.h"
 #include "shot_manipulator.h"
-
+#include <cliententitylist.h>
 
 #include "c_zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 class C_ZMTEFireBullets : public C_BaseTempEntity
 {
@@ -31,27 +29,27 @@ public:
     static void ThirdpersonMuzzleflash( C_BaseCombatWeapon* pWpn );
 
 public:
-    int		m_iPlayer;
-    Vector	m_vecOrigin;
-    Vector  m_vecDir;
-    int		m_iAmmoID;
-    int		m_iWeaponIndex;
-    int		m_iSeed;
-    float	m_flSpread;
-    int		m_iShots;
-    bool	m_bDoImpacts;
-    bool	m_bDoTracers;
+    int m_iPlayer;
+    Vector m_vecOrigin;
+    Vector m_vecDir;
+    int m_iAmmoID;
+    int m_iWeaponIndex;
+    int m_iSeed;
+    float m_flSpread;
+    int m_iShots;
+    bool m_bDoImpacts;
+    bool m_bDoTracers;
 };
 
 class CTraceFilterSkipPlayerAndViewModelOnly : public CTraceFilter
 {
 public:
-    virtual bool ShouldHitEntity( IHandleEntity *pServerEntity, int contentsMask )
+    virtual bool ShouldHitEntity( IHandleEntity* pServerEntity, int contentsMask )
     {
-        C_BaseEntity *pEntity = EntityFromEntityHandle( pServerEntity );
-        if( pEntity &&
-            ( ( dynamic_cast<C_BaseViewModel *>( pEntity ) != nullptr ) ||
-            ( dynamic_cast<C_BasePlayer *>( pEntity ) != nullptr ) ) )
+        C_BaseEntity* pEntity = EntityFromEntityHandle( pServerEntity );
+        if ( pEntity &&
+             ( ( dynamic_cast<C_BaseViewModel*>( pEntity ) != nullptr ) ||
+                 ( dynamic_cast<C_BasePlayer*>( pEntity ) != nullptr ) ) )
         {
             return false;
         }
@@ -68,29 +66,25 @@ void C_ZMTEFireBullets::CreateEffects()
     CAmmoDef* pAmmoDef = GetAmmoDef();
 
     if ( !pAmmoDef )
-         return;
-
+        return;
 
     auto* pPlayer = ToZMPlayer( ClientEntityList().GetEnt( m_iPlayer ) );
     if ( !pPlayer || !pPlayer->GetActiveWeapon() )
         return;
 
-
     auto* pWpn = pPlayer->GetActiveWeapon();
     if ( !pWpn )
         return;
-
 
     int iSeed = m_iSeed;
 
     int iAttachment = pWpn->LookupAttachment( "muzzle" );
 
-                    
     CShotManipulator Manipulator( m_vecDir );
 
     for ( int iShot = 0; iShot < m_iShots; iShot++ )
     {
-        RandomSeed( iSeed );	// init random system with this seed
+        RandomSeed( iSeed ); // init random system with this seed
 
         // Don't run the biasing code for the player at the moment.
         Vector vecDir = Manipulator.ApplySpread( Vector( m_flSpread, m_flSpread, m_flSpread ) );
@@ -98,7 +92,7 @@ void C_ZMTEFireBullets::CreateEffects()
         trace_t tr;
         CTraceFilterSkipPlayerAndViewModelOnly traceFilter;
 
-        UTIL_TraceLine( m_vecOrigin, vecEnd, MASK_SHOT, &traceFilter, &tr);
+        UTIL_TraceLine( m_vecOrigin, vecEnd, MASK_SHOT, &traceFilter, &tr );
 
         if ( m_bDoTracers )
         {
@@ -115,7 +109,6 @@ void C_ZMTEFireBullets::CreateEffects()
             if ( data.m_nAttachmentIndex > 0 )
                 data.m_fFlags |= TRACER_FLAG_USEATTACHMENT;
 
-
             if ( pTracerName && *pTracerName )
             {
                 DispatchEffect( pTracerName, data );
@@ -125,7 +118,7 @@ void C_ZMTEFireBullets::CreateEffects()
                 DispatchEffect( "Tracer", data );
             }
         }
-                    
+
         if ( m_bDoImpacts )
         {
             pWpn->DoImpactEffect( tr, pAmmoDef->DamageType( m_iAmmoID ) );
@@ -133,7 +126,6 @@ void C_ZMTEFireBullets::CreateEffects()
 
         iSeed++;
     }
-
 
     ThirdpersonMuzzleflash( pWpn );
 }
@@ -149,28 +141,27 @@ void C_ZMTEFireBullets::ThirdpersonMuzzleflash( C_BaseCombatWeapon* pWpn )
 
     switch ( zm_cl_muzzleflash_thirdperson_type.GetInt() )
     {
-    case 1 :
+    case 1:
         Q_strncpy( effect, "PISTOL", sizeof( effect ) );
         break;
-    case 2 :
+    case 2:
         Q_strncpy( effect, "SMG1", sizeof( effect ) );
         break;
-    case 3 :
+    case 3:
         Q_strncpy( effect, "SHOTGUN", sizeof( effect ) );
         break;
-    case 4 :
+    case 4:
         Q_strncpy( effect, "357", sizeof( effect ) );
         break;
-    case 5 :
+    case 5:
         Q_strncpy( effect, "RPG", sizeof( effect ) );
         break;
-    case 6 :
+    case 6:
         Q_strncpy( effect, "COMBINE", sizeof( effect ) );
         break;
-    default :
+    default:
         break;
     }
-
 
     if ( effect[0] != '\0' )
     {
@@ -189,9 +180,7 @@ void C_ZMTEFireBullets::PostDataUpdate( DataUpdateType_t updateType )
     }
 }
 
-
 IMPLEMENT_CLIENTCLASS_EVENT( C_ZMTEFireBullets, DT_ZM_TE_FireBullets, CZMTEFireBullets );
-
 
 BEGIN_RECV_TABLE_NOBASE( C_ZMTEFireBullets, DT_ZM_TE_FireBullets )
     RecvPropVector( RECVINFO( m_vecOrigin ) ),

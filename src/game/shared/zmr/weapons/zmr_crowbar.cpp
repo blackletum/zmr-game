@@ -2,12 +2,10 @@
 
 #include "in_buttons.h"
 
-
-#include "zmr_shareddefs.h"
 #include "zmr_player_shared.h"
+#include "zmr_shareddefs.h"
 
 #include "zmr_basemelee.h"
-
 
 #ifdef CLIENT_DLL
 #define CZMWeaponCrowbar C_ZMWeaponCrowbar
@@ -16,12 +14,11 @@
 class CZMWeaponCrowbar : public CZMBaseMeleeWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponCrowbar, CZMBaseMeleeWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponCrowbar, CZMBaseMeleeWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponCrowbar();
-
 
     virtual bool UsesAnimEvent( bool bSecondary ) const override { return false; }
 
@@ -43,7 +40,6 @@ LINK_ENTITY_TO_CLASS( weapon_zm_improvised, CZMWeaponCrowbar );
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CZMWeaponCrowbar ); // // Some poopy maps may spawn weapon_crowbar.
 #endif
 PRECACHE_WEAPON_REGISTER( weapon_zm_improvised );
-
 
 CZMWeaponCrowbar::CZMWeaponCrowbar()
 {

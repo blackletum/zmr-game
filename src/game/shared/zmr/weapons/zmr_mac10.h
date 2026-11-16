@@ -7,7 +7,6 @@
 #define CZMWeaponMac10 C_ZMWeaponMac10
 #endif
 
-
 class CZMMac10Config : public ZMWeaponConfig::CZMBaseWeaponConfig
 {
 public:
@@ -19,7 +18,6 @@ public:
 
     virtual KeyValues* ToKeyValues() const override;
 
-    
     float flEasyDampen;
     float flVerticalKick;
     float flSlideLimit;
@@ -28,15 +26,13 @@ public:
 class CZMWeaponMac10 : public CZMBaseWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponMac10, CZMBaseWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponMac10, CZMBaseWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponMac10();
 
-
     const CZMMac10Config* GetMac10Config() const;
 
-    
     virtual void AddViewKick() override;
 };

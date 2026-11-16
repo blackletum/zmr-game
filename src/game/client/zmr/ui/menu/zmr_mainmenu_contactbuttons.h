@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vgui_controls/Panel.h>
 #include <vgui/IImage.h>
+#include <vgui_controls/Panel.h>
 
 class CZMMainMenuContactButtonList : public vgui::Panel
 {
@@ -13,10 +13,8 @@ public:
     CZMMainMenuContactButtonList( vgui::Panel* pParent, const char* name );
     ~CZMMainMenuContactButtonList();
 
-
     virtual void ApplySchemeSettings( vgui::IScheme* pScheme ) override;
     virtual void ApplySettings( KeyValues* kv ) override;
-
 
     void AddButton( KeyValues* kv );
 };

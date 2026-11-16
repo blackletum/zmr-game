@@ -3,12 +3,9 @@
 #include "zmr_basemelee.h"
 #include "zmr_weaponconfig.h"
 
-
-
 #ifdef CLIENT_DLL
 #define CZMWeaponSledge C_ZMWeaponSledge
 #endif
-
 
 class CZMSledgeConfig : public ZMWeaponConfig::CZMBaseWeaponConfig
 {
@@ -89,7 +86,6 @@ public:
         return kv;
     }
 
-    
     float flPrimaryRandomMultMin;
     float flPrimaryRandomMultMax;
 
@@ -97,29 +93,24 @@ public:
     float flSecondaryRandomMultMax;
 };
 
-
 class CZMWeaponSledge : public CZMBaseMeleeWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponSledge, CZMBaseMeleeWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponSledge, CZMBaseMeleeWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponSledge();
-
 
     virtual void PrimaryAttack() override;
     virtual void SecondaryAttack() override;
 
-
     const CZMSledgeConfig* GetSledgeConfig() const;
-
 
     virtual bool CanSecondaryAttack() const override;
     virtual WeaponSound_t GetSecondaryAttackSound() const;
 
     virtual bool UsesAnimEvent( bool bSecondary ) const override;
-
 
     virtual float GetDamageForActivity( Activity act ) const override;
 

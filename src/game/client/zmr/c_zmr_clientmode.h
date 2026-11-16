@@ -2,7 +2,6 @@
 
 #include "clientmode_shared.h"
 
-
 class ClientModeZMNormal : public ClientModeShared
 {
 public:
@@ -19,7 +18,6 @@ public:
     virtual void PostRender() override;
 
     virtual int KeyInput( int down, ButtonCode_t keynum, const char* pszCurrentBinding );
-
 
     bool IsZMHoldingCtrl() const { return m_bZMHoldingCtrl; }
     void SetZMHoldingCtrl( bool state ) { m_bZMHoldingCtrl = state; }

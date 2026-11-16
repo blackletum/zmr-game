@@ -1,6 +1,6 @@
 #include "cbase.h"
-#include "takedamageinfo.h"
 #include "soundent.h"
+#include "takedamageinfo.h"
 
 #include "npcr/npcr_basenpc.h"
 
@@ -9,10 +9,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CZMZombieSenses::CZMZombieSenses( NPCR::CBaseNPC* pNPC ) : NPCR::CBaseSenses( pNPC )
 {
-
 }
 
 CZMZombieSenses::~CZMZombieSenses()
@@ -32,10 +30,9 @@ void CZMZombieSenses::OnDamaged( const CTakeDamageInfo& info )
         if ( !pKnown )
         {
             pKnown = new NPCR::KnownEntity( pAttacker, false );
-            
 
             m_vKnownEnts.AddToTail( pKnown );
-            
+
             GetNPC()->OnAcquiredEnemy( pAttacker );
         }
 

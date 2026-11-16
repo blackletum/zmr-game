@@ -5,11 +5,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
-#define ZOMBIE_PHYSICS_SEARCH_DEPTH     32
-
-
+#define ZOMBIE_PHYSICS_SEARCH_DEPTH 32
 
 CZombieScanSwatObjSchedule::CZombieScanSwatObjSchedule()
 {
@@ -63,11 +59,9 @@ CBaseEntity* CZombieScanSwatObjSchedule::GetSwatObject()
 
     const Vector vecMyPos = pOuter->GetAbsOrigin();
 
-
     Vector vecDirToGoal;
     Vector vecDirToObject;
     Vector vecTarget;
-            
 
     CBaseEntity* pEnemy = pOuter->GetEnemy();
     if ( pEnemy )
@@ -79,7 +73,6 @@ CBaseEntity* CZombieScanSwatObjSchedule::GetSwatObject()
         vecTarget = vecMyPos + UTIL_YawToVector( pOuter->GetAbsAngles().y ) * 200.0f;
     }
 
-
     vecDirToGoal = vecTarget - vecMyPos;
 
     float maxdist = zm_sv_swat_scan_target_maxdist.GetFloat();
@@ -87,7 +80,6 @@ CBaseEntity* CZombieScanSwatObjSchedule::GetSwatObject()
     {
         return nullptr;
     }
-
 
     vecDirToGoal.z = 0;
     vecDirToGoal.NormalizeInPlace();
@@ -106,13 +98,11 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
 
     CBaseEntity* pEnemy = pOuter->GetEnemy();
 
-
     // Find objects within a box between us and the enemy
     Vector vecDelta( flFurthestDist * 0.5f, flFurthestDist * 0.5f, pOuter->GetMotor()->GetHullHeight() * 0.5f );
 
     Vector vecBoxOrigin = vecMyPos + vecDirToGoal * vecDelta;
     vecBoxOrigin.z += vecDelta.z;
-            
 
     class CZombieSwatEntitiesEnum : public CFlaggedEntitiesEnum
     {
@@ -121,7 +111,7 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
         {
         }
 
-        virtual IterationRetval_t EnumElement( IHandleEntity *pHandleEntity )
+        virtual IterationRetval_t EnumElement( IHandleEntity* pHandleEntity )
         {
             // Easier debugging
             CBaseEntity* pEnt = EntityFromEntityHandle( pHandleEntity );
@@ -138,10 +128,9 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
             // Don't swat server ragdolls!
             if ( FClassnameIs( pEnt, "physics_prop_ragdoll" ) )
                 return ITERATION_CONTINUE;
-            
+
             if ( FClassnameIs( pEnt, "prop_ragdoll" ) )
                 return ITERATION_CONTINUE;
-
 
             return CFlaggedEntitiesEnum::EnumElement( pHandleEntity );
         }
@@ -149,14 +138,12 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
 
     CZombieSwatEntitiesEnum swatEnum( pList, ARRAYSIZE( pList ) );
 
-
     int count = UTIL_EntitiesInBox( vecBoxOrigin - vecDelta, vecBoxOrigin + vecDelta, &swatEnum );
-
 
     // We can only reach this low to break the object.
     Vector vecLowest = vecMyPos + Vector( 0.0f, 0.0f, pOuter->GetAttackLowest() );
 
-    const unsigned int tracemask = MASK_SOLID & ~(CONTENTS_MONSTER);
+    const unsigned int tracemask = MASK_SOLID & ~( CONTENTS_MONSTER );
     CTraceFilterWorldOnly filter;
     CBaseEntity* pNearest = nullptr;
     float flNearestDist = FLT_MAX;
@@ -166,7 +153,7 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
 
     for ( int i = 0; i < count; i++ )
     {
-        center = pList[ i ]->WorldSpaceCenter();
+        center = pList[i]->WorldSpaceCenter();
 
         // Check if the prop is COMPLETELY opposite.
         // There are cases where the prop is large enough
@@ -178,26 +165,23 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
         if ( vecDirToGoal.Dot( dir ) < -0.6f )
             continue;
 
-
         // Don't swat things where the highest point is under my knees
         // NOTE: This is a rough test; a more exact test is going to occur below
-        if ( (center.z + pList[i]->BoundingRadius()) < vecLowest.z )
+        if ( ( center.z + pList[i]->BoundingRadius() ) < vecLowest.z )
             continue;
-            
+
         // Don't swat things that are over my head.
         if ( center.z > pOuter->EyePosition().z )
             continue;
 
-
         auto* pCollide = modelinfo->GetVCollide( pList[i]->GetModelIndex() );
-        
+
         Vector objMins, objMaxs;
         physcollision->CollideGetAABB( &objMins, &objMaxs, pCollide->solids[0], pList[i]->GetAbsOrigin(), pList[i]->GetAbsAngles() );
 
         // Highest point too low.
         if ( objMaxs.z < vecLowest.z )
             continue;
-
 
         // Check the closest point direction.
         // This ensures we get the closest possible prop to swat.
@@ -214,7 +198,6 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
                 continue;
         }
 
-
         // We must see the prop.
         UTIL_TraceLine( center, pOuter->EyePosition(), tracemask, &filter, &tr );
         if ( tr.fraction != 1.0f )
@@ -228,13 +211,12 @@ CBaseEntity* CZombieScanSwatObjSchedule::FindNearestSwatObject( const Vector& ve
                 continue;
         }
 
-
         pNearest = pList[i];
         flNearestDist = flDist;
     }
 
     if ( IsDebugging() )
-        NDebugOverlay::Box( vecBoxOrigin, -vecDelta, vecDelta, pNearest ? 255 : 0, (!pNearest) ? 255 : 0, 0, 0, 0.5f );
+        NDebugOverlay::Box( vecBoxOrigin, -vecDelta, vecDelta, pNearest ? 255 : 0, ( !pNearest ) ? 255 : 0, 0, 0, 0.5f );
 
     return pNearest;
 }

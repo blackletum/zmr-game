@@ -9,9 +9,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
 
 CZMLineTool::CZMLineTool( Panel* pParent ) : Panel( g_pClientMode->GetViewport(), "ZMLineTool" )
 {
@@ -36,7 +34,6 @@ void CZMLineTool::Paint()
 {
     if ( !IsValidLine() ) return;
 
-
     // ZMRTODO: Get colors from scheme.
     surface()->DrawSetColor( 150, 0, 0, 255 );
     surface()->DrawLine( start_x, start_y, end_x, end_y );
@@ -56,5 +53,5 @@ void CZMLineTool::SetEnd( int x, int y )
 
 bool CZMLineTool::IsValidLine( int grace )
 {
-    return abs(end_x - start_x) > grace || abs(end_y - start_y) > grace;
+    return abs( end_x - start_x ) > grace || abs( end_y - start_y ) > grace;
 }

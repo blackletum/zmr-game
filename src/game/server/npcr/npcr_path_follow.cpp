@@ -3,14 +3,11 @@
 #include "npcr_motor.h"
 #include "npcr_path_follow.h"
 
-
-
 ConVar npcr_debug_path_avoid( "npcr_debug_path_avoid", "0" );
 ConVar npcr_debug_path_stuck( "npcr_debug_path_stuck", "0" );
 
-
 // 80 degrees
-#define STUCK_ANGLE_START       1.39626f
+#define STUCK_ANGLE_START 1.39626f
 
 class CAvoidTraceFilter : public CTraceFilterSimple
 {
@@ -52,7 +49,7 @@ public:
                 //    return true;
 
                 // Slowpokes
-                if ( spd > 10.0f && spd < (m_pNPC->GetMotor()->GetMovementSpeed() * 0.9f) )
+                if ( spd > 10.0f && spd < ( m_pNPC->GetMotor()->GetMovementSpeed() * 0.9f ) )
                     return true;
 
                 // If we're going opposite directions, we need to go around them.
@@ -88,13 +85,11 @@ void NPCR::CFollowNavPath::Invalidate()
     m_pGoal = nullptr;
     m_pCurLink = nullptr;
 
-
     m_bStuckPosCheck = false;
     m_nStuckTimes = 0;
     m_StuckTimer.Invalidate();
     m_flStuckAngle = STUCK_ANGLE_START;
     m_StuckCheckTimer.Invalidate();
-
 
     m_JumpStatus = JUMP_BEGIN;
 }
@@ -104,7 +99,6 @@ NPCR::PathRes_t NPCR::CFollowNavPath::CheckGoal( CBaseNPC* pNPC ) const
     if ( !m_pGoal )
         return PATH_OK;
 
-
     Vector vecMyPos = pNPC->GetPosition();
 
     if ( m_pCurLink && m_pCurLink->navTravel == TRAVEL_NAVJUMP )
@@ -112,7 +106,6 @@ NPCR::PathRes_t NPCR::CFollowNavPath::CheckGoal( CBaseNPC* pNPC ) const
         if ( ShouldFailNavJump( pNPC ) )
             return PATH_FAILED;
     }
-
 
     const NavLink_t* next = NextLink( m_pGoal );
 
@@ -132,7 +125,6 @@ NPCR::PathRes_t NPCR::CFollowNavPath::CheckGoal( CBaseNPC* pNPC ) const
         tolerance = 8.0f;
     }
 
-
     Vector dirToMe = vecMyPos - m_pGoal->pos;
 
     // Use proper length for drop downs
@@ -143,13 +135,11 @@ NPCR::PathRes_t NPCR::CFollowNavPath::CheckGoal( CBaseNPC* pNPC ) const
 
     float distToGoal = dirToMe.NormalizeInPlace();
 
-
     // We close enough to goal?
     if ( distToGoal < tolerance )
     {
         return PATH_SUCCESS;
     }
-
 
     // Check the next link in case current goal is redundant.
     if ( m_pGoal->navTravel != TRAVEL_NAVJUMP && next && distToGoal < 128.0f )
@@ -169,7 +159,7 @@ NPCR::PathRes_t NPCR::CFollowNavPath::CheckGoal( CBaseNPC* pNPC ) const
             float distToNextSqr = next->pos.DistToSqr( vecMyPos );
             float goalToNextSqr = m_pGoal->length;
             goalToNextSqr *= goalToNextSqr;
-            if ( distToNextSqr < (distToGoal*distToGoal) || distToNextSqr < goalToNextSqr )
+            if ( distToNextSqr < ( distToGoal * distToGoal ) || distToNextSqr < goalToNextSqr )
             {
                 return PATH_SUCCESS;
             }
@@ -184,16 +174,14 @@ bool NPCR::CFollowNavPath::ShouldFailNavJump( CBaseNPC* pNPC ) const
     if ( m_JumpStatus == JUMP_BEGIN )
         return false;
 
-
     bool bOnGround = pNPC->GetMotor()->IsOnGround();
-        
+
     // We're not on groud yet.
     if ( !bOnGround )
         return false;
 
-
     // We seemingly failed our jump.
-    if ( (m_pGoal->pos.z-8.0f) > pNPC->GetPosition().z )
+    if ( ( m_pGoal->pos.z - 8.0f ) > pNPC->GetPosition().z )
     {
         return true;
     }
@@ -210,7 +198,6 @@ void NPCR::CFollowNavPath::FollowPath( CBaseNPC* pNPC )
         res = CheckGoal( pNPC );
         if ( res != PATH_SUCCESS )
             break;
-
 
         ClearAvoidState();
         m_pCurLink = m_pGoal;
@@ -236,7 +223,6 @@ void NPCR::CFollowNavPath::FollowPath( CBaseNPC* pNPC )
         return;
     }
 
-
     UpdateMove( pNPC );
 }
 
@@ -250,13 +236,10 @@ void NPCR::CFollowNavPath::GroundMove( CBaseNPC* pNPC )
     if ( !pNPC->GetMotor()->IsOnGround() )
         return;
 
-
     Vector vecGoal = m_pGoal->pos;
-
 
     int iStuck = CheckStuck( pNPC, vecGoal );
     bool bIsDoingStuckMove = iStuck != 0;
-
 
     int res = CheckAvoid( pNPC, vecGoal );
 
@@ -284,7 +267,6 @@ void NPCR::CFollowNavPath::GroundMove( CBaseNPC* pNPC )
             }
         }
     }
-
 
     // Keep moving towards current goal
     pNPC->GetMotor()->Approach( vecGoal );
@@ -340,7 +322,6 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
 {
     VPROF_BUDGET( "CFollowNavPath::CheckAvoid", "NPCR" );
 
-
     Vector vecMyPos = pNPC->GetPosition();
 
     // We're currently doing the avoiding.
@@ -355,12 +336,11 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     if ( m_NextAvoidCheck.HasStarted() && !m_NextAvoidCheck.IsElapsed() )
         return -1;
 
-
     // Trace left and right
     // If one trace is longer, pick that side and strafe that way.
     m_NextAvoidCheck.Start( 0.4f );
 
-    Vector fwd = (vecGoalPos - vecMyPos);
+    Vector fwd = ( vecGoalPos - vecMyPos );
     fwd.z = 0.0f;
     float distToGoal = fwd.NormalizeInPlace();
 
@@ -368,10 +348,7 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     if ( distToGoal <= GetAvoidMinDistance() )
         return -1;
 
-
     Vector right( fwd.y, -fwd.x, 0.0f );
-
-
 
     float realWidth = pNPC->GetMotor()->GetHullWidth();
 
@@ -384,14 +361,13 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     float tolerance = GetGoalTolerance() + realWidth;
     float length = 30.0f;
 
-    if ( (distToGoal - tolerance) < 0.0f )
+    if ( ( distToGoal - tolerance ) < 0.0f )
     {
         length = MAX( realWidth, distToGoal - realWidth );
     }
 
-
     const bool bIsDebugging = npcr_debug_path_avoid.GetBool();
-    
+
     Vector scanStart = vecMyPos;
     Vector scanRight = scanStart + right * offset;
     Vector scanLeft = scanStart + -right * offset;
@@ -406,7 +382,6 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
 
     CAvoidTraceFilter filter( pNPC, COLLISION_GROUP_NPC );
 
-
     // Trace right
     UTIL_TraceHull( scanRight, scanRightEnd, scanMins, scanMaxs, MASK_NPCSOLID, &filter, &tr );
 
@@ -419,16 +394,15 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     {
         NDebugOverlay::SweptBox( scanRight, scanRightEnd, scanMins, scanMaxs, vec3_angle, rightClear ? 0 : 255, rightClear ? 255 : 0, 0, 255, 0.1f );
 
-
         if ( !rightClear && !tr.startsolid )
         {
-            QAngle ang; VectorAngles( tr.plane.normal, ang );
+            QAngle ang;
+            VectorAngles( tr.plane.normal, ang );
             NDebugOverlay::Axis( tr.endpos, ang, 16.0f, true, 1.0f );
         }
     }
 
     scanRightEnd = tr.endpos;
-
 
     // Trace left
     UTIL_TraceHull( scanLeft, scanLeftEnd, scanMins, scanMaxs, MASK_NPCSOLID, &filter, &tr );
@@ -442,16 +416,15 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     {
         NDebugOverlay::SweptBox( scanLeft, scanLeftEnd, scanMins, scanMaxs, vec3_angle, leftClear ? 0 : 255, leftClear ? 255 : 0, 0, 255, 0.1f );
 
-
         if ( !leftClear && !tr.startsolid )
         {
-            QAngle ang; VectorAngles( tr.plane.normal, ang );
+            QAngle ang;
+            VectorAngles( tr.plane.normal, ang );
             NDebugOverlay::Axis( tr.endpos, ang, 16.0f, true, 1.0f );
         }
     }
 
     scanLeftEnd = tr.endpos;
-
 
     // Nothing in our way
     if ( rightClear && leftClear )
@@ -459,22 +432,18 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
         return 0;
     }
 
-
     // Just a slope? We'll be fine.
     float minSlope = pNPC->GetMotor()->GetSlopeLimit();
-    if ((rightClear || rightNormal.z > minSlope)
-    &&  (leftClear || leftNormal.z > minSlope))
+    if ( ( rightClear || rightNormal.z > minSlope ) && ( leftClear || leftNormal.z > minSlope ) )
     {
         return 0;
     }
 
     // We hit something that is further than our goal. We'll be fine.
-    if ((rightClear || distToGoal < (length*rightFrac))
-    &&  (leftClear || distToGoal < (length*leftFrac)))
+    if ( ( rightClear || distToGoal < ( length * rightFrac ) ) && ( leftClear || distToGoal < ( length * leftFrac ) ) )
     {
         return 0;
     }
-
 
     Vector normal;
     normal.Init();
@@ -484,7 +453,6 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     {
         // Both not clear, pick the one that is further away.
 
-        
         const float epsilon = 0.001f;
         float delta = leftFrac - rightFrac;
 
@@ -497,12 +465,10 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     else
     {
         // Can't really do anything here then.
-        if ((leftClear && rightFrac == 0.0f)
-        ||  (rightClear && leftFrac == 0.0f))
+        if ( ( leftClear && rightFrac == 0.0f ) || ( rightClear && leftFrac == 0.0f ) )
         {
             return 0;
         }
-
 
         side = leftClear ? -1.0f : 1.0f;
         normal = leftClear ? rightNormal : leftNormal;
@@ -510,7 +476,7 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
 
     if ( bIsDebugging )
     {
-        const char* sidename = (side != 0.0f ? side : -m_flLastSide) > 0.0f ? "right" : "left";
+        const char* sidename = ( side != 0.0f ? side : -m_flLastSide ) > 0.0f ? "right" : "left";
 
         DevMsg( "[NPCR] Avoiding to the %s! (Left | Frac: %s%.1f) (Right | Frac: %s%.1f)%s\n",
             sidename,
@@ -529,13 +495,10 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
     normal.z = 0.0f;
     normal.NormalizeInPlace();
 
-    
     float dot = fabsf( fwd.AsVector2D().Dot( normal.AsVector2D() ) );
     dot *= side;
 
-
-    m_vecAvoidDelta = (vecGoalPos + right * MAX( 100.0f, distToGoal ) * dot) - vecMyPos;
-
+    m_vecAvoidDelta = ( vecGoalPos + right * MAX( 100.0f, distToGoal ) * dot ) - vecMyPos;
 
     /*if ( m_nTimesAvoided )
     {
@@ -543,15 +506,12 @@ int NPCR::CFollowNavPath::CheckAvoid( CBaseNPC* pNPC, Vector& vecGoalPos )
         newPos += right * 32.0f * m_nTimesAvoided * side;
     }*/
 
-
     m_flLastSide = side;
 
     // Avoid the same way for this long and check again later.
     m_AvoidTimer.Start( 0.4f );
 
-
     vecGoalPos = vecMyPos + m_vecAvoidDelta;
-
 
     if ( bIsDebugging )
     {
@@ -581,7 +541,7 @@ int NPCR::CFollowNavPath::CheckStuck( CBaseNPC* pNPC, Vector& vecGoalPos )
 
         // This was designed for default 15 tick update rate.
         const float defaultUpdateInterval = 1.0f / 15.0f;
-        float stuckSizeSqr = (2.0f*2.0f) * (pNPC->GetUpdateInterval() / defaultUpdateInterval);
+        float stuckSizeSqr = ( 2.0f * 2.0f ) * ( pNPC->GetUpdateInterval() / defaultUpdateInterval );
 
         if ( m_vecStuckPos.AsVector2D().DistToSqr( vecMyPos.AsVector2D() ) < stuckSizeSqr )
         {
@@ -596,14 +556,12 @@ int NPCR::CFollowNavPath::CheckStuck( CBaseNPC* pNPC, Vector& vecGoalPos )
                 m_nStuckTimes = 0;
         }
 
-
         float timeStuck = m_nStuckTimes * pNPC->GetUpdateInterval();
 
         if ( timeStuck > 0.4f )
         {
             // We've been stuck for a while.
             pNPC->OnStuck();
-
 
             if ( npcr_debug_path_stuck.GetBool() )
             {
@@ -617,11 +575,10 @@ int NPCR::CFollowNavPath::CheckStuck( CBaseNPC* pNPC, Vector& vecGoalPos )
             vecBack.NormalizeInPlace();
 
             // Pick the side that we were trying to move to last time
-            float angle = atan2f( vecBack.y, vecBack.x ) + (m_flLastSide * m_flStuckAngle);
+            float angle = atan2f( vecBack.y, vecBack.x ) + ( m_flLastSide * m_flStuckAngle );
 
             vecBack.x = cos( angle );
             vecBack.y = sin( angle );
-
 
             m_vecStuckDelta = vecBack * 100.0f;
 

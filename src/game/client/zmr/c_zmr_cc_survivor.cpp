@@ -8,9 +8,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZMCC_SURVIVOR           "materials/colorcorrection/game_survivor.raw"
-
+#define ZMCC_SURVIVOR "materials/colorcorrection/game_survivor.raw"
 
 ConVar zm_cl_colorcorrection_survivor_weight( "zm_cl_colorcorrection_survivor_weight", "1", FCVAR_ARCHIVE );
 
@@ -31,7 +29,6 @@ public:
 
             return true;
         }
-
 
         m_bAlive = false;
 

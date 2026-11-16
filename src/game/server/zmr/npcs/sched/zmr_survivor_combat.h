@@ -13,7 +13,6 @@
 #include "zmr_survivor_attack_closerange.h"
 #include "zmr_survivor_attack_longrange.h"
 
-
 //
 // Monitors bot's combat state.
 // Attacks an enemy if found, etc.
@@ -48,7 +47,6 @@ private:
     bool ShouldMoveBack( CBaseEntity* pEnemy ) const;
 
     void MoveBackFromThreat( CBaseEntity* pEnemy );
-
 
     NPCR::CFollowNavPath m_Path;
     NPCR::CPathCostGroundOnly m_PathCost;

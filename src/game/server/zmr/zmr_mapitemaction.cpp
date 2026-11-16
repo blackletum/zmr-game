@@ -1,75 +1,64 @@
 #include "cbase.h"
-#include "filesystem.h"
-#include "mapentities_shared.h"
-#include "mapentities.h"
 #include "datacache/imdlcache.h"
+#include "filesystem.h"
+#include "mapentities.h"
+#include "mapentities_shared.h"
 
 #include "zmr_mapitemaction.h"
-
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_mapitem_debug( "zm_sv_mapitem_debug", "0" );
-
 
 using namespace ZMItemAction;
 
+#define ITEMACTION_DEFAULT_FILE        "cfg/itemactions_default.txt"
+#define ITEMACTION_DEFAULT_FILE_SERVER "cfg/itemactions_default_server.txt"
+#define ITEMACTION_FILE_MAP_FORMAT     "cfg/itemactions_%s.txt"
 
-
-#define ITEMACTION_DEFAULT_FILE             "cfg/itemactions_default.txt"
-#define ITEMACTION_DEFAULT_FILE_SERVER      "cfg/itemactions_default_server.txt"
-#define ITEMACTION_FILE_MAP_FORMAT          "cfg/itemactions_%s.txt"
-
-
-
-#define ITEMDATA( classname, flags )             ItemBaseData_t( #classname, flags )
-#define CLASSDATA( classname, flag )         ClassData_t( #classname, flag )
-
-
+#define ITEMDATA( classname, flags ) ItemBaseData_t( #classname, flags )
+#define CLASSDATA( classname, flag ) ClassData_t( #classname, flag )
 
 //
 //
 //
-ItemBaseData_t const CZMMapItemSystem::m_ItemData[] =
-{
+ItemBaseData_t const CZMMapItemSystem::m_ItemData[] = {
     // Weapons
-    ITEMDATA( weapon_zm_shotgun, CLASS_WEAPON|CLASS_SHOTGUN|CLASS_PRIMARY ),
-    ITEMDATA( weapon_zm_shotgun_sporting, CLASS_WEAPON|CLASS_SHOTGUN|CLASS_PRIMARY ),
-    ITEMDATA( weapon_zm_mac10, CLASS_WEAPON|CLASS_PRIMARY|CLASS_SMG ),
-    ITEMDATA( weapon_zm_ar9mm, CLASS_WEAPON|CLASS_PRIMARY|CLASS_SMG ),
-    ITEMDATA( weapon_zm_rifle, CLASS_WEAPON|CLASS_PRIMARY|CLASS_RIFLE ),
-    ITEMDATA( weapon_zm_r700, CLASS_WEAPON|CLASS_PRIMARY|CLASS_RIFLE ),
-    ITEMDATA( weapon_zm_pistol, CLASS_WEAPON|CLASS_PISTOL|CLASS_SECONDARY ),
-    ITEMDATA( weapon_zm_glock, CLASS_WEAPON|CLASS_PISTOL|CLASS_SECONDARY ),
-    ITEMDATA( weapon_zm_revolver, CLASS_WEAPON|CLASS_SECONDARY|CLASS_BIGPISTOL ),
-    ITEMDATA( weapon_zm_snubnose, CLASS_WEAPON|CLASS_SECONDARY|CLASS_BIGPISTOL ),
+    ITEMDATA( weapon_zm_shotgun, CLASS_WEAPON | CLASS_SHOTGUN | CLASS_PRIMARY ),
+    ITEMDATA( weapon_zm_shotgun_sporting, CLASS_WEAPON | CLASS_SHOTGUN | CLASS_PRIMARY ),
+    ITEMDATA( weapon_zm_mac10, CLASS_WEAPON | CLASS_PRIMARY | CLASS_SMG ),
+    ITEMDATA( weapon_zm_ar9mm, CLASS_WEAPON | CLASS_PRIMARY | CLASS_SMG ),
+    ITEMDATA( weapon_zm_rifle, CLASS_WEAPON | CLASS_PRIMARY | CLASS_RIFLE ),
+    ITEMDATA( weapon_zm_r700, CLASS_WEAPON | CLASS_PRIMARY | CLASS_RIFLE ),
+    ITEMDATA( weapon_zm_pistol, CLASS_WEAPON | CLASS_PISTOL | CLASS_SECONDARY ),
+    ITEMDATA( weapon_zm_glock, CLASS_WEAPON | CLASS_PISTOL | CLASS_SECONDARY ),
+    ITEMDATA( weapon_zm_revolver, CLASS_WEAPON | CLASS_SECONDARY | CLASS_BIGPISTOL ),
+    ITEMDATA( weapon_zm_snubnose, CLASS_WEAPON | CLASS_SECONDARY | CLASS_BIGPISTOL ),
 
-    ITEMDATA( weapon_zm_molotov, CLASS_WEAPON|CLASS_THROWABLE ),
-    ITEMDATA( weapon_zm_pipebomb, CLASS_WEAPON|CLASS_THROWABLE ),
+    ITEMDATA( weapon_zm_molotov, CLASS_WEAPON | CLASS_THROWABLE ),
+    ITEMDATA( weapon_zm_pipebomb, CLASS_WEAPON | CLASS_THROWABLE ),
 
-    ITEMDATA( weapon_zm_improvised, CLASS_WEAPON|CLASS_MELEE|CLASS_MELEE_MEDIUM ),
-    ITEMDATA( weapon_zm_baseballbat, CLASS_WEAPON|CLASS_MELEE|CLASS_MELEE_MEDIUM ),
-    ITEMDATA( weapon_zm_sledge, CLASS_WEAPON|CLASS_MELEE|CLASS_MELEE_BIG ),
-    ITEMDATA( weapon_zm_fireaxe, CLASS_WEAPON|CLASS_MELEE|CLASS_MELEE_BIG ),
+    ITEMDATA( weapon_zm_improvised, CLASS_WEAPON | CLASS_MELEE | CLASS_MELEE_MEDIUM ),
+    ITEMDATA( weapon_zm_baseballbat, CLASS_WEAPON | CLASS_MELEE | CLASS_MELEE_MEDIUM ),
+    ITEMDATA( weapon_zm_sledge, CLASS_WEAPON | CLASS_MELEE | CLASS_MELEE_BIG ),
+    ITEMDATA( weapon_zm_fireaxe, CLASS_WEAPON | CLASS_MELEE | CLASS_MELEE_BIG ),
 
     // Legacy weapons
     ITEMDATA( weapon_crowbar, CLASS_DONTUSE ),
     ITEMDATA( weapon_shotgun, CLASS_DONTUSE ),
 
     // Ammo
-    ITEMDATA( item_box_buckshot, CLASS_AMMO|CLASS_AMMO_SHOTGUN ),
-    ITEMDATA( item_ammo_357, CLASS_AMMO|CLASS_AMMO_RIFLE ),
-    ITEMDATA( item_ammo_smg1, CLASS_AMMO|CLASS_AMMO_SMG ),
-    ITEMDATA( item_ammo_pistol, CLASS_AMMO|CLASS_AMMO_PISTOL ),
-    ITEMDATA( item_ammo_revolver, CLASS_AMMO|CLASS_AMMO_BIGPISTOL ),
+    ITEMDATA( item_box_buckshot, CLASS_AMMO | CLASS_AMMO_SHOTGUN ),
+    ITEMDATA( item_ammo_357, CLASS_AMMO | CLASS_AMMO_RIFLE ),
+    ITEMDATA( item_ammo_smg1, CLASS_AMMO | CLASS_AMMO_SMG ),
+    ITEMDATA( item_ammo_pistol, CLASS_AMMO | CLASS_AMMO_PISTOL ),
+    ITEMDATA( item_ammo_revolver, CLASS_AMMO | CLASS_AMMO_BIGPISTOL ),
 
     ITEMDATA( item_item_crate, CLASS_ITEM_CRATE ),
 };
 
-const ClassData_t CZMMapItemSystem::m_Classes[] =
-{
+const ClassData_t CZMMapItemSystem::m_Classes[] = {
     // Weapons
     CLASSDATA( Weapon, CLASS_WEAPON ),
 
@@ -122,8 +111,6 @@ void CZMMapItemSystem::LevelInitPreEntity()
 
     LoadActionsFromMapFile();
 
-    
-
     m_vEntData.PurgeAndDeleteElements();
     LoadItemsFromMap();
     ComputeMapVersion();
@@ -133,12 +120,10 @@ void CZMMapItemSystem::ComputeMapVersion()
 {
     m_bIsOldMap = true;
 
-
     //
     // Check if the map has any new items that don't exist in old maps.
     //
-    static const int newitems[] =
-    {
+    static const int newitems[] = {
         FindItemByClassname( "weapon_zm_shotgun_sporting" ),
     };
 
@@ -162,12 +147,11 @@ void CZMMapItemSystem::ComputeMapVersion()
 bool CZMMapItemSystem::LoadActionsFromFile( const char* filename )
 {
     KeyValuesAD kv( "ItemActions" );
-    
+
     if ( !kv->LoadFromFile( filesystem, filename ) )
     {
         return false;
     }
-
 
     for ( auto* action = kv->GetFirstTrueSubKey(); action; action = action->GetNextTrueSubKey() )
     {
@@ -202,7 +186,7 @@ void CZMMapItemSystem::LoadItemsFromMap()
     //}
 
     // Loop through all entities in the map data and copy the data we want to be able to affect.
-    for ( ; true; pMapData = MapEntity_SkipToNextEntity(pMapData, szTokenBuffer) )
+    for ( ; true; pMapData = MapEntity_SkipToNextEntity( pMapData, szTokenBuffer ) )
     {
         //
         // Parse the opening brace.
@@ -218,10 +202,9 @@ void CZMMapItemSystem::LoadItemsFromMap()
 
         if ( token[0] != '{' )
         {
-            Warning( "Found %s when expecting {\n", token);
+            Warning( "Found %s when expecting {\n", token );
             continue;
         }
-
 
         CEntityMapData entData( (char*)pMapData );
 
@@ -229,7 +212,6 @@ void CZMMapItemSystem::LoadItemsFromMap()
         {
             continue;
         }
-
 
         auto* pEntData = ItemEntData_t::Create( pMapData );
         if ( pEntData )
@@ -247,7 +229,7 @@ unsigned int CZMMapItemSystem::GetClassFlagByName( const char* itemclass )
     {
         return m_Classes[index].m_fClassFlag;
     }
-    
+
     return 0;
 }
 
@@ -259,7 +241,7 @@ unsigned int CZMMapItemSystem::GetItemFlags( const char* classname )
     {
         return m_ItemData[index].m_fClassFlags;
     }
-    
+
     return 0;
 }
 
@@ -279,7 +261,7 @@ bool CZMMapItemSystem::GetMapItemsByClass( unsigned int classflags, CUtlVector<c
     return num > 0;
 }
 
-bool CZMMapItemSystem::GetMapItems( std::function<bool(const ItemBaseData_t&)> func, CUtlVector<const ItemBaseData_t*>& items )
+bool CZMMapItemSystem::GetMapItems( std::function<bool( const ItemBaseData_t& )> func, CUtlVector<const ItemBaseData_t*>& items )
 {
     int num = 0;
 
@@ -329,11 +311,9 @@ const char* CZMMapItemSystem::OnCreateItem( const char* classname )
         return classname;
     }
 
-
     ItemEntData_t itemdata(
         m_ItemData[iItemIndex].m_pszClassname,
         m_ItemData[iItemIndex].m_fClassFlags );
-
 
     bool bAffected = false;
 
@@ -346,25 +326,20 @@ const char* CZMMapItemSystem::OnCreateItem( const char* classname )
         }
     }
 
-
     // We don't need to do anything to this item.
     if ( !bAffected )
     {
         return classname;
     }
 
-
-
     ActionData_t actiondata;
     actiondata.bIsOldMap = m_bIsOldMap;
     actiondata.items.AddToTail( &itemdata );
-
 
     FOR_EACH_VEC( m_vActions, i )
     {
         m_vActions[i]->PerformAction( actiondata, TIME_ENTSPAWN );
     }
-
 
     return itemdata.pszItemClassname;
 }
@@ -388,18 +363,15 @@ void CZMMapItemSystem::SpawnItems()
     ActionData_t actiondata;
     actiondata.bIsOldMap = m_bIsOldMap;
 
-
     GetCopiedData( actiondata.items );
     int len = actiondata.items.Count();
     if ( len < 1 )
         return;
 
-
     FOR_EACH_VEC( m_vActions, i )
     {
         m_vActions[i]->PerformAction( actiondata, TIME_WORLDRESET );
     }
-
 
     CBaseEntity** pEnts = new CBaseEntity*[len];
     int nEnts = 0;
@@ -408,12 +380,10 @@ void CZMMapItemSystem::SpawnItems()
     {
         auto* pEntData = actiondata.items[i];
 
-
         auto* pEnt = CreateEntityByName( pEntData->pszItemClassname );
 
         if ( !pEnt )
             continue;
-
 
         CEntityMapData entData( (char*)pEntData->pszEntData );
         pEnt->ParseMapData( &entData );
@@ -426,9 +396,7 @@ void CZMMapItemSystem::SpawnItems()
         pEnts[nEnts++] = pEnt;
     }
 
-
     actiondata.items.PurgeAndDeleteElements();
-
 
     bool bAsyncAnims = mdlcache->SetAsyncLoad( MDLCACHE_ANIMBLOCK, false );
     for ( int i = 0; i < nEnts; i++ )
@@ -437,7 +405,6 @@ void CZMMapItemSystem::SpawnItems()
         pEnts[i]->Activate();
     }
     mdlcache->SetAsyncLoad( MDLCACHE_ANIMBLOCK, bAsyncAnims );
-
 
     delete[] pEnts;
 }
@@ -451,7 +418,6 @@ bool CZMMapItemSystem::ShouldAffectEntity( CEntityMapData& entData, char* buffer
     if ( !AffectsItem( buffer ) )
         return false;
 
-
     // We don't want to touch entities that may be part of some map logic.
 
     if ( entData.ExtractValue( "targetname", buffer ) && buffer[0] != '\0' )
@@ -459,7 +425,6 @@ bool CZMMapItemSystem::ShouldAffectEntity( CEntityMapData& entData, char* buffer
 
     if ( entData.ExtractValue( "parent", buffer ) && buffer[0] != '\0' )
         return false;
-
 
     return true;
 }
@@ -489,8 +454,6 @@ bool CZMMapItemSystem::AffectsItem( const char* classname )
 //
 //
 
-
-
 //
 //
 //
@@ -502,7 +465,6 @@ CZMMapItemActionReplace::CZMMapItemActionReplace()
     m_vecRangeCheckPos.Init();
     m_fFlag = 0;
     m_szClassname[0] = '\0';
-
 
     m_flRangeCheck = 0.0f;
     m_fFilterFlags = 0;
@@ -537,9 +499,8 @@ void CZMMapItemActionReplace::ReplacePerc( ItemList_t& items )
     if ( m_flReplaceFrac < 0.0f || m_flReplaceFrac >= 1.0f )
         return;
 
-
     int total = items.Count();
-    int remove = (1.0f - m_flReplaceFrac) * total;
+    int remove = ( 1.0f - m_flReplaceFrac ) * total;
 
     for ( int i = 0; i < remove; i++ )
     {
@@ -559,7 +520,6 @@ int CZMMapItemActionReplace::PerformAction( ActionData_t& actiondata, ItemSpawnT
         return 0;
     }
 
-
     int nChanged = 0;
 
     {
@@ -574,7 +534,6 @@ int CZMMapItemActionReplace::PerformAction( ActionData_t& actiondata, ItemSpawnT
                 myitems.AddToTail( actiondata.items[i] );
             }
         }
-    
 
         if ( myitems.Count() )
         {
@@ -588,7 +547,6 @@ int CZMMapItemActionReplace::PerformAction( ActionData_t& actiondata, ItemSpawnT
         }
     }
 
-
     FOR_EACH_VEC( m_vSubReplaces, i )
     {
         nChanged += m_vSubReplaces[i]->PerformAction( actiondata, status );
@@ -599,11 +557,10 @@ int CZMMapItemActionReplace::PerformAction( ActionData_t& actiondata, ItemSpawnT
 
 bool CZMMapItemActionReplace::AffectsItem( ItemEntData_t& itemEntData, ItemSpawnTime_t status ) const
 {
-    if ( m_flRangeCheck > 0.0f && m_vecRangeCheckPos.DistToSqr( itemEntData.vecPos ) > (m_flRangeCheck*m_flRangeCheck) )
+    if ( m_flRangeCheck > 0.0f && m_vecRangeCheckPos.DistToSqr( itemEntData.vecPos ) > ( m_flRangeCheck * m_flRangeCheck ) )
     {
         return false;
     }
-
 
     // A specific item needs to be affected
     if ( m_iFilterItemIndex != -1 )
@@ -620,12 +577,10 @@ bool CZMMapItemActionReplace::AffectsItem( ItemEntData_t& itemEntData, ItemSpawn
             return false;
     }
 
-
     if ( m_bMapItemsOnly && status != TIME_WORLDRESET )
     {
         return false;
     }
-
 
     return true;
 }
@@ -634,7 +589,6 @@ bool CZMMapItemActionReplace::Replace( ItemEntData_t& itemEntData )
 {
     char classname[64];
     classname[0] = '\0';
-
 
     // Do the actual edit
     if ( m_szClassname[0] != '\0' )
@@ -651,11 +605,10 @@ bool CZMMapItemActionReplace::Replace( ItemEntData_t& itemEntData )
         {
             Q_strncpy(
                 classname,
-                items[random->RandomInt( 0, items.Count() - 1)]->m_pszClassname,
+                items[random->RandomInt( 0, items.Count() - 1 )]->m_pszClassname,
                 sizeof( classname ) );
         }
     }
-
 
     if ( Q_stricmp( itemEntData.pszItemClassname, classname ) != 0 )
     {
@@ -666,13 +619,10 @@ bool CZMMapItemActionReplace::Replace( ItemEntData_t& itemEntData )
             entData.SetValue( "classname", classname );
         }
 
-
-
         if ( zm_sv_mapitem_debug.GetBool() )
         {
             Msg( "Replaced '%s' with '%s'\n", itemEntData.pszItemClassname, classname );
         }
-
 
         // Update our temporary data
         int iItemIndex = CZMMapItemSystem::FindItemByClassname( classname );
@@ -689,7 +639,6 @@ bool CZMMapItemActionReplace::Replace( ItemEntData_t& itemEntData )
 
         return true;
     }
-    
 
     return false;
 }
@@ -698,12 +647,10 @@ CZMMapItemActionReplace* CZMMapItemActionReplace::Create( KeyValues* kv )
 {
     const char* name = kv->GetName();
 
-
     if ( zm_sv_mapitem_debug.GetBool() )
     {
         Msg( "Loading replace '%s'\n", name );
     }
-
 
     auto* pReplace = new CZMMapItemActionReplace;
 
@@ -712,7 +659,6 @@ CZMMapItemActionReplace* CZMMapItemActionReplace::Create( KeyValues* kv )
     if ( chance >= 0.0f )
         pReplace->m_flChanceFrac = chance;
 
-
     float replace_frac = kv->GetFloat( "replace_frac", -1.0f );
 
     if ( replace_frac >= 0.0f )
@@ -720,16 +666,11 @@ CZMMapItemActionReplace* CZMMapItemActionReplace::Create( KeyValues* kv )
         pReplace->m_flReplaceFrac = replace_frac;
     }
 
-
-
     pReplace->m_bOnlyOldMaps = kv->GetBool( "onlyoldmaps", false );
 
     pReplace->m_bMapItemsOnly = kv->GetBool( "mapitemsonly", true );
 
-
-
     pReplace->ParseReplaceFilter( kv );
-
 
     const char* pszReplace = kv->GetString( "replace", nullptr );
     if ( !pszReplace )
@@ -738,10 +679,7 @@ CZMMapItemActionReplace* CZMMapItemActionReplace::Create( KeyValues* kv )
         return nullptr;
     }
 
-
     pReplace->ParseReplaceTarget( pszReplace );
-
-
 
     for ( auto* subkv = kv->GetFirstTrueSubKey(); subkv; subkv = subkv->GetNextTrueSubKey() )
     {
@@ -752,7 +690,6 @@ CZMMapItemActionReplace* CZMMapItemActionReplace::Create( KeyValues* kv )
             pReplace->m_vSubReplaces.AddToTail( sub );
         }
     }
-    
 
     return pReplace;
 }
@@ -767,12 +704,10 @@ bool CZMMapItemActionReplace::ParseReplaceTarget( const char* target )
         return true;
     }
 
-
     if ( CZMMapItemSystem::AffectsItem( target ) )
     {
         Q_strncpy( m_szClassname, target, sizeof( m_szClassname ) );
     }
-
 
     return true;
 }
@@ -780,35 +715,31 @@ bool CZMMapItemActionReplace::ParseReplaceTarget( const char* target )
 bool CZMMapItemActionReplace::ParseReplaceFilter( KeyValues* kv )
 {
     const char* classfilter = kv->GetString( "filter_class" );
-    
+
     if ( !*classfilter )
     {
         return false;
     }
 
-
     m_fFilterFlags = CZMMapItemSystem::GetClassFlagByName( classfilter );
     if ( !m_fFilterFlags )
     {
         m_iFilterItemIndex = CZMMapItemSystem::FindItemByClassname( classfilter );
-        
+
         if ( m_iFilterItemIndex == -1 )
         {
             return false;
         }
     }
 
-
     char buffer[256];
     buffer[0] = '\0';
-    
+
     const char* rangefilter = kv->GetString( "filter_range" );
     if ( *rangefilter )
     {
         sscanf( buffer, "%f;%f,%f,%f", &m_flRangeCheck, &m_vecRangeCheckPos.x, &m_vecRangeCheckPos.y, &m_vecRangeCheckPos.z );
     }
-
-
 
     return true;
 }
@@ -828,20 +759,15 @@ void CZMMapItemActionReplace::LoadActions( KeyValues* kv, CUtlVector<CZMMapItemA
 //
 //
 
-
-
 //
 //
 //
 CZMMapItemActionAdd::CZMMapItemActionAdd()
 {
-
 }
-
 
 CZMMapItemActionAdd::~CZMMapItemActionAdd()
 {
-    
 }
 
 void CZMMapItemActionAdd::LoadActions( KeyValues* kv, CUtlVector<CZMMapItemAction*>& actions )
@@ -864,8 +790,6 @@ CZMMapItemActionAdd* CZMMapItemActionAdd::Create( KeyValues* kv )
 //
 //
 
-
-
 //
 //
 //
@@ -876,31 +800,22 @@ ItemEntData_t* ItemEntData_t::Create( const char* pszEntData )
     Vector pos;
     unsigned int flags;
 
-
-
     if ( !entData.ExtractValue( "classname", token ) || token[0] == '\0' )
         return nullptr;
-
-
 
     int iItemIndex = CZMMapItemSystem::FindItemByClassname( token );
     if ( iItemIndex == -1 )
         return nullptr;
-
 
     const char* classname = CZMMapItemSystem::m_ItemData[iItemIndex].m_pszClassname;
     flags = CZMMapItemSystem::m_ItemData[iItemIndex].m_fClassFlags;
     if ( !flags )
         return nullptr;
 
-
     if ( !entData.ExtractValue( "origin", token ) || token[0] == '\0' )
         return nullptr;
 
-
     sscanf( token, "%f %f %f", &pos.x, &pos.y, &pos.z );
-
-
 
     // Skip to the end of the entity data to get the size of it.
     char keyName[MAPKEY_MAXLENGTH];
@@ -909,29 +824,24 @@ ItemEntData_t* ItemEntData_t::Create( const char* pszEntData )
     {
     }
 
-
     const char* pszEnd = entData.CurrentBufferPosition();
     if ( !pszEnd )
         return nullptr;
 
-
-    size_t size = (size_t)(pszEnd - pszEntData) + 1;
+    size_t size = (size_t)( pszEnd - pszEntData ) + 1;
     if ( size <= 1 )
         return nullptr;
-
 
     size_t contentsize = size;
     size += 128;
 
     char* pszNewEntData = new char[size];
-    Q_strncpy( pszNewEntData, pszEntData, contentsize+2 );
-
+    Q_strncpy( pszNewEntData, pszEntData, contentsize + 2 );
 
     return new ItemEntData_t( pszNewEntData, (int)size, flags, pos, classname );
 }
 //
 //
 //
-
 
 CZMMapItemSystem ZMItemAction::g_ZMMapItemSystem;

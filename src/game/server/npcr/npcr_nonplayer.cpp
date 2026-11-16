@@ -1,11 +1,10 @@
-#include "cbase.h"
 #include "animation.h"
+#include "cbase.h"
 
 #include "npcr_motor_nonplayer.h"
 #include "npcr_nonplayer.h"
 #include "npcr_schedule.h"
 #include "npcr_senses.h"
-
 
 BEGIN_DATADESC( CNPCRNonPlayer )
     // Outputs
@@ -22,7 +21,6 @@ BEGIN_DATADESC( CNPCRNonPlayer )
     DEFINE_INPUTFUNC( FIELD_INTEGER, "SetHealth", InputSetHealth ),
 END_DATADESC()
 
-
 CNPCRNonPlayer::CNPCRNonPlayer() : NPCR::CBaseNPC( this )
 {
     m_bCurActivityLoops = false;
@@ -31,12 +29,7 @@ CNPCRNonPlayer::CNPCRNonPlayer() : NPCR::CBaseNPC( this )
 
     m_hEnemy.Set( nullptr );
 
-
-
     m_iHealth = 0; // Set to 0 here, since keyvalues might set this to something else.
-
-
-
 
     m_flLastDamageTime = 0.0f;
 
@@ -72,28 +65,23 @@ void CNPCRNonPlayer::Spawn()
 
     // This flag makes sure we can touch NPC triggers.
     AddFlag( FL_NPC );
-    
 
-    
-    InitBoneControllers(); 
+    InitBoneControllers();
 
     // Default to idle. Remember to set in client as well.
     // Animation events may not get through to client, and it's better to have
     // some animation, rather than model's default animation which can be anything.
     SetActivity( ACT_IDLE );
 
-
     SetThink( &CNPCRNonPlayer::NPCThink );
     SetNextThink( gpGlobals->curtime );
 
-    
     m_takedamage = DAMAGE_YES;
     Assert( m_iMaxHealth > 0 );
     if ( m_iMaxHealth < 1 )
         m_iMaxHealth = 1;
     if ( m_iHealth < 1 )
         m_iHealth = m_iMaxHealth;
-
 
     SetDefaultEyeOffset();
 
@@ -105,9 +93,7 @@ void CNPCRNonPlayer::Spawn()
     mins.x = mins.y = -maxs.x;
     mins.z = 0.0f;
 
-
     SetCollisionBounds( mins, maxs );
-
 
     if ( VPhysicsGetObject() )
     {
@@ -115,9 +101,9 @@ void CNPCRNonPlayer::Spawn()
         VPhysicsDestroyObject();
     }
 
-	IPhysicsObject* pPhysObj = VPhysicsInitShadow( false, false );
-	if ( pPhysObj )
-	{
+    IPhysicsObject* pPhysObj = VPhysicsInitShadow( false, false );
+    if ( pPhysObj )
+    {
         pPhysObj->EnableMotion( false );
         pPhysObj->EnableGravity( false );
 
@@ -131,7 +117,6 @@ void CNPCRNonPlayer::Spawn()
             mass = 1.0f;
         pPhysObj->SetMass( mass );
 
-
         IPhysicsShadowController* pController = pPhysObj->GetShadowController();
         pController->SetTeleportDistance( 1.0f );
     }
@@ -142,9 +127,7 @@ int CNPCRNonPlayer::OnTakeDamage_Alive( const CTakeDamageInfo& info )
     if ( !BaseClass::OnTakeDamage_Alive( info ) )
         return 0;
 
-
     OnDamaged( info );
-
 
     //
     // Fire outputs
@@ -164,16 +147,13 @@ int CNPCRNonPlayer::OnTakeDamage_Alive( const CTakeDamageInfo& info )
             }
         }
 
-
-
         m_flLastDamageTime = gpGlobals->curtime;
     }
 
-    if ( m_iHealth <= (m_iMaxHealth / 2) )
+    if ( m_iHealth <= ( m_iMaxHealth / 2 ) )
     {
         m_OnHalfHealth.FireOutput( pAttacker, this );
     }
-
 
     return 1;
 }
@@ -182,10 +162,7 @@ void CNPCRNonPlayer::Event_Killed( const CTakeDamageInfo& info )
 {
     m_OnDeath.FireOutput( info.GetAttacker(), this );
 
-
-
     BaseClass::Event_Killed( info );
-
 
     // IMPORTANT: We need this check or the entity will never be removed.
     // The ragdolling process will mark us for removal.
@@ -198,7 +175,7 @@ void CNPCRNonPlayer::Event_Killed( const CTakeDamageInfo& info )
 
 void CNPCRNonPlayer::SetDefaultEyeOffset()
 {
-    if  ( GetModelPtr() )
+    if ( GetModelPtr() )
     {
         Vector offset = vec3_origin;
         GetEyePosition( GetModelPtr(), offset );
@@ -228,7 +205,6 @@ void CNPCRNonPlayer::PostUpdate()
 {
     NPCR::CBaseNPC::PostUpdate();
 
-
     CBaseEntity* pCurEnemy = GetEnemy();
 
     if ( pCurEnemy )
@@ -240,7 +216,7 @@ void CNPCRNonPlayer::PostUpdate()
         {
             auto* pKnown = GetSenses()->GetKnownOf( pCurEnemy );
             const bool bCanSee = pKnown ? pKnown->CanSee() : false;
-            
+
             // Player varients are kept for backwards compatibility. (damn you, zm_kink)
             if ( !bCanSee && m_bDidSeeEnemyLastTime )
             {
@@ -248,7 +224,6 @@ void CNPCRNonPlayer::PostUpdate()
                     m_OnLostPlayerLOS.FireOutput( pCurEnemy, this );
 
                 m_OnLostEnemyLOS.FireOutput( pCurEnemy, this );
-
             }
             else if ( bCanSee && !m_bDidSeeEnemyLastTime )
             {
@@ -268,13 +243,10 @@ void CNPCRNonPlayer::NPCThink()
 {
     SetNextThink( gpGlobals->curtime );
 
-
     UpdateLastKnownArea();
-
 
     CBaseNPC::Update();
 
-    
     if ( IsSequenceFinished() )
     {
         OnAnimActivityFinished( m_iCurActivity );
@@ -303,7 +275,7 @@ void CNPCRNonPlayer::PerformCustomPhysics( Vector* pNewPosition, Vector* pNewVel
     {
         //VPhysicsGetObject()->UpdateShadow( *pNewPosition, vec3_angle, true, 0.0f );
         VPhysicsGetObject()->UpdateShadow( *pNewPosition, vec3_angle, false, GetUpdateInterval() );
-        
+
         // This will not apply any force to objects nearby.
         // Will get players stuck (if called alone?)
         VPhysicsGetObject()->SetPosition( *pNewPosition, vec3_angle, true );
@@ -323,7 +295,6 @@ void CNPCRNonPlayer::AcquireEnemy( CBaseEntity* pEnemy )
     Assert( pEnemy != nullptr );
 
     SetEnemy( pEnemy );
-
 
     // Perform sight outputs.
     m_bDidSeeEnemyLastTime = false;

@@ -2,10 +2,7 @@
 
 #include "npcs/zmr_zombiebase.h"
 
-
 typedef NPCR::CSchedule<CZMBaseZombie> CBaseZombieSchedule;
-
-
 
 #include "npcr_path_cost.h"
 #include "npcr_path_follow.h"
@@ -15,7 +12,6 @@ extern ConVar zm_sv_defense_goal_tolerance;
 extern ConVar zm_sv_zombie_move_start_areafinddist;
 
 class CZombieGotoSwatObjSchedule;
-
 
 //
 // Entrypoint to zombie schedules.
@@ -48,10 +44,8 @@ private:
     CZombieMainSchedule();
     ~CZombieMainSchedule();
 
-
     bool Command( CZMPlayer* pCommander, const Vector& vecPos );
     bool CommandSwat( CZMPlayer* pCommander, CBaseEntity* pEnt, bool bBreak = true );
-
 
     bool ShouldDefendFrom( CBaseEntity* pEnemy ) const;
 
@@ -59,14 +53,12 @@ private:
 
     void UpdateGoal( const Vector& vecPos );
 
-
     NPCR::CFollowNavPath* m_pPath;
     NPCR::CPathCostGroundOnly m_PathCost;
     Vector m_vecCurrentGoal;
     bool m_bHasGoal;
     CountdownTimer m_BlockerTimer;
     CZombieGotoSwatObjSchedule* m_pGotoSwatSched;
-
 
     friend class CZMBaseZombie;
 };

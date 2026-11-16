@@ -1,19 +1,18 @@
 #include "cbase.h"
+#include "filesystem.h"
 #include "hud_macros.h"
 #include "iclientmode.h"
 #include "input.h"
 #include "view.h"
-#include "filesystem.h"
 
 #include <vgui/ILocalize.h>
-#include <vgui/ISurface.h>
 #include <vgui/IPanel.h>
+#include <vgui/ISurface.h>
 
-#include <vgui_controls/TextEntry.h>
-#include <vgui_controls/EditablePanel.h>
-#include <vgui_controls/AnimationController.h>
 #include "hudelement.h"
-
+#include <vgui_controls/AnimationController.h>
+#include <vgui_controls/EditablePanel.h>
+#include <vgui_controls/TextEntry.h>
 
 #include "zmr_framepanel.h"
 
@@ -23,24 +22,21 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 // Similar to AngleNormalize
 float AngleNormalizeRadians( float angle )
 {
-    angle = fmodf( angle, M_PI_F*2 );
+    angle = fmodf( angle, M_PI_F * 2 );
     if ( angle > M_PI_F )
-        angle -= M_PI_F*2;
+        angle -= M_PI_F * 2;
     if ( angle < -M_PI_F )
-        angle += M_PI_F*2;
+        angle += M_PI_F * 2;
     return angle;
 }
-
 
 // The index player may pass in +zm_voicemenu 1
 enum
 {
     RADIALINDEX_INVALID = -1,
-
 
     RADIALINDEX_TEAM,
     // Current not used.
@@ -48,15 +44,11 @@ enum
 
     RADIALINDEX_SURVIVOR_MAX,
 
-
-
     // In case we ever add a ZM one.
     RADIALINDEX_ZM = RADIALINDEX_SURVIVOR_MAX,
 
-
     RADIALINDEX_ZM_MAX
 };
-
 
 struct ZMVoiceMenuData_t
 {
@@ -83,7 +75,6 @@ struct ZMVoiceMenu_t
     bool m_bOffset;
 };
 
-
 class CZMHudVoiceMenu : public CHudElement, public CZMFramePanel
 {
 public:
@@ -92,11 +83,9 @@ public:
     CZMHudVoiceMenu( const char* pElementName );
     ~CZMHudVoiceMenu();
 
-
     virtual void Init() override;
     virtual void VidInit() override;
     virtual void Reset() override;
-
 
     virtual bool ShouldDraw() override { return IsVisible() && CHudElement::ShouldDraw(); }
 
@@ -104,16 +93,12 @@ public:
     virtual void OnThink() override;
     virtual void Paint() override;
 
-
     virtual void SetVisible( bool state ) override;
-
-
 
     virtual ZMVoiceMenu_t* GetPreferredVoiceMenu( int radialIndex );
 
     void LoadMenus();
 
-    
     void BeginFadeIn( ZMVoiceMenu_t* pMenu );
     void BeginFadeOut();
     void PerformVoice();
@@ -124,9 +109,7 @@ public:
 protected:
     void UpdateSelection();
 
-
     bool LoadMenuTo( ZMVoiceMenu_t& vMenu, const char* path );
-
 
     void PaintString( const vgui::HFont font, const Color& clr, int x, int y, const wchar_t* txt );
 
@@ -141,38 +124,27 @@ private:
 
     CPanelAnimationVar( Color, m_BgColor, "BgColor", "ZMHudBgColor" );
 
-
     ZMVoiceMenu_t m_MenuTeam;
     ZMVoiceMenu_t m_MenuUseless;
     ZMVoiceMenu_t* m_pCurrentMenu;
 
-
     int m_nTexBgId;
-
 
     int m_iCurSelection;
 
     float m_flInnerScale;
 
-
     float m_flFadeIn;
     float m_flFadeOut;
 };
 
-
 CZMHudVoiceMenu* g_pVoiceMenu = nullptr;
-
-
-
-
-
 
 static void IN_ZM_VoiceMenu1( const CCommand& args )
 {
     bool newstate = ( args.Arg( 0 )[0] == '+' ) ? true : false;
 
     int index = atoi( args.Arg( 1 ) );
-
 
     if ( g_pVoiceMenu )
     {
@@ -196,9 +168,6 @@ static void IN_ZM_VoiceMenu1( const CCommand& args )
 ConCommand zm_voicemenu1_up( "+zm_voicemenu", IN_ZM_VoiceMenu1 );
 ConCommand zm_voicemenu1_down( "-zm_voicemenu", IN_ZM_VoiceMenu1 );
 
-
-
-
 using namespace vgui;
 
 DECLARE_HUDELEMENT( CZMHudVoiceMenu );
@@ -207,19 +176,15 @@ CZMHudVoiceMenu::CZMHudVoiceMenu( const char* pElementName ) : CHudElement( pEle
 {
     g_pVoiceMenu = this;
 
-
     SetPaintBackgroundEnabled( false );
     SetVisible( false );
     SetKeyBoardInputEnabled( false );
 
-
-
     m_nTexBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBgId, "zmr_effects/hud_bg_voicemenu", true, false );
 
-
     m_iCurSelection = -1;
-    
+
     m_flInnerScale = 0.12f;
 
     m_pCurrentMenu = nullptr;
@@ -235,7 +200,6 @@ void CZMHudVoiceMenu::LoadMenus()
     m_MenuTeam.m_vItems.PurgeAndDeleteElements();
     m_MenuUseless.m_vItems.PurgeAndDeleteElements();
 
-
     LoadMenuTo( m_MenuTeam, "resource/zmvoicemenu.txt" );
     LoadMenuTo( m_MenuUseless, "resource/zmvoicemenu2.txt" );
 }
@@ -248,9 +212,7 @@ bool CZMHudVoiceMenu::LoadMenuTo( ZMVoiceMenu_t& vMenu, const char* path )
         return false;
     }
 
-
     vMenu.m_bOffset = kv->GetInt( "offset" );
-
 
     KeyValues* data = kv->GetFirstSubKey();
     do
@@ -260,13 +222,11 @@ bool CZMHudVoiceMenu::LoadMenuTo( ZMVoiceMenu_t& vMenu, const char* path )
             continue;
 
         const char* pLocal = data->GetString( "name" );
-        if ( !pLocal || !(*pLocal) )
+        if ( !pLocal || !( *pLocal ) )
             continue;
 
-        
         vMenu.m_vItems.AddToTail( new ZMVoiceMenuData_t( pLocal, index ) );
-    }
-    while ( (data = data->GetNextKey()) != nullptr );
+    } while ( ( data = data->GetNextKey() ) != nullptr );
 
     return true;
 }
@@ -291,7 +251,6 @@ void CZMHudVoiceMenu::SetVisible( bool state )
 {
     if ( IsVisible() == state )
         return;
-
 
     if ( state )
     {
@@ -321,10 +280,7 @@ void CZMHudVoiceMenu::UpdateSelection()
     if ( m_flFadeOut != 0.0f )
         return;
 
-
-
     m_iCurSelection = -1;
-
 
     int mx, my;
     ::input->GetFullscreenMousePos( &mx, &my );
@@ -332,29 +288,26 @@ void CZMHudVoiceMenu::UpdateSelection()
     int cx = GetXPos() + GetWide() / 2;
     int cy = GetYPos() + GetTall() / 2;
 
-
-    Vector2D v1( (float)(mx - cx), (float)(my - cy) );
+    Vector2D v1( (float)( mx - cx ), (float)( my - cy ) );
     float length = v1.NormalizeInPlace();
 
     // The mouse is considered to be in the "center".
-    if ( length < (m_flSize*m_flInnerScale) )
+    if ( length < ( m_flSize * m_flInnerScale ) )
     {
         return;
     }
-
 
     if ( !m_pCurrentMenu )
         return;
 
     int count = m_pCurrentMenu->m_vItems.Count();
-    
+
     float dir = GetStartingAngle( count, m_pCurrentMenu->m_bOffset );
-    float jump = (M_PI_F*2) / count;
+    float jump = ( M_PI_F * 2 ) / count;
 
     for ( int i = 0; i < count; i++ )
     {
         Vector2D v2( cos( dir ), sin( dir ) );
-
 
         if ( v2.Dot( v1 ) > 0.9f )
         {
@@ -362,27 +315,25 @@ void CZMHudVoiceMenu::UpdateSelection()
             break;
         }
 
-
         dir = AngleNormalizeRadians( dir + jump );
     }
 }
 
 float CZMHudVoiceMenu::GetRadialSize()
 {
-    return MIN( m_flSize, (float)(GetWide() > GetTall() ? GetTall() : GetWide()) );
+    return MIN( m_flSize, (float)( GetWide() > GetTall() ? GetTall() : GetWide() ) );
 }
 
 float CZMHudVoiceMenu::GetStartingAngle( int nElements, bool offset ) const
 {
-    float up = -(M_PI_F/2.0f);
+    float up = -( M_PI_F / 2.0f );
 
-    return offset ? ( up - (M_PI_F*2) / nElements / 2 ) : up;
+    return offset ? ( up - ( M_PI_F * 2 ) / nElements / 2 ) : up;
 }
 
 void CZMHudVoiceMenu::BeginFadeIn( ZMVoiceMenu_t* pMenu )
 {
     m_iCurSelection = -1;
-
 
     m_pCurrentMenu = pMenu;
 
@@ -410,7 +361,6 @@ void CZMHudVoiceMenu::BeginFadeOut()
     if ( m_flFadeOut > gpGlobals->curtime )
         return;
 
-
     m_flFadeOut = gpGlobals->curtime + m_flFadeOutTime;
     m_flFadeIn = 0.0f;
 
@@ -425,7 +375,6 @@ void CZMHudVoiceMenu::PerformVoice()
     if ( !m_pCurrentMenu->m_vItems.IsValidIndex( m_iCurSelection ) )
         return;
 
-
     ZMGetVoiceLines()->SendVoiceLine( m_pCurrentMenu->m_vItems[m_iCurSelection]->m_iIndex );
 }
 
@@ -435,14 +384,14 @@ ZMVoiceMenu_t* CZMHudVoiceMenu::GetPreferredVoiceMenu( int radialIndex )
     if ( !pLocal )
         return nullptr;
 
-
     if ( pLocal->IsHuman() )
     {
         switch ( radialIndex )
         {
-        case RADIALINDEX_USELESS : return &m_MenuUseless;
-        case RADIALINDEX_TEAM :
-        default :
+        case RADIALINDEX_USELESS:
+            return &m_MenuUseless;
+        case RADIALINDEX_TEAM:
+        default:
             return &m_MenuTeam;
         }
     }
@@ -455,22 +404,19 @@ void CZMHudVoiceMenu::Paint()
     int cx = GetWide() / 2;
     int cy = GetTall() / 2;
 
-
-    
     float size = GetRadialSize();
-    
 
     int alpha = 255;
 
     if ( m_flFadeIn != 0.0f )
     {
-        alpha = (gpGlobals->curtime - m_flFadeIn) / m_flFadeInTime * 255;
+        alpha = ( gpGlobals->curtime - m_flFadeIn ) / m_flFadeInTime * 255;
         if ( alpha >= 255 )
             m_flFadeIn = 0.0f;
     }
     else if ( m_flFadeOut != 0.0f )
     {
-        alpha = (m_flFadeOut - gpGlobals->curtime) / m_flFadeOutTime * 255;
+        alpha = ( m_flFadeOut - gpGlobals->curtime ) / m_flFadeOutTime * 255;
         if ( alpha <= 0 )
         {
             SetVisible( false );
@@ -479,7 +425,6 @@ void CZMHudVoiceMenu::Paint()
     }
 
     alpha = clamp( alpha, 0, 255 );
-
 
     // Draw background
     float halfsize = size / 2;
@@ -491,25 +436,17 @@ void CZMHudVoiceMenu::Paint()
     surface()->DrawSetTexture( m_nTexBgId );
     surface()->DrawTexturedRect( cx - halfsize, cy - halfsize, cx + halfsize, cy + halfsize );
 
-
-
     size = halfsize * m_flTextPosScale;
-
 
     if ( !m_pCurrentMenu )
         return;
 
     int count = m_pCurrentMenu->m_vItems.Count();
     float dir = GetStartingAngle( count, m_pCurrentMenu->m_bOffset );
-    float jump = (M_PI_F*2) / count;
-
-
-
+    float jump = ( M_PI_F * 2 ) / count;
 
     // Draw the text
     const Color clr( 255, 255, 255, alpha );
-
-
 
     for ( int i = 0; i < count; i++ )
     {
@@ -520,7 +457,6 @@ void CZMHudVoiceMenu::Paint()
         //float rad = DEG2RAD( dir );
         vx = cos( dir );
         vy = sin( dir );
-
 
         if ( pData->m_wszCachedTxt[0] == L'\0' )
         {
@@ -534,16 +470,13 @@ void CZMHudVoiceMenu::Paint()
         int w, h;
         surface()->GetTextSize( font, txt, w, h );
 
-
         float ex = cx + vx * size;
         float ey = cy + vy * size;
 
         PaintString( font, clr, ex - w / 2, ey - h / 2, txt );
 
-
         dir = AngleNormalizeRadians( dir + jump );
     }
-
 
     // Draw separation lines
     /*
@@ -581,9 +514,8 @@ void CZMHudVoiceMenu::PaintString( const HFont font, const Color& clr, int x, in
     surface()->DrawSetTextPos( x, y );
     surface()->DrawSetTextColor( clr );
     surface()->DrawSetTextFont( font );
-	surface()->DrawUnicodeString( txt );
+    surface()->DrawUnicodeString( txt );
 }
-
 
 CON_COMMAND( zm_hud_reloadvoicemenu, "" )
 {

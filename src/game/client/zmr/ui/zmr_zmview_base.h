@@ -1,27 +1,20 @@
 #pragma once
 
-
 #include "cbase.h"
 #include "hudelement.h"
 
 #include "zmr_boxselect.h"
-#include "zmr_linetool.h"
 #include "zmr_buildmenu_base.h"
-#include "zmr_manimenu_base.h"
 #include "zmr_framepanel.h"
-
-
+#include "zmr_linetool.h"
+#include "zmr_manimenu_base.h"
 
 class C_ZMTempModel;
 
-
-#define MASK_ZMVIEW             ( CONTENTS_SOLID | CONTENTS_MOVEABLE ) // When testing box select.
-#define MASK_ZMSELECTUSABLE     ( MASK_SOLID & ~(CONTENTS_WINDOW|CONTENTS_GRATE) ) // When left clicking (not setting rallypoint, etc.)
-#define MASK_ZMTARGET           MASK_SOLID // When right clicking.
-#define MASK_ZMCREATE           MASK_SOLID // When left clicking.
-
-
-
+#define MASK_ZMVIEW         ( CONTENTS_SOLID | CONTENTS_MOVEABLE ) // When testing box select.
+#define MASK_ZMSELECTUSABLE ( MASK_SOLID & ~( CONTENTS_WINDOW | CONTENTS_GRATE ) ) // When left clicking (not setting rallypoint, etc.)
+#define MASK_ZMTARGET       MASK_SOLID // When right clicking.
+#define MASK_ZMCREATE       MASK_SOLID // When left clicking.
 
 enum ZMClickMode_t
 {
@@ -35,16 +28,13 @@ enum ZMClickMode_t
     ZMCLICKMODE_MAX
 };
 
-
 class CZMViewBase : public CHudElement, public CZMFramePanel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMViewBase, CZMFramePanel );
 
-
     CZMViewBase( const char* pElementName );
     ~CZMViewBase();
-
 
     // CHudElement
     virtual void LevelInit() override;
@@ -61,9 +51,8 @@ private:
     virtual void OnMousePressed( MouseCode code ) override;
     virtual void OnMouseDoublePressed( MouseCode code ) override;
     virtual void OnMouseWheeled( int delta ) override;
+
 public:
-
-
     virtual int ZMKeyInput( ButtonCode_t keynum, int down );
 
     virtual void CloseChildMenus();
@@ -74,21 +63,18 @@ public:
 
     void UpdateHiddenSpawnSpot( int mx, int my );
     const char* GetTempHiddenSpawnModel( ZombieClass_t zclass ) const;
+
 private:
     float m_flLastHiddenSpawnUpdate;
     wchar_t m_wszHiddenSpawnTxt[64];
     Color m_HiddenSpawnTxtColor;
+
 public:
-
-
     virtual CZMBuildMenuBase* GetBuildMenu() { return nullptr; }
     virtual CZMManiMenuBase* GetManiMenu() { return nullptr; }
 
-
-    
     ZMClickMode_t GetClickMode() const { return m_iClickMode; }
     virtual void SetClickMode( ZMClickMode_t mode, bool print = true );
-
 
     virtual float GetDoubleClickDelta() const;
     bool IsDoubleClickLeft() const;
@@ -101,21 +87,16 @@ public:
 
     bool IsInObserverMode();
 
-
     static void TraceScreenToWorld( int mx, int my, trace_t* res, CTraceFilterSimple* filter, int mask );
 
     static bool UsesZMView();
 
 protected:
-
     virtual void OnLeftClick();
     virtual void OnRightClick();
 
     virtual void OnLeftRelease();
     virtual void OnRightRelease();
-
-
-
 
     void FindZombiesInBox( int start_x, int start_y, int end_x, int end_y, bool bSticky );
     void FindZMObject( int x, int y, bool bSticky );
@@ -123,17 +104,13 @@ protected:
     void SelectZombiesOfType( ZombieClass_t zclass, bool bSticky );
     void DoMoveLine();
 
-
-
     CZMBoxSelect* GetBoxSelect() const { return m_BoxSelect; }
     CZMLineTool* GetLineTool() const { return m_LineTool; }
-
 
     C_ZMTempModel* CreateTempHiddenZombie() const;
     void FreeTempHiddenZombie();
 
     MouseCode SwitchMouseButtons( MouseCode code );
-
 
     C_ZMTempModel* m_pTempHiddenZombie;
 
@@ -143,23 +120,18 @@ private:
     float m_flLastLeftClick;
     float m_flLastRightClick;
 
-
     CZMBoxSelect* m_BoxSelect;
     CZMLineTool* m_LineTool;
-
 
     bool m_bDraggingLeft;
     bool m_bDraggingRight;
 
-
     vgui::HFont m_hCursorFont;
-
 
     // Client mode will call some of our functions.
     friend class ClientModeZMNormal;
 };
 
 extern CZMViewBase* g_pZMView;
-
 
 extern void UTIL_TraceZMView( trace_t* trace, Vector endpos, int mask, CTraceFilterSimple* filter = nullptr, C_BaseEntity* pEnt = nullptr, int collisionGroup = COLLISION_GROUP_NONE );

@@ -1,25 +1,19 @@
 #include "cbase.h"
 
-
 #include <vgui/ISurface.h>
 
 #include "zmr_mainmenu_basebtn.h"
-
 
 #include "zmr_mainmenu.h"
 #include "zmr_mainmenu_btn.h"
 #include "zmr_mainmenu_subbtn.h"
 
-
 using namespace vgui;
-
-
 
 CZMMainMenuBaseButton::CZMMainMenuBaseButton( Panel* pParent, const char* name ) : BaseClass( pParent, name, "" )
 {
     SetPaintBackgroundEnabled( false );
     SetPaintBorderEnabled( false );
-
 
     m_pImage = nullptr;
     m_iImageX = 0;
@@ -46,7 +40,6 @@ void CZMMainMenuBaseButton::Paint()
         m_pImage->SetSize( image_size, image_size );
         m_pImage->Paint();
     }
-
 
     BaseClass::Paint();
 }
@@ -83,7 +76,6 @@ void CZMMainMenuBaseButton::ApplySettings( KeyValues* in )
         }
     }
 
-
     m_nImageMargin = in->GetInt( "image_margin", 4 );
 
     // We have to layout here already to
@@ -95,7 +87,7 @@ int CZMMainMenuBaseButton::GetImageSize()
 {
     int h = GetTall();
     int image_size = h * 0.5f;
-    image_size += (image_size % 2) ? 1 : 0; // Make sure our size is even
+    image_size += ( image_size % 2 ) ? 1 : 0; // Make sure our size is even
 
     return image_size;
 }
@@ -103,8 +95,6 @@ int CZMMainMenuBaseButton::GetImageSize()
 void CZMMainMenuBaseButton::ApplySchemeSettings( IScheme* pScheme )
 {
     BaseClass::ApplySchemeSettings( pScheme );
-
-
 
     LayoutImage();
 
@@ -131,11 +121,8 @@ void CZMMainMenuBaseButton::LayoutImage()
     int image_size = GetImageSize();
     int image_y = GetTall() / 2 - image_size / 2;
 
-    
-
     int tx0, ty0, tx1, ty1;
     ComputeAlignment( tx0, ty0, tx1, ty1 );
-
 
     int image_x = tx0 - image_size - QuickPropScale( m_nImageMargin );
 
@@ -148,7 +135,6 @@ void CZMMainMenuBaseButton::LayoutImage()
 
         image_x = 0;
     }
-            
 
     m_iImageX = image_x;
     m_iImageY = image_y;

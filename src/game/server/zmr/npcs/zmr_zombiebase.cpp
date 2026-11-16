@@ -1,28 +1,26 @@
+#include "activitylist.h"
 #include "cbase.h"
+#include "collisionutils.h"
+#include "eventlist.h"
 #include "func_break.h"
 #include "npcevent.h"
-#include "activitylist.h"
-#include "eventlist.h"
-#include "collisionutils.h"
 
 #include "npcr_manager.h"
 
-#include "zmr_zombiemodelgroups.h"
-#include "zmr_gamerules.h"
-#include "zmr_blockerfinder.h"
-#include "npcs/zmr_zombieanimstate.h"
 #include "npcs/zmr_zombie_senses.h"
-#include "zmr_zombiebase.h"
-#include "zmr_softcollisions.h"
+#include "npcs/zmr_zombieanimstate.h"
 #include "npcs/zmr_zombiebase_shared.h"
 #include "sched/zmr_zombie_main.h"
+#include "zmr_blockerfinder.h"
+#include "zmr_gamerules.h"
+#include "zmr_softcollisions.h"
+#include "zmr_zombiebase.h"
+#include "zmr_zombiemodelgroups.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_zombie_flinch( "zm_sv_debug_zombie_flinch", "0", 0, "Play flinching animations every time a zombie g ets shot." );
-
 
 class CZMLOSFilter : public CTraceFilter
 {
@@ -69,15 +67,14 @@ public:
         if ( !g_pGameRules->ShouldCollide( COLLISION_GROUP_PROJECTILE, pEnt->GetCollisionGroup() ) )
             return false;
 
-
         //
         // Trace to see if we can see this entity.
         //
-        auto CantSee = [ pEnt ]( const trace_t& tr )
+        auto CantSee = [pEnt]( const trace_t& tr )
         {
             return tr.fraction != 1.0f && tr.m_pEnt != pEnt;
         };
-        
+
         trace_t tr;
         UTIL_TraceLine( m_vecAttackPos, pEnt->WorldSpaceCenter(), MASK_NPCSOLID, &m_Filter, &tr );
         if ( CantSee( tr ) )
@@ -98,8 +95,6 @@ public:
                 return false;
             }
         }
-
-
 
         bool bDamage = false;
 
@@ -126,7 +121,6 @@ public:
 
             pEnt->TakeDamage( info );
 
-
             m_vHitEnts.AddToTail( pEnt );
         }
 
@@ -134,16 +128,14 @@ public:
     }
 
 private:
-    CZMBaseZombie*              m_pAttacker;
-    const CTakeDamageInfo*      m_pDmgInfo;
-    Vector                      m_vecCenter;
-    Vector                      m_vecAttackPos;
-    CZMLOSFilter                m_Filter;
+    CZMBaseZombie* m_pAttacker;
+    const CTakeDamageInfo* m_pDmgInfo;
+    Vector m_vecCenter;
+    Vector m_vecAttackPos;
+    CZMLOSFilter m_Filter;
 
-    CUtlVector<CBaseEntity*>    m_vHitEnts;
+    CUtlVector<CBaseEntity*> m_vHitEnts;
 };
-
-
 
 int CZMBaseZombie::AE_ZOMBIE_ATTACK_RIGHT = AE_INVALID;
 int CZMBaseZombie::AE_ZOMBIE_ATTACK_LEFT = AE_INVALID;
@@ -155,21 +147,17 @@ int CZMBaseZombie::AE_ZOMBIE_ALERTSOUND = AE_INVALID;
 
 float CZMBaseZombie::g_flLastZombieSound = 0.0f;
 
-
-
 ConVar zm_sv_swatmaxmass( "zm_sv_swatmaxmass", "200", FCVAR_NOTIFY );
 ConVar zm_sv_swatlift( "zm_sv_swatlift", "20000", FCVAR_NOTIFY, "How much upward force is applied to the swatted prop." );
 ConVar zm_sv_swatforcemin( "zm_sv_swatforcemin", "20000", FCVAR_NOTIFY, "Minimum amount of force applied to the swatted prop." );
 ConVar zm_sv_swatforcemax( "zm_sv_swatforcemax", "50000", FCVAR_NOTIFY, "Maximum amount of force applied to the swatted prop." ); // Originally 70000
 ConVar zm_sv_swatangvel( "zm_sv_swatangvel", "1000", FCVAR_NOTIFY, "Amount of angular velocity swatting applies to prop." );
 
-
 ConVar zm_sv_swat_scan_target_maxdist( "zm_sv_swat_scan_target_maxdist", "512", FCVAR_NOTIFY, "How far our target (enemy) can be for us to swat objects." );
 ConVar zm_sv_swat_scan_def_maxdist( "zm_sv_swat_scan_def_maxdist", "128", FCVAR_NOTIFY, "If no enemy, how far do we look for objects." );
 
 ConVar zm_sv_defense_chase_dist( "zm_sv_defense_chase_dist", "333", FCVAR_NOTIFY, "Zombies will begin chasing if enemy is closer than this." );
 ConVar zm_sv_defense_goal_tolerance( "zm_sv_defense_goal_tolerance", "64", FCVAR_NOTIFY, "How close is 'home' for a zombie going back to the spot being defended." );
-
 
 ConVar zm_sv_debug_zombieattack( "zm_sv_debug_zombieattack", "0" );
 ConVar zm_sv_debug_shotgun_dmgmult( "zm_sv_debug_shotgun_dmgmult", "0" );
@@ -178,13 +166,9 @@ ConVar zm_sv_zombiesoftcollisions( "zm_sv_zombiesoftcollisions", "1", FCVAR_NOTI
 
 ConVar zm_sv_zombie_stepheight( "zm_sv_zombie_stepheight", "17", FCVAR_NOTIFY, "The default zombie step height." );
 
-
 extern ConVar zm_sk_default_hitmult_head;
 extern ConVar zm_sk_default_hitmult_head_buckshot;
 extern ConVar zm_sk_default_hitmult_head_buckshot_dist;
-
-
-
 
 IMPLEMENT_SERVERCLASS_ST( CZMBaseZombie, DT_ZM_BaseZombie )
     // Send low-resolution
@@ -200,7 +184,6 @@ IMPLEMENT_SERVERCLASS_ST( CZMBaseZombie, DT_ZM_BaseZombie )
     SendPropExclude( "DT_BaseCombatCharacter", "m_hActiveWeapon" ),
     SendPropExclude( "DT_BaseCombatCharacter", "m_hMyWeapons" ),
 
-
     SendPropInt( SENDINFO( m_iSelectorIndex ) ),
     SendPropFloat( SENDINFO( m_flHealthRatio ) ),
     SendPropBool( SENDINFO( m_bIsOnGround ) ),
@@ -209,16 +192,15 @@ IMPLEMENT_SERVERCLASS_ST( CZMBaseZombie, DT_ZM_BaseZombie )
 
     SendPropInt( SENDINFO( m_iGibType ), Q_log2( ZMGIBTYPE_MAX ) + 1, SPROP_UNSIGNED ),
 
-
     // Animation excludes
     SendPropExclude( "DT_BaseAnimating", "m_flPoseParameter" ),
-    SendPropExclude( "DT_BaseAnimating", "m_flPlaybackRate" ),	
+    SendPropExclude( "DT_BaseAnimating", "m_flPlaybackRate" ),
     SendPropExclude( "DT_BaseAnimating", "m_nSequence" ),
     SendPropExclude( "DT_BaseAnimatingOverlay", "overlay_vars" ),
 
     // Animstate and clientside animation takes care of these on the client
-    SendPropExclude( "DT_ServerAnimationData" , "m_flCycle" ),	
-    SendPropExclude( "DT_AnimTimeMustBeFirst" , "m_flAnimTime" ),
+    SendPropExclude( "DT_ServerAnimationData", "m_flCycle" ),
+    SendPropExclude( "DT_AnimTimeMustBeFirst", "m_flAnimTime" ),
 
     SendPropExclude( "DT_BaseFlex", "m_flexWeight" ),
     SendPropExclude( "DT_BaseFlex", "m_blinktoggle" ),
@@ -229,10 +211,8 @@ BEGIN_DATADESC( CZMBaseZombie )
     DEFINE_KEYFIELD( m_strModelGroup, FIELD_STRING, "modelgroup" ),
 END_DATADESC()
 
-
 CZMBaseZombieMotor::CZMBaseZombieMotor( CZMBaseZombie* pOuter ) : NPCR::CNonPlayerMotor( pOuter )
 {
-    
 }
 
 float CZMBaseZombieMotor::GetStepHeight() const
@@ -245,7 +225,6 @@ float CZMBaseZombieMotor::GetYawRate( float delta ) const
 {
     return RemapValClamped( fabsf( delta ), 0.0f, 60.0f, 20.0f, 200.0f );
 }
-
 
 CZMBaseZombie::CZMBaseZombie( ZombieClass_t zclass )
 {
@@ -260,24 +239,20 @@ CZMBaseZombie::CZMBaseZombie( ZombieClass_t zclass )
     m_pBlockerScanner = nullptr;
     m_iZombieMode = ZOMBIEMODE_OFFENSIVE;
 
-
     m_iSelectorIndex = 0;
     m_flHealthRatio = 1.0f;
     m_bIsOnGround = false;
     static int randomseed = 0;
-    randomseed = (randomseed + 1) % 50;
+    randomseed = ( randomseed + 1 ) % 50;
     m_iAnimationRandomSeed = (int)gpGlobals->curtime + randomseed;
-    
+
     m_iAdditionalAnimRandomSeed = 0;
 
     m_iGibType = ZMGIBTYPE_NONE;
 
-
     m_hAmbushEnt.Set( nullptr );
 
-
     m_flNextMove = 0.0f;
-
 
     m_flBurnDamage = 0.0f;
     m_flBurnDamageTime = 0.0f;
@@ -285,11 +260,9 @@ CZMBaseZombie::CZMBaseZombie( ZombieClass_t zclass )
     m_flNextIdleSound = 0.0f;
     m_flNextPainSound = 0.0f;
 
-
     m_strModelGroup = NULL_STRING;
 
     ChangeTeam( ZMTEAM_ZM );
-
 
     g_ZombieManager.AddZombie( this );
 
@@ -313,7 +286,6 @@ CZMBaseZombie::~CZMBaseZombie()
         m_pBlockerScanner = nullptr;
     }
 
-
     RemoveFromAmbush( true );
 
     g_ZombieManager.RemoveZombie( this );
@@ -331,9 +303,7 @@ bool CZMBaseZombie::CreateComponents()
     if ( !m_pAnimState )
         return false;
 
-
     m_pBlockerScanner = CreateBlockerScanner();
-    
 
     return true;
 }
@@ -373,10 +343,8 @@ void CZMBaseZombie::Precache()
     PrecacheScriptSound( "NPC_BaseZombie.PoundDoor" );
     PrecacheScriptSound( "NPC_BaseZombie.Swat" );
 
-
     PrecacheScriptSound( "BaseCombatCharacter.CorpseGib" );
     PrecacheScriptSound( "NPC_Antlion.RunOverByVehicle" );
-
 
     REGISTER_PRIVATE_ANIMEVENT( AE_ZOMBIE_ATTACK_RIGHT );
     REGISTER_PRIVATE_ANIMEVENT( AE_ZOMBIE_ATTACK_LEFT );
@@ -391,13 +359,10 @@ void CZMBaseZombie::Spawn()
 {
     g_ZombieModelGroups.OnZombieSpawn( this );
 
-
     BaseClass::Spawn();
-
 
     SetThink( &CZMBaseZombie::ZombieThink );
     SetNextThink( gpGlobals->curtime );
-
 
     AddSolidFlags( FSOLID_NOT_STANDABLE );
 }
@@ -425,7 +390,6 @@ void CZMBaseZombie::ZombieThink()
 {
     VPROF_BUDGET( "CZMBaseZombie::ZombieThink", "NPCR" );
 
-
     m_pAnimState->Update();
 
     BaseClass::NPCThink();
@@ -434,7 +398,6 @@ void CZMBaseZombie::ZombieThink()
 void CZMBaseZombie::PreUpdate()
 {
     BaseClass::PreUpdate();
-
 
     if ( ShouldPlayIdleSound() )
     {
@@ -448,9 +411,7 @@ void CZMBaseZombie::PostUpdate()
 {
     BaseClass::PostUpdate();
 
-
     m_bIsOnGround = GetMotor()->IsOnGround();
-
 
     m_CmdQueue.UpdateExpire();
 }
@@ -507,19 +468,18 @@ void CZMBaseZombie::HandleAnimEvent( animevent_t* pEvent )
     BaseClass::HandleAnimEvent( pEvent );
 }
 
-bool CZMBaseZombie::Event_Gibbed( const CTakeDamageInfo &info )
+bool CZMBaseZombie::Event_Gibbed( const CTakeDamageInfo& info )
 {
     CorpseGib( info );
 
     return true;
 }
 
-bool CZMBaseZombie::CorpseGib( const CTakeDamageInfo &info )
+bool CZMBaseZombie::CorpseGib( const CTakeDamageInfo& info )
 {
     // ZMRTODO: Combine these into one single sound.
     EmitSound( "BaseCombatCharacter.CorpseGib" );
     EmitSound( "NPC_Antlion.RunOverByVehicle" );
-
 
     // ZMRTODO: Make sure CanBecomeRagdoll always return true!!!
     if ( !BecomeRagdollOnClient( vec3_origin ) )
@@ -538,7 +498,6 @@ bool CZMBaseZombie::ShouldGib( const CTakeDamageInfo& info )
 {
     if ( info.GetDamageType() & DMG_ALWAYSGIB ) return true;
 
-
     return BaseClass::ShouldGib( info );
 }
 
@@ -553,7 +512,6 @@ void CZMBaseZombie::Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, 
 {
     // We are an NPC! :/
     bNPCOnly = false;
-
 
     if ( !IsOnFire() && IsAlive() )
     {
@@ -613,7 +571,7 @@ bool CZMBaseZombie::HasConditionsForClawAttack( CBaseEntity* pEnemy ) const
 {
     // Not close enough in XY?
     float dist = GetClawAttackRange();
-    if ( pEnemy->GetAbsOrigin().AsVector2D().DistToSqr( GetAbsOrigin().AsVector2D() ) > (dist*dist) )
+    if ( pEnemy->GetAbsOrigin().AsVector2D().DistToSqr( GetAbsOrigin().AsVector2D() ) > ( dist * dist ) )
         return false;
 
     float up_z = GetAbsOrigin().z + GetAttackHeight();
@@ -624,7 +582,6 @@ bool CZMBaseZombie::HasConditionsForClawAttack( CBaseEntity* pEnemy ) const
     float down_z = GetAbsOrigin().z + GetAttackLowest() - pEnemy->CollisionProp()->OBBMaxs().z;
     if ( pEnemy->GetAbsOrigin().z < down_z )
         return false;
-
 
     return true;
 }
@@ -639,7 +596,6 @@ CBaseEntity* CZMBaseZombie::ClawAttack( float flDist, float flDamage, const QAng
     Vector vecMins, vecMaxs;
     GetAttackHull( vecMins, vecMaxs );
     Assert( vecMaxs.z > vecMins.z );
-
 
     CUtlVector<CBaseEntity*> vHitEnts;
     bool bHit = MeleeAttackTrace( vecMins, vecMaxs, flDist, flDamage, DMG_SLASH, &vHitEnts );
@@ -679,10 +635,8 @@ CBaseEntity* CZMBaseZombie::ClawAttack( float flDist, float flDamage, const QAng
 
     ClawImpactSound( bHit );
 
-
     // Tell our components we just attacked.
     OnAttacked();
-
 
     return nullptr;
 }
@@ -695,7 +649,7 @@ bool CZMBaseZombie::MeleeAttackTrace(
     const Vector* vecDir )
 {
     const Vector vecStart = GetAbsOrigin();
-    
+
     Vector fwd;
     if ( vecDir )
     {
@@ -710,20 +664,18 @@ bool CZMBaseZombie::MeleeAttackTrace(
 
     const Vector vecEnd = vecStart + fwd * flDist;
 
-
-    CTakeDamageInfo	info( this, this, flDamage, iDmgType );
+    CTakeDamageInfo info( this, this, flDamage, iDmgType );
 
     CZMMeleeFilter filter( this, MASK_SHOT_HULL, info );
 
     trace_t tr;
     UTIL_TraceHull( vecStart, vecEnd, vecMins, vecMaxs, MASK_SHOT_HULL, &filter, &tr );
 
-
     bool bDidHit = filter.DidHit();
 
     if ( zm_sv_debug_zombieattack.GetBool() )
     {
-        NDebugOverlay::SweptBox( vecStart, vecEnd, vecMins, vecMaxs, vec3_angle, bDidHit ? 255 : 0, (!bDidHit) ? 255 : 0, 0, 0, 1.0f );
+        NDebugOverlay::SweptBox( vecStart, vecEnd, vecMins, vecMaxs, vec3_angle, bDidHit ? 255 : 0, ( !bDidHit ) ? 255 : 0, 0, 0, 1.0f );
     }
 
     if ( vHitEnts )
@@ -748,7 +700,7 @@ bool CZMBaseZombie::CanSwatObject( CBaseEntity* pEnt )
 {
     if ( !pEnt )
         return false;
-    
+
     if ( pEnt->MyCombatCharacterPointer() != nullptr )
         return false;
 
@@ -765,13 +717,11 @@ bool CZMBaseZombie::CanSwatObject( CBaseEntity* pEnt )
     //if ( FClassnameIs( pEnt, "func_breakable_surf" ) )
     //    return false;
 
-
     // If we're a physics object that moves, sure.
     IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
-    
+
     if ( !pPhys )
         return false;
-
 
     return pPhys->IsMoveable() && pPhys->GetMass() < GetSwatMaxMass();
 }
@@ -802,18 +752,16 @@ bool CZMBaseZombie::CanBreakObject( CBaseEntity* pEnt, bool bSwat ) const
         if ( pPhys->GetGameFlags() & FVPHYSICS_PLAYER_HELD )
             return true;
     }
-        
 
     return false;
 }
 
-#define ZOMBIE_BUCKSHOT_TRIPLE_DAMAGE_DIST	96.0f // Triple damage from buckshot at 8 feet (headshot only)
+#define ZOMBIE_BUCKSHOT_TRIPLE_DAMAGE_DIST 96.0f // Triple damage from buckshot at 8 feet (headshot only)
 
 void CZMBaseZombie::TraceAttack( const CTakeDamageInfo& inputInfo, const Vector& vecDir, trace_t* pTrace, CDmgAccumulator* pAccumulator )
 {
     // The force bone will be used for proper ragdolling.
     m_nForceBone = pTrace->physicsbone;
-
 
     if ( zm_sv_debug_zombie_flinch.GetBool() )
     {
@@ -831,13 +779,9 @@ void CZMBaseZombie::TraceAttack( const CTakeDamageInfo& inputInfo, const Vector&
         }
     }
 
-
-
     CTakeDamageInfo info = inputInfo;
 
     ScaleDamageByHitgroup( pTrace->hitgroup, info );
-
-
 
     BaseClass::TraceAttack( info, vecDir, pTrace, pAccumulator );
 }
@@ -848,28 +792,27 @@ bool CZMBaseZombie::ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info 
     if ( info.GetDamageType() & DMG_BLAST )
         return true;
 
-
     switch ( iHitGroup )
     {
-    case HITGROUP_HEAD :
+    case HITGROUP_HEAD:
+    {
+        // Shotgun scales damage differently.
+        if ( info.GetDamageType() & DMG_BUCKSHOT )
         {
-            // Shotgun scales damage differently.
-            if ( info.GetDamageType() & DMG_BUCKSHOT )
-            {
-                MultiplyBuckshotDamage( info );
-            }
-            // ZMRTODO: This random shit really has to go.
-            else if ( info.GetDamageType() & DMG_CLUB )
-            {
-                info.ScaleDamage( random->RandomFloat( 1.9f, 3.0f ) );
-            }
-            else
-            {
-                info.ScaleDamage( zm_sk_default_hitmult_head.GetFloat() );
-            }
-
-            return true;
+            MultiplyBuckshotDamage( info );
         }
+        // ZMRTODO: This random shit really has to go.
+        else if ( info.GetDamageType() & DMG_CLUB )
+        {
+            info.ScaleDamage( random->RandomFloat( 1.9f, 3.0f ) );
+        }
+        else
+        {
+            info.ScaleDamage( zm_sk_default_hitmult_head.GetFloat() );
+        }
+
+        return true;
+    }
     }
 
     return false;
@@ -880,10 +823,8 @@ void CZMBaseZombie::MultiplyBuckshotDamage( CTakeDamageInfo& info ) const
     CBaseEntity* pAttacker = info.GetAttacker();
     if ( !pAttacker ) return;
 
-
     const Vector startpos = pAttacker->EyePosition();
     const Vector hitpos = info.GetDamagePosition();
-
 
     float flDistSqr = startpos.DistToSqr( hitpos );
 
@@ -893,14 +834,12 @@ void CZMBaseZombie::MultiplyBuckshotDamage( CTakeDamageInfo& info ) const
     // We need to be close enough to do more damage.
     const bool bScaleDmg = flDistSqr < flDmgDistSqr;
 
-
     if ( zm_sv_debug_shotgun_dmgmult.GetBool() )
     {
         float t = zm_sv_debug_shotgun_dmgmult.GetFloat();
         NDebugOverlay::Axis( hitpos, vec3_angle, 2.0f, true, t );
-        NDebugOverlay::Line( startpos, hitpos, (!bScaleDmg) ? 255 : 0, bScaleDmg ? 255 : 0, 0, true, t );
+        NDebugOverlay::Line( startpos, hitpos, ( !bScaleDmg ) ? 255 : 0, bScaleDmg ? 255 : 0, 0, true, t );
     }
-
 
     if ( bScaleDmg )
     {
@@ -916,28 +855,26 @@ void CZMBaseZombie::Event_Killed( const CTakeDamageInfo& info )
     BaseClass::Event_Killed( info );
 }
 
-#define ZOMBIE_BULLET_DAMAGE_SCALE  0.5f
+#define ZOMBIE_BULLET_DAMAGE_SCALE 0.5f
 
-#define ZOMBIE_SCORCH_RATE          8
-#define ZOMBIE_MIN_RENDERCOLOR      50
+#define ZOMBIE_SCORCH_RATE     8
+#define ZOMBIE_MIN_RENDERCOLOR 50
 int CZMBaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo& inputInfo )
 {
     CTakeDamageInfo info = inputInfo;
 
-    
     if ( info.GetDamageType() & DMG_BURN )
     {
         // If a zombie is on fire it only takes damage from the fire that's attached to it. (DMG_DIRECT)
         // This is to stop zombies from burning to death 10x faster when they're standing around
         // 10 fire entities.
-        if( IsOnFire() && !(info.GetDamageType() & DMG_DIRECT) )
+        if ( IsOnFire() && !( info.GetDamageType() & DMG_DIRECT ) )
         {
             return 0;
         }
-        
+
         //Scorch( ZOMBIE_SCORCH_RATE, ZOMBIE_MIN_RENDERCOLOR );
     }
-    
 
     if ( ShouldIgnite( info ) )
     {
@@ -945,7 +882,7 @@ int CZMBaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo& inputInfo )
     }
 
     // Take some percentage of damage from bullets (unless hit in the crab). Always take full buckshot & sniper damage
-    if ( info.GetDamageType() & DMG_BULLET && !(info.GetDamageType() & (DMG_BUCKSHOT/*|DMG_SNIPER*/)) )
+    if ( info.GetDamageType() & DMG_BULLET && !( info.GetDamageType() & ( DMG_BUCKSHOT /*|DMG_SNIPER*/ ) ) )
     {
         info.ScaleDamage( ZOMBIE_BULLET_DAMAGE_SCALE );
     }
@@ -954,9 +891,8 @@ int CZMBaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo& inputInfo )
 
     if ( tookDamage )
     {
-        m_flHealthRatio = m_iHealth / (float)(m_iMaxHealth > 0 ? m_iMaxHealth : 1);
+        m_flHealthRatio = m_iHealth / (float)( m_iMaxHealth > 0 ? m_iMaxHealth : 1 );
     }
-
 
     if ( ShouldPlayPainSound( info ) )
     {
@@ -964,7 +900,6 @@ int CZMBaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo& inputInfo )
 
         m_flNextPainSound = gpGlobals->curtime + delay;
     }
-
 
     return tookDamage;
 }
@@ -983,7 +918,7 @@ bool CZMBaseZombie::ShouldIgnite( const CTakeDamageInfo& info )
         // If we take more than ten percent of our health in burn damage within a five
         // second interval, we should catch on fire.
         //
-        if ( (m_flBurnDamageTime + 5.0f) < gpGlobals->curtime )
+        if ( ( m_flBurnDamageTime + 5.0f ) < gpGlobals->curtime )
         {
             m_flBurnDamage = 0.0f;
         }
@@ -991,7 +926,7 @@ bool CZMBaseZombie::ShouldIgnite( const CTakeDamageInfo& info )
         m_flBurnDamage += info.GetDamage();
         m_flBurnDamageTime = gpGlobals->curtime;
 
-        if ( m_flBurnDamage >= (m_iMaxHealth * 0.1f) )
+        if ( m_flBurnDamage >= ( m_iMaxHealth * 0.1f ) )
         {
             return true;
         }
@@ -1006,11 +941,9 @@ bool CZMBaseZombie::Swat( CZMPlayer* pZM, CBaseEntity* pSwat, bool bBreak )
 
     if ( !CanSwatPhysicsObjects() && !bBreak ) return false;
 
-
     m_hSwatObject.Set( pSwat );
 
     //m_bSwatBreakable = bBreak;
-
 
     m_CmdQueue.QueueCommand( new CZMCommandSwat( pZM, pSwat, bBreak ) );
     OnQueuedCommand( pZM, COMMAND_SWAT );
@@ -1025,11 +958,9 @@ bool CZMBaseZombie::SwatObject( CBaseEntity* pSwat )
     if ( !pSwat )
         return false;
 
-
     IPhysicsObject* pPhys = pSwat->VPhysicsGetObject();
     if ( !pPhys )
         return false;
-
 
     Vector dir;
     CBaseEntity* pEnemy = GetEnemy();
@@ -1045,25 +976,22 @@ bool CZMBaseZombie::SwatObject( CBaseEntity* pSwat )
         AngleVectors( QAngle( 0.0f, EyeAngles().y, 0.0f ), &dir );
     }
 
-
     int mass = pPhys->GetMass();
 
     Vector uplift = Vector( 0, 0, RemapVal( mass, 5, 350, 3000, zm_sv_swatlift.GetFloat() ) );
 
     float force = RemapVal( mass, 5, 500, zm_sv_swatforcemin.GetFloat(), zm_sv_swatforcemax.GetFloat() );
 
-
     //if ( pPhys->IsAsleep() && pPhys->IsMotionEnabled() )
     //{
     //    pPhys->Wake();
     //}
 
-
     // Force the player to drop it!
     if ( pPhys->GetGameFlags() & FVPHYSICS_PLAYER_HELD )
     {
         auto* pPlayer = ToZMPlayer( pSwat->GetOwnerEntity() );
-        
+
         if ( pPlayer )
         {
             pPlayer->ForceDropOfCarriedPhysObjects( pSwat );
@@ -1072,8 +1000,6 @@ bool CZMBaseZombie::SwatObject( CBaseEntity* pSwat )
 
     pPhys->ApplyForceCenter( dir * force + uplift );
 
-
-            
     // Add a bit of spin so it doesn't look boring.
     float f = zm_sv_swatangvel.GetFloat();
 
@@ -1086,7 +1012,6 @@ bool CZMBaseZombie::SwatObject( CBaseEntity* pSwat )
 
         pPhys->AddVelocity( nullptr, &angvel );
     }
-
 
     return true;
 }
@@ -1123,13 +1048,10 @@ bool CZMBaseZombie::CanSpawn( const Vector& vecPos ) const
     mins.x = mins.y = -maxs.x;
     mins.z = 0.0f;
 
-
     UTIL_TraceHull( vecPos, up, mins, maxs, MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &trace );
-
 
     return trace.fraction == 1.0f;
 }
-
 
 void CZMBaseZombie::SetAmbush( CZMEntAmbushTrigger* pTrigger )
 {
@@ -1145,7 +1067,6 @@ void CZMBaseZombie::RemoveFromAmbush( bool bRemoveFromAmbushEnt )
     }
 
     m_hAmbushEnt.Set( nullptr );
-
 
     SetZombieMode( ZOMBIEMODE_OFFENSIVE );
 }
@@ -1165,7 +1086,7 @@ NPCR::CFollowNavPath* CZMBaseZombie::GetFollowPath() const
 
 NPCR::QueryResult_t CZMBaseZombie::ShouldChase( CBaseEntity* pEnemy ) const
 {
-    if ( (gpGlobals->curtime - GetLastTimeCommanded()) < 1.0f )
+    if ( ( gpGlobals->curtime - GetLastTimeCommanded() ) < 1.0f )
         return NPCR::RES_NO;
 
     return BaseClass::ShouldChase( pEnemy );
@@ -1179,22 +1100,18 @@ NPCR::QueryResult_t CZMBaseZombie::ShouldTouch( CBaseEntity* pEnt ) const
     {
         auto* pFuncBrush = dynamic_cast<CFuncBrush*>( pEnt );
 
-
         // Should we bother doing classname and name matching at all?
-        bool bShouldCheck = pFuncBrush ? (pFuncBrush->m_iszExcludedClass != NULL_STRING || pFuncBrush->m_bInvertExclusion) : false;
-
+        bool bShouldCheck = pFuncBrush ? ( pFuncBrush->m_iszExcludedClass != NULL_STRING || pFuncBrush->m_bInvertExclusion ) : false;
 
         if ( pFuncBrush && bShouldCheck )
         {
             auto* pMe = const_cast<CZMBaseZombie*>( this );
-            
 
             bool bMatches;
 
             bool bClassMatch = pMe->ClassMatches( pFuncBrush->m_iszExcludedClass );
             // Have a name? Try comparing that also.
             bool bNameMatch = STRING( pMe->GetEntityName() )[0] != '\0' && pMe->NameMatches( pFuncBrush->m_iszExcludedClass );
-            
 
             bMatches = bClassMatch || bNameMatch;
 
@@ -1210,7 +1127,6 @@ NPCR::QueryResult_t CZMBaseZombie::ShouldTouch( CBaseEntity* pEnt ) const
     {
         NPCR::CBaseNPC* pOther = pEnt->MyNPCRPointer();
 
-
         if ( zm_sv_zombiesoftcollisions.GetBool() )
         {
             GetZMSoftCollisions()->OnZombieCollide(
@@ -1219,7 +1135,6 @@ NPCR::QueryResult_t CZMBaseZombie::ShouldTouch( CBaseEntity* pEnt ) const
 
             return NPCR::RES_NO;
         }
-
 
         // If we're inside each other, don't collide
         const Vector vecMyPos = GetAbsOrigin();
@@ -1231,7 +1146,6 @@ NPCR::QueryResult_t CZMBaseZombie::ShouldTouch( CBaseEntity* pEnt ) const
         mymins.x = mymins.y = -mymaxs.x;
         mymins.z = 0.0f;
 
-
         otmaxs.x = otmaxs.y = pOther->GetMotor()->GetHullWidth() / 2.0f;
         otmaxs.z = pOther->GetMotor()->GetHullHeight();
         otmins.x = otmins.y = -otmaxs.x;
@@ -1239,11 +1153,10 @@ NPCR::QueryResult_t CZMBaseZombie::ShouldTouch( CBaseEntity* pEnt ) const
 
         mymins += vecMyPos;
         mymaxs += vecMyPos;
-        
+
         otmins += vecEntPos;
         otmaxs += vecEntPos;
 
-        
         if ( IsBoxIntersectingBox( mymins, mymaxs, otmins, otmaxs ) )
             return NPCR::RES_NO;
     }
@@ -1259,9 +1172,8 @@ float CZMBaseZombie::GetMoveActivityMovementSpeed()
 bool CZMBaseZombie::ShouldPlayIdleSound() const
 {
     // Don't spam zombie sounds.
-    if ( (g_flLastZombieSound + 0.05f) > gpGlobals->curtime )
+    if ( ( g_flLastZombieSound + 0.05f ) > gpGlobals->curtime )
         return false;
-
 
     if ( m_lifeState != LIFE_ALIVE )
         return false;
@@ -1272,14 +1184,13 @@ bool CZMBaseZombie::ShouldPlayIdleSound() const
     if ( m_flNextIdleSound > gpGlobals->curtime )
         return false;
 
-
     return true;
 }
 
 bool CZMBaseZombie::ShouldPlayPainSound( const CTakeDamageInfo& info ) const
 {
     // Don't spam zombie sounds.
-    if ( (g_flLastZombieSound + 0.05f) > gpGlobals->curtime )
+    if ( ( g_flLastZombieSound + 0.05f ) > gpGlobals->curtime )
         return false;
 
     if ( m_flNextPainSound > gpGlobals->curtime )
@@ -1305,11 +1216,12 @@ void CZMBaseZombie::GetAnimRandomSeed( int iEvent, int& nData )
     static int randomseed = 0;
     switch ( iEvent )
     {
-    case ZOMBIEANIMEVENT_IDLE :
-    case ZOMBIEANIMEVENT_ATTACK :
-    case ZOMBIEANIMEVENT_ON_BURN :
-    case ZOMBIEANIMEVENT_ON_EXTINGUISH :
-        nData = ( randomseed = (randomseed + 1) % 50 );
-    default : break;
+    case ZOMBIEANIMEVENT_IDLE:
+    case ZOMBIEANIMEVENT_ATTACK:
+    case ZOMBIEANIMEVENT_ON_BURN:
+    case ZOMBIEANIMEVENT_ON_EXTINGUISH:
+        nData = ( randomseed = ( randomseed + 1 ) % 50 );
+    default:
+        break;
     }
 }

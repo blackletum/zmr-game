@@ -1,30 +1,28 @@
 #include "cbase.h"
 
-#include "npcevent.h"
 #include "eventlist.h"
+#include "npcevent.h"
 
 #include "in_buttons.h"
 
 #ifndef CLIENT_DLL
 #include "fire.h"
-#include "smoke_trail.h"
 #include "gib.h"
 #include "props.h"
+#include "smoke_trail.h"
 #endif
 
-#include "zmr_shareddefs.h"
 #include "zmr_basethrowable.h"
-
+#include "zmr_shareddefs.h"
 
 #include "zmr_player_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define MOLOTOV_RADIUS 4.0f
 
-#define MOLOTOV_RADIUS      4.0f
-
-#define MOLOTOV_FIRE_SPRITE         "sprites/fire_vm_grey.vmt"
+#define MOLOTOV_FIRE_SPRITE "sprites/fire_vm_grey.vmt"
 
 #ifdef CLIENT_DLL
 #define CZMWeaponMolotov C_ZMWeaponMolotov
@@ -33,28 +31,25 @@
 class CZMWeaponMolotov : public CZMBaseThrowableWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponMolotov, CZMBaseThrowableWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponMolotov, CZMBaseThrowableWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponMolotov();
     ~CZMWeaponMolotov();
 
 #ifndef CLIENT_DLL
     void Operator_HandleAnimEvent( animevent_t*, CBaseCombatCharacter* ) override;
-    void HandleAnimEvent( animevent_t *pEvent ) override;
+    void HandleAnimEvent( animevent_t* pEvent ) override;
 #else
     bool OnFireEvent( C_BaseViewModel*, const Vector&, const QAngle&, int event, const char* ) override;
-
 
     //void ViewModelDrawn( C_BaseViewModel* ) override;
 
     //CMaterialReference m_matClothFlame;
 
-
     //bool m_bClothFlame;
 #endif
-
 
     void Precache() override;
     void PrimaryAttack() override;
@@ -62,7 +57,7 @@ public:
     bool Holster( CBaseCombatWeapon* pSwitchTo = nullptr ) override;
 
     void HandleAnimEventLight();
-    
+
     virtual const char* GetProjectileClassname() const override;
 
 #ifdef CLIENT_DLL
@@ -91,7 +86,6 @@ CZMWeaponMolotov::CZMWeaponMolotov()
 {
     SetSlotFlag( ZMWEAPONSLOT_EQUIPMENT );
     SetConfigSlot( ZMWeaponConfig::ZMCONFIGSLOT_MOLOTOV );
-
 
 #ifdef CLIENT_DLL
     //m_bClothFlame = false;
@@ -171,7 +165,6 @@ void CZMWeaponMolotov::PrimaryAttack()
     // No arming in water :(
     if ( pPlayer->GetWaterLevel() >= 2 ) return;
 
-    
     SendWeaponAnim( ACT_VM_PRIMARYATTACK_1 );
     m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + SequenceDuration();
 
@@ -185,11 +178,9 @@ void CZMWeaponMolotov::HandleAnimEventLight()
         return;
     }
 
-
     CZMPlayer* pPlayer = GetPlayerOwner();
 
     if ( !pPlayer ) return;
-
 
     SetThrowState( THROWSTATE_DRAW_BACK );
 
@@ -204,17 +195,17 @@ const char* CZMWeaponMolotov::GetProjectileClassname() const
 }
 
 #ifndef CLIENT_DLL
-void CZMWeaponMolotov::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
+void CZMWeaponMolotov::Operator_HandleAnimEvent( animevent_t* pEvent, CBaseCombatCharacter* pOperator )
 {
-	switch( pEvent->event )
-	{
-	case EVENT_WEAPON_SEQUENCE_FINISHED :
-		HandleAnimEventLight();
-		break;
-	default:
-		BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
-		break;
-	}
+    switch ( pEvent->event )
+    {
+    case EVENT_WEAPON_SEQUENCE_FINISHED:
+        HandleAnimEventLight();
+        break;
+    default:
+        BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
+        break;
+    }
 }
 
 void CZMWeaponMolotov::HandleAnimEvent( animevent_t* pEvent )
@@ -247,14 +238,14 @@ void CZMWeaponMolotov::HandleAnimEvent( animevent_t* pEvent )
 #else
 bool CZMWeaponMolotov::OnFireEvent( C_BaseViewModel* pViewModel, const Vector& origin, const QAngle& angles, int event, const char* options )
 {
-	switch( event )
-	{
-	case EVENT_WEAPON_SEQUENCE_FINISHED :
-		HandleAnimEventLight();
-		return true;
-    case AE_ZM_LIGHTERFLAME :
+    switch ( event )
+    {
+    case EVENT_WEAPON_SEQUENCE_FINISHED:
+        HandleAnimEventLight();
         return true;
-    case AE_ZM_CLOTHFLAME :
+    case AE_ZM_LIGHTERFLAME:
+        return true;
+    case AE_ZM_CLOTHFLAME:
         // Toggle cloth flame.
         if ( m_hClothFlameParticle != nullptr )
         {
@@ -266,13 +257,12 @@ bool CZMWeaponMolotov::OnFireEvent( C_BaseViewModel* pViewModel, const Vector& o
             CBaseViewModel* pVM = pPlayer ? pPlayer->GetViewModel() : nullptr;
             if ( pVM )
             {
-                 m_hClothFlameParticle = pVM->ParticleProp()->Create( "molotov_clothflame", ParticleAttachment_t::PATTACH_POINT_FOLLOW, "clothflame" );
+                m_hClothFlameParticle = pVM->ParticleProp()->Create( "molotov_clothflame", ParticleAttachment_t::PATTACH_POINT_FOLLOW, "clothflame" );
             }
         }
 
-
         return true;
-	}
+    }
 
     return false;
 }

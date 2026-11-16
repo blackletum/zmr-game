@@ -3,7 +3,6 @@
 #include "zmr_gamerules.h"
 #include "zmr_objectives.h"
 
-
 struct ObjInputData_t
 {
 public:
@@ -48,25 +47,20 @@ public:
     DECLARE_CLASS( CZMEntObjectivesManager, CServerOnlyPointEntity )
     DECLARE_DATADESC()
 
-
     CZMEntObjectivesManager();
     ~CZMEntObjectivesManager();
 
-
     void Spawn( void ) override;
-    
 
     static void Display( CZMEntObjectives* pObj, CBaseEntity* pActivator = nullptr, ObjRecipient_t rec = OBJRECIPIENT_INVALID );
     static void Update( CZMEntObjectives* pObj, CBaseEntity* pActivator = nullptr, ObjRecipient_t rec = OBJRECIPIENT_INVALID );
     static void UpdateLine( CZMEntObjectives* pObj, int line, CBaseEntity* pActivator = nullptr, ObjRecipient_t rec = OBJRECIPIENT_INVALID );
     void ChangeDisplay( CZMPlayer* );
 
-
     void InitObjectiveEntities();
     void RoundStart();
 
     static void ResetObjectives();
-
 
     inline bool IsLoaded() { return m_bLoaded; };
 

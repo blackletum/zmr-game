@@ -5,18 +5,16 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_cl_usenewmenus( "zm_cl_usenewmenus", "1", FCVAR_ARCHIVE, "Use new ZM menus?" );
-
 
 CZMViewOld::CZMViewOld( const char* pElementName ) : CZMViewBase( pElementName )
 {
-	m_pZMControl = new CZMHudControlPanel( this );
+    m_pZMControl = new CZMHudControlPanel( this );
 
-	m_pManiMenu = new CZMManiMenu( this ); 
-	m_pManiMenuNew = new CZMManiMenuNew( this ); 
-	m_pBuildMenu = new CZMBuildMenu( this ); 
-	m_pBuildMenuNew = new CZMBuildMenuNew( this ); 
+    m_pManiMenu = new CZMManiMenu( this );
+    m_pManiMenuNew = new CZMManiMenuNew( this );
+    m_pBuildMenu = new CZMBuildMenu( this );
+    m_pBuildMenuNew = new CZMBuildMenuNew( this );
 }
 
 CZMViewOld::~CZMViewOld()
@@ -31,7 +29,7 @@ CZMViewOld::~CZMViewOld()
 
 CZMBuildMenuBase* CZMViewOld::GetBuildMenu()
 {
-    // Tertiary tries to make me cast... pshh, I'll just use good ol' if's. 
+    // Tertiary tries to make me cast... pshh, I'll just use good ol' if's.
     if ( zm_cl_usenewmenus.GetBool() )
     {
         return m_pBuildMenuNew;
@@ -44,7 +42,7 @@ CZMBuildMenuBase* CZMViewOld::GetBuildMenu()
 
 CZMManiMenuBase* CZMViewOld::GetManiMenu()
 {
-    // Tertiary tries to make me cast... pshh, I'll just use good ol' if's. 
+    // Tertiary tries to make me cast... pshh, I'll just use good ol' if's.
     if ( zm_cl_usenewmenus.GetBool() )
     {
         return m_pManiMenuNew;

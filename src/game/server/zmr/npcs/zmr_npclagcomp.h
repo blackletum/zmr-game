@@ -47,7 +47,7 @@ public:
         m_vecMins = src.m_vecMins;
         m_vecMaxs = src.m_vecMaxs;
         m_flSimulationTime = src.m_flSimulationTime;
-        for( int layerIndex = 0; layerIndex < CBaseAnimatingOverlay::MAX_OVERLAYS; ++layerIndex )
+        for ( int layerIndex = 0; layerIndex < CBaseAnimatingOverlay::MAX_OVERLAYS; ++layerIndex )
         {
             m_layerRecords[layerIndex] = src.m_layerRecords[layerIndex];
         }
@@ -56,20 +56,20 @@ public:
     }
 
     // Did NPC die this frame
-    int                 m_fFlags;
+    int m_fFlags;
 
     // NPC position, orientation and bbox
-    Vector              m_vecOrigin;
-    QAngle              m_vecAngles;
-    Vector              m_vecMins;
-    Vector              m_vecMaxs;
+    Vector m_vecOrigin;
+    QAngle m_vecAngles;
+    Vector m_vecMins;
+    Vector m_vecMaxs;
 
-    float               m_flSimulationTime;    
+    float m_flSimulationTime;
 
     // NPC animation details, so we can get the legs in the right spot.
-    LayerRecordNPC      m_layerRecords[CBaseAnimatingOverlay::MAX_OVERLAYS];
-    int                 m_masterSequence;
-    float               m_masterCycle;
+    LayerRecordNPC m_layerRecords[CBaseAnimatingOverlay::MAX_OVERLAYS];
+    int m_masterSequence;
+    float m_masterCycle;
 };
 
 abstract_class CZMNPCLagCompensation
@@ -87,18 +87,37 @@ public:
         delete m_LagTrack;
     }
 
-
     CUtlFixedLinkedList<LagRecordNPC>* GetLagTrack() { return m_LagTrack; }
-    LagRecordNPC*   GetLagRestoreData() { if ( m_RestoreData != nullptr ) return m_RestoreData; else return new LagRecordNPC(); }
-    LagRecordNPC*   GetLagChangeData() { if ( m_ChangeData != nullptr ) return m_ChangeData; else return new LagRecordNPC(); }
-    void            SetLagRestoreData(LagRecordNPC* l) { if ( m_RestoreData != nullptr ) delete m_RestoreData; m_RestoreData = l; }
-    void            SetLagChangeData(LagRecordNPC* l) { if ( m_ChangeData != nullptr ) delete m_ChangeData; m_ChangeData = l; }
-    void            FlagForLagCompensation( bool tempValue ) { m_bFlaggedForLagCompensation = tempValue; }
-    bool            IsLagFlagged() { return m_bFlaggedForLagCompensation; }
-    
+    LagRecordNPC* GetLagRestoreData()
+    {
+        if ( m_RestoreData != nullptr )
+            return m_RestoreData;
+        else
+            return new LagRecordNPC();
+    }
+    LagRecordNPC* GetLagChangeData()
+    {
+        if ( m_ChangeData != nullptr )
+            return m_ChangeData;
+        else
+            return new LagRecordNPC();
+    }
+    void SetLagRestoreData( LagRecordNPC * l )
+    {
+        if ( m_RestoreData != nullptr ) delete m_RestoreData;
+        m_RestoreData = l;
+    }
+    void SetLagChangeData( LagRecordNPC * l )
+    {
+        if ( m_ChangeData != nullptr ) delete m_ChangeData;
+        m_ChangeData = l;
+    }
+    void FlagForLagCompensation( bool tempValue ) { m_bFlaggedForLagCompensation = tempValue; }
+    bool IsLagFlagged() { return m_bFlaggedForLagCompensation; }
+
 private:
     CUtlFixedLinkedList<LagRecordNPC>* m_LagTrack;
-    LagRecordNPC*   m_RestoreData;
-    LagRecordNPC*   m_ChangeData;
-    bool            m_bFlaggedForLagCompensation;
+    LagRecordNPC* m_RestoreData;
+    LagRecordNPC* m_ChangeData;
+    bool m_bFlaggedForLagCompensation;
 };

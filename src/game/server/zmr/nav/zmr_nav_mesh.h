@@ -1,11 +1,8 @@
 #pragma once
 
-
 #include "nav_mesh.h"
 
-
-#define NAV_MESH_ZMR_NOFLOOR    0x00040000
-
+#define NAV_MESH_ZMR_NOFLOOR 0x00040000
 
 class CZMNavTransientFilter : public CTraceFilterSimple
 {
@@ -29,12 +26,9 @@ public:
 
     virtual CNavArea* CreateArea() const override;
 
-
     virtual void OnServerActivate() override;
 
-
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
-
 
     static float GetTransientCheckStartHeight() { return 17.0f; }
 

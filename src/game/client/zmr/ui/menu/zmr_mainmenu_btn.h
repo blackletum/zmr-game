@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "zmr_mainmenu_basebtn.h"
-
 
 class CZMMainMenuSubButton;
 
@@ -13,10 +11,8 @@ public:
     typedef CZMMainMenuButton ThisClass;
     //DECLARE_CLASS( CZMMainMenuButton, CZMMainMenuBaseButton );
 
-
     CZMMainMenuButton( vgui::Panel* pParent, const char* name );
     ~CZMMainMenuButton();
-
 
     virtual void OnCursorExited() override;
 
@@ -28,14 +24,11 @@ public:
     virtual void SetSelected( bool state ) override;
     virtual void SetArmed( bool state ) override;
 
-
     void AttemptToShowButtons();
     void ShowSubButtons();
     void HideSubButtons();
 
-
     void PositionSubButtons();
-
 
     int GetSubButtonHeight() const { return m_nSubBtnHeight; }
     int GetMaxSubTextWidth() const { return m_nMaxSubTextWidth; }
@@ -45,7 +38,7 @@ public:
 
     bool IsLayoutHorizontally() const { return m_bLayoutHorizontally; }
     int GetHorizontalMargin() const { return m_nHorizontalMargin; }
-    
+
     bool IsSubButtonsVisible() const;
     bool DrawOnlyInGame() const { return m_bOnlyInGame; }
     bool DrawOnlyNotInGame() const { return m_bOnlyNotInGame; }
@@ -66,7 +59,7 @@ private:
 
     bool m_bLayoutHorizontally;
     int m_nHorizontalMargin;
-    
+
     int m_nMaxSubTextWidth;
     int m_nSubBtnHeight;
 

@@ -1,30 +1,25 @@
-#include "cbase.h"
 #include "bone_setup.h"
+#include "cbase.h"
 #include "eventlist.h"
-#include "vprof.h"
 #include "takedamageinfo.h"
+#include "vprof.h"
 #include <engine/ivdebugoverlay.h>
 
 #include "clienteffectprecachesystem.h"
 
-
-
-#include "zmr_player_shared.h"
 #include "c_zmr_zmvision.h"
+#include "c_zmr_zombiegib.h"
 #include "npcs/zmr_zombieanimstate.h"
 #include "npcs/zmr_zombiebase_shared.h"
-#include "c_zmr_zombiegib.h"
+#include "zmr_player_shared.h"
 #include "zmr_usercmd.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern bool g_bRenderPostProcess;
 
-
 static ConVar zm_cl_zombiefadein( "zm_cl_zombiefadein", "0.55", FCVAR_ARCHIVE, "How fast zombie fades.", true, 0.0f, true, 2.0f );
-
 
 #undef CZMBaseZombie
 IMPLEMENT_CLIENTCLASS_DT( C_ZMBaseZombie, DT_ZM_BaseZombie, CZMBaseZombie )
@@ -33,8 +28,8 @@ IMPLEMENT_CLIENTCLASS_DT( C_ZMBaseZombie, DT_ZM_BaseZombie, CZMBaseZombie )
 
     RecvPropFloat( RECVINFO_NAME( m_angNetworkAngles[1], m_angRotation[1] ) ),
 
-	RecvPropInt( RECVINFO( m_iSelectorIndex ) ),
-	RecvPropFloat( RECVINFO( m_flHealthRatio ) ),
+    RecvPropInt( RECVINFO( m_iSelectorIndex ) ),
+    RecvPropFloat( RECVINFO( m_flHealthRatio ) ),
     RecvPropBool( RECVINFO( m_bIsOnGround ) ),
     RecvPropInt( RECVINFO( m_iAnimationRandomSeed ) ),
     RecvPropInt( RECVINFO( m_lifeState ) ),
@@ -45,16 +40,14 @@ END_RECV_TABLE()
 BEGIN_PREDICTION_DATA( C_ZMBaseZombie )
     DEFINE_PRED_FIELD( m_iSelectorIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 
-
     // Animation
     DEFINE_PRED_FIELD( m_flCycle, FIELD_FLOAT, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK ),
     DEFINE_PRED_FIELD( m_nSequence, FIELD_INTEGER, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK ),
-    
+
     DEFINE_PRED_FIELD( m_flPlaybackRate, FIELD_FLOAT, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK ),
     DEFINE_PRED_ARRAY_TOL( m_flPoseParameter, FIELD_FLOAT, MAXSTUDIOPOSEPARAM, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK, 0.0f ),
     DEFINE_PRED_ARRAY_TOL( m_flEncodedController, FIELD_FLOAT, MAXSTUDIOBONECTRLS, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE, 0.02f ),
     DEFINE_PRED_FIELD( m_nNewSequenceParity, FIELD_INTEGER, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK ),
-
 
     // Misc
     DEFINE_PRED_ARRAY( m_flexWeight, FIELD_FLOAT, MAXSTUDIOFLEXCTRL, FTYPEDESC_OVERRIDE | FTYPEDESC_PRIVATE | FTYPEDESC_NOERRORCHECK ),
@@ -65,11 +58,9 @@ END_PREDICTION_DATA()
 BEGIN_DATADESC( C_ZMBaseZombie )
 END_DATADESC()
 
-
 // ZMRTODO: Replace these
-#define MAT_HPCIRCLE        "effects/zm_healthring"
-#define MAT_INNERCIRCLE     "effects/zombie_select"
-
+#define MAT_HPCIRCLE    "effects/zm_healthring"
+#define MAT_INNERCIRCLE "effects/zombie_select"
 
 CLIENTEFFECT_REGISTER_BEGIN( PrecacheZMSelectEffect )
 //CLIENTEFFECT_MATERIAL( "effects/spark" )
@@ -78,16 +69,13 @@ CLIENTEFFECT_MATERIAL( MAT_HPCIRCLE )
 CLIENTEFFECT_MATERIAL( MAT_INNERCIRCLE )
 CLIENTEFFECT_REGISTER_END()
 
-
 C_ZMBaseZombie::C_ZMBaseZombie()
 {
     m_iZombieClass = ZMCLASS_INVALID;
     m_angEyeAttachment.Init();
     m_pAnimState = new CZMZombieAnimState( this );
 
-
     g_ZombieManager.AddZombie( this );
-
 
     m_fxHealth = nullptr;
     m_fxInner = nullptr;
@@ -99,9 +87,7 @@ C_ZMBaseZombie::C_ZMBaseZombie()
 
     m_iAdditionalAnimRandomSeed = 0;
 
-
     m_bDidDeathEffect = false;
-    
 
     // Always create FX.
     m_fxHealth = new CZMCharCircle( MAT_HPCIRCLE, 16.0f );
@@ -111,7 +97,6 @@ C_ZMBaseZombie::C_ZMBaseZombie()
 C_ZMBaseZombie::~C_ZMBaseZombie()
 {
     delete m_pAnimState;
-    
 
     g_ZombieManager.RemoveZombie( this );
 
@@ -130,7 +115,6 @@ void C_ZMBaseZombie::Spawn( void )
     // This allows the client to make us bleed and spawn blood decals.
     // Possibly add option to turn off?
     m_takedamage = DAMAGE_YES;
-
 
     g_ZMVision.AddSilhouette( this );
 }
@@ -165,17 +149,13 @@ int C_ZMBaseZombie::DrawModel( int flags )
 {
     CZMPlayer* pPlayer = ToZMPlayer( C_BasePlayer::GetLocalPlayer() );
 
-    if (pPlayer
-    &&  pPlayer->IsObserver()
-    &&  pPlayer->GetObserverTarget() == this
-    &&  pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
+    if ( pPlayer && pPlayer->IsObserver() && pPlayer->GetObserverTarget() == this && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE )
         return 0;
 
     if ( !pPlayer || !pPlayer->IsZM() )
     {
         return DrawModelAndEffects( flags );
     }
-        
 
     if ( !g_bRenderPostProcess )
     {
@@ -195,7 +175,6 @@ int C_ZMBaseZombie::DrawModel( int flags )
             m_fxInner->Draw();
         }
 
-
         if ( m_fxHealth )
         {
             m_fxHealth->SetColor( r, g, 0 );
@@ -204,7 +183,6 @@ int C_ZMBaseZombie::DrawModel( int flags )
             m_fxHealth->Draw();
         }
     }
-
 
     return DrawModelAndEffects( flags );
 }
@@ -217,15 +195,13 @@ int C_ZMBaseZombie::DrawModelAndEffects( int flags )
     if ( !m_bReadyToDraw )
         return BaseClass::DrawModel( flags );
 
-
     // Turn off lighting if we're using zm vision.
     const bool bNoLight = g_ZMVision.IsOn();
     if ( bNoLight )
     {
         const Vector clr( 1.0f, 0.0f, 0.0f );
 
-        static const Vector lightlvl[6] = 
-        {
+        static const Vector lightlvl[6] = {
             Vector( 0.7f, 0.7f, 0.7f ),
             Vector( 0.7f, 0.7f, 0.7f ),
             Vector( 0.7f, 0.7f, 0.7f ),
@@ -241,12 +217,9 @@ int C_ZMBaseZombie::DrawModelAndEffects( int flags )
         modelrender->SuppressEngineLighting( true );
     }
 
-
     const Vector reset( 1.0f, 1.0f, 1.0f );
 
-
     int ret = 0;
-
 
     float fadein = zm_cl_zombiefadein.GetFloat();
     float delta = gpGlobals->curtime - SpawnTime();
@@ -258,9 +231,8 @@ int C_ZMBaseZombie::DrawModelAndEffects( int flags )
         const float l = delta * delta;
         const Vector clr( 1.0f, l, l );
 
-
         CMatRenderContextPtr pRenderContext( materials );
-    
+
         // Pop into existence.
         const Vector down( 0.0f, 0.0f, -1.0f );
 
@@ -273,7 +245,7 @@ int C_ZMBaseZombie::DrawModelAndEffects( int flags )
         const Vector4D plane( down.x, down.y, down.z, down.Dot( pos ) );
         bool bPrevClipping = pRenderContext->EnableClipping( true );
         pRenderContext->PushCustomClipPlane( plane.Base() );
-    
+
         // Color it a bit.
         float blend = delta;
 
@@ -286,14 +258,11 @@ int C_ZMBaseZombie::DrawModelAndEffects( int flags )
         render->SetBlend( blend );
         render->SetColorModulation( clr.Base() );
 
-
         ret = BaseClass::DrawModel( flags );
-
 
         pRenderContext->PopCustomClipPlane();
         pRenderContext->EnableClipping( bPrevClipping );
 
-        
         render->SetBlend( 1.0f );
         render->SetColorModulation( reset.Base() );
     }
@@ -307,7 +276,6 @@ int C_ZMBaseZombie::DrawModelAndEffects( int flags )
         modelrender->SuppressEngineLighting( false );
         render->SetColorModulation( reset.Base() );
     }
-
 
     return ret;
 }
@@ -344,150 +312,147 @@ void C_ZMBaseZombie::CalculateIKLocks( float currentTime )
         if ( !pTarget->IsActive() )
             continue;
 
-
         trace_t tr;
 
         switch ( pTarget->type )
         {
-        case IK_GROUND :
+        case IK_GROUND:
+        {
+            Vector estGround;
+            Vector p1, p2;
+
+            // Adjust ground to original ground position
+            estGround = pTarget->est.pos - GetRenderOrigin();
+            estGround = estGround - ( estGround * up ) * up;
+            estGround = GetAbsOrigin() + estGround + pTarget->est.floor * up;
+
+            VectorMA( estGround, pTarget->est.height, up, p1 );
+            VectorMA( estGround, -pTarget->est.height, up, p2 );
+
+            float r = MAX( pTarget->est.radius, 1 );
+
+            // Don't IK to other characters
+            ray.Init( p1, p2, Vector( -r, -r, 0 ), Vector( r, r, r * 2 ) );
+            enginetrace->TraceRay( ray, PhysicsSolidMaskForEntity(), &traceFilter, &tr );
+
+            if ( zm_sv_debug_zombieik.GetBool() )
             {
-                Vector estGround;
-                Vector p1, p2;
+                bool bDidHit = tr.fraction != 1.0f;
+                debugoverlay->AddLineOverlay( ray.m_Start, ray.m_Start + ray.m_Delta, bDidHit ? 255 : 0, ( !bDidHit ) ? 255 : 0, 0, true, 0.0f );
+            }
 
-                // Adjust ground to original ground position
-                estGround = pTarget->est.pos - GetRenderOrigin();
-                estGround = estGround - (estGround * up) * up;
-                estGround = GetAbsOrigin() + estGround + pTarget->est.floor * up;
+            if ( tr.m_pEnt && tr.m_pEnt->GetMoveType() == MOVETYPE_PUSH )
+            {
+                pTarget->SetOwner( tr.m_pEnt->entindex(), tr.m_pEnt->GetAbsOrigin(), tr.m_pEnt->GetAbsAngles() );
+            }
+            else
+            {
+                pTarget->ClearOwner();
+            }
 
-                VectorMA( estGround, pTarget->est.height, up, p1 );
-                VectorMA( estGround, -pTarget->est.height, up, p2 );
+            if ( tr.startsolid )
+            {
+                // Trace from back towards hip
+                Vector tmp = estGround - pTarget->trace.closest;
+                tmp.NormalizeInPlace();
+                ray.Init( estGround - tmp * pTarget->est.height, estGround, Vector( -r, -r, 0 ), Vector( r, r, 1 ) );
 
-                float r = MAX( pTarget->est.radius, 1 );
+                enginetrace->TraceRay( ray, MASK_SOLID, &traceFilter, &tr );
 
-                // Don't IK to other characters
-                ray.Init( p1, p2, Vector(-r,-r,0), Vector(r,r,r*2) );
-                enginetrace->TraceRay( ray, PhysicsSolidMaskForEntity(), &traceFilter, &tr );
-
-                if ( zm_sv_debug_zombieik.GetBool() )
+                if ( !tr.startsolid )
                 {
-                    bool bDidHit = tr.fraction != 1.0f;
-                    debugoverlay->AddLineOverlay( ray.m_Start, ray.m_Start + ray.m_Delta, bDidHit ? 255 : 0, (!bDidHit) ? 255 : 0, 0, true, 0.0f );
-                }
-
-                if ( tr.m_pEnt && tr.m_pEnt->GetMoveType() == MOVETYPE_PUSH )
-                {
-                    pTarget->SetOwner( tr.m_pEnt->entindex(), tr.m_pEnt->GetAbsOrigin(), tr.m_pEnt->GetAbsAngles() );
-                }
-                else
-                {
-                    pTarget->ClearOwner();
-                }
-
-                if ( tr.startsolid )
-                {
-                    // Trace from back towards hip
-                    Vector tmp = estGround - pTarget->trace.closest;
-                    tmp.NormalizeInPlace();
-                    ray.Init( estGround - tmp * pTarget->est.height, estGround, Vector(-r,-r,0), Vector(r,r,1) );
-                    
+                    p1 = tr.endpos;
+                    VectorMA( p1, -pTarget->est.height, up, p2 );
+                    ray.Init( p1, p2, Vector( -r, -r, 0 ), Vector( r, r, 1 ) );
 
                     enginetrace->TraceRay( ray, MASK_SOLID, &traceFilter, &tr );
-
-                    if ( !tr.startsolid )
-                    {
-                        p1 = tr.endpos;
-                        VectorMA( p1, - pTarget->est.height, up, p2 );
-                        ray.Init( p1, p2, Vector(-r,-r,0), Vector(r,r,1) );
-
-                        enginetrace->TraceRay( ray, MASK_SOLID, &traceFilter, &tr );
-                    }
                 }
+            }
 
-                // Didn't work either, just stop here.
-                if ( tr.startsolid )
-                {
-                    if ( !tr.DidHitWorld() )
-                    {
-                        pTarget->IKFailed();
-                    }
-                    else
-                    {
-                        pTarget->SetPos( tr.endpos );
-                        pTarget->SetAngles( GetRenderAngles() );
-                        pTarget->SetOnWorld( true );
-                    }
-
-                    continue;
-                }
-
-
-                if ( tr.DidHitWorld() )
-                {
-                    // clamp normal to 33 degrees
-                    const float limit = 0.832f;
-                    float dot = DotProduct( tr.plane.normal, up );
-                    if ( dot < limit )
-                    {
-                        Assert( dot >= 0 );
-                        // subtract out up component
-                        Vector diff = tr.plane.normal - up * dot;
-                        // scale remainder such that it and the up vector are a unit vector
-                        float d = sqrt( (1 - limit * limit) / DotProduct( diff, diff ) );
-                        tr.plane.normal = up * limit + d * diff;
-                    }
-                    // FIXME: this is wrong with respect to contact position and actual ankle offset
-                    pTarget->SetPosWithNormalOffset( tr.endpos, tr.plane.normal );
-                    pTarget->SetNormal( tr.plane.normal );
-                    pTarget->SetOnWorld( true );
-
-                    // only do this on forward tracking or commited IK ground rules
-                    //if (pTarget->est.release < 0.1)
-                    //{
-                    //    // keep track of ground height
-                    //    float offset = DotProduct( pTarget->est.pos, up );
-                    //    if (minHeight > offset )
-                    //        minHeight = offset;
-
-                    //    if (maxHeight < offset )
-                    //        maxHeight = offset;
-                    //}
-                    // FIXME: if we don't drop legs, running down hills looks horrible
-                    /*
-                    if (DotProduct( pTarget->est.pos, up ) < DotProduct( estGround, up ))
-                    {
-                        pTarget->est.pos = estGround;
-                    }
-                    */
-                }
-                else if ( tr.DidHitNonWorldEntity() )
-                {
-                    pTarget->SetPos( tr.endpos );
-                    pTarget->SetAngles( GetRenderAngles() );
-
-                    // only do this on forward tracking or commited IK ground rules
-                    //if (pTarget->est.release < 0.1)
-                    //{
-                    //    float offset = DotProduct( pTarget->est.pos, up );
-                    //    if (minHeight > offset )
-                    //        minHeight = offset;
-
-                    //    if (maxHeight < offset )
-                    //        maxHeight = offset;
-                    //}
-                    // FIXME: if we don't drop legs, running down hills looks horrible
-                    /*
-                    if (DotProduct( pTarget->est.pos, up ) < DotProduct( estGround, up ))
-                    {
-                        pTarget->est.pos = estGround;
-                    }
-                    */
-                }
-                else
+            // Didn't work either, just stop here.
+            if ( tr.startsolid )
+            {
+                if ( !tr.DidHitWorld() )
                 {
                     pTarget->IKFailed();
                 }
+                else
+                {
+                    pTarget->SetPos( tr.endpos );
+                    pTarget->SetAngles( GetRenderAngles() );
+                    pTarget->SetOnWorld( true );
+                }
+
+                continue;
             }
-            break;
+
+            if ( tr.DidHitWorld() )
+            {
+                // clamp normal to 33 degrees
+                const float limit = 0.832f;
+                float dot = DotProduct( tr.plane.normal, up );
+                if ( dot < limit )
+                {
+                    Assert( dot >= 0 );
+                    // subtract out up component
+                    Vector diff = tr.plane.normal - up * dot;
+                    // scale remainder such that it and the up vector are a unit vector
+                    float d = sqrt( ( 1 - limit * limit ) / DotProduct( diff, diff ) );
+                    tr.plane.normal = up * limit + d * diff;
+                }
+                // FIXME: this is wrong with respect to contact position and actual ankle offset
+                pTarget->SetPosWithNormalOffset( tr.endpos, tr.plane.normal );
+                pTarget->SetNormal( tr.plane.normal );
+                pTarget->SetOnWorld( true );
+
+                // only do this on forward tracking or commited IK ground rules
+                //if (pTarget->est.release < 0.1)
+                //{
+                //    // keep track of ground height
+                //    float offset = DotProduct( pTarget->est.pos, up );
+                //    if (minHeight > offset )
+                //        minHeight = offset;
+
+                //    if (maxHeight < offset )
+                //        maxHeight = offset;
+                //}
+                // FIXME: if we don't drop legs, running down hills looks horrible
+                /*
+                    if (DotProduct( pTarget->est.pos, up ) < DotProduct( estGround, up ))
+                    {
+                        pTarget->est.pos = estGround;
+                    }
+                    */
+            }
+            else if ( tr.DidHitNonWorldEntity() )
+            {
+                pTarget->SetPos( tr.endpos );
+                pTarget->SetAngles( GetRenderAngles() );
+
+                // only do this on forward tracking or commited IK ground rules
+                //if (pTarget->est.release < 0.1)
+                //{
+                //    float offset = DotProduct( pTarget->est.pos, up );
+                //    if (minHeight > offset )
+                //        minHeight = offset;
+
+                //    if (maxHeight < offset )
+                //        maxHeight = offset;
+                //}
+                // FIXME: if we don't drop legs, running down hills looks horrible
+                /*
+                    if (DotProduct( pTarget->est.pos, up ) < DotProduct( estGround, up ))
+                    {
+                        pTarget->est.pos = estGround;
+                    }
+                    */
+            }
+            else
+            {
+                pTarget->IKFailed();
+            }
+        }
+        break;
         }
     }
 
@@ -531,7 +496,6 @@ void C_ZMBaseZombie::HandleAnimEvent( animevent_t* pEvent )
 
         return;
     }
-
 
     if ( pEvent->event == AE_ZOMBIE_SCUFF_LEFT )
     {
@@ -583,24 +547,18 @@ extern ConVar zm_sv_happyzombies;
 ConVar zm_cl_happyzombies_disable( "zm_cl_happyzombies_disable", "0", 0, "No fun :(" );
 ConVar zm_cl_happyzombies_chance( "zm_cl_happyzombies_chance", "0.2", FCVAR_ARCHIVE );
 
-
 CStudioHdr* C_ZMBaseZombie::OnNewModel()
 {
     CStudioHdr* hdr = BaseClass::OnNewModel();
-
 
     if ( m_pAnimState )
     {
         m_pAnimState->OnNewModel();
     }
-    
 
     HappyZombieEvent_t iEvent = (HappyZombieEvent_t)zm_sv_happyzombies.GetInt();
 
-    if (iEvent > HZEVENT_INVALID
-    &&  !zm_cl_happyzombies_disable.GetBool()
-    &&  IsAffectedByEvent( iEvent )
-    &&  random->RandomFloat( 0.0f, 1.0f ) <= zm_cl_happyzombies_chance.GetFloat())
+    if ( iEvent > HZEVENT_INVALID && !zm_cl_happyzombies_disable.GetBool() && IsAffectedByEvent( iEvent ) && random->RandomFloat( 0.0f, 1.0f ) <= zm_cl_happyzombies_chance.GetFloat() )
     {
         CreateEventAccessories();
     }
@@ -613,18 +571,13 @@ C_BaseAnimating* C_ZMBaseZombie::BecomeRagdollOnClient()
     if ( m_bDidDeathEffect )
         return nullptr;
 
-
     m_bDidDeathEffect = true;
 
-
-
     ReleaseHat();
-
 
     if ( m_iGibType != ZMGIBTYPE_NONE )
     {
         AddEffects( EF_NODRAW );
-
 
         C_ZMZombieGib::Create( this, ZMGIBTYPE_HEAD );
     }
@@ -633,7 +586,6 @@ C_BaseAnimating* C_ZMBaseZombie::BecomeRagdollOnClient()
         return BaseClass::BecomeRagdollOnClient();
     }
 
-    
     return nullptr;
 }
 
@@ -656,16 +608,14 @@ void C_ZMBaseZombie::UpdateVisibility()
 bool C_ZMBaseZombie::CreateEventAccessories()
 {
     const char* model = GetEventHatModel( (HappyZombieEvent_t)zm_sv_happyzombies.GetInt() );
-    if ( !model || !(*model) )
+    if ( !model || !( *model ) )
         return false;
-
 
     ReleaseHat();
 
     m_pHat = new C_ZMHolidayHat();
 
-
-    if ( !m_pHat || !m_pHat->Initialize( this, model )/* || !m_pHat->Parent( "eyes" )*/ )
+    if ( !m_pHat || !m_pHat->Initialize( this, model ) /* || !m_pHat->Parent( "eyes" )*/ )
     {
         ReleaseHat();
         return false;
@@ -696,7 +646,6 @@ void C_ZMBaseZombie::PlayFootstepSound( const char* soundname )
 {
     VPROF_BUDGET( "C_ZMBaseZombie::PlayFootstepSound", _T( "CBaseEntity::EmitSound" ) );
 
-
     // Depending on how "active" our walking animation is, change the footstep volume.
     // I can't seem to notice a difference, but whatever. Perhaps the soundscript affects this in some way?
     float volume = VOL_NORM;
@@ -708,7 +657,6 @@ void C_ZMBaseZombie::PlayFootstepSound( const char* soundname )
 
         volume = clamp( value, 0.05f, 1.0f );
     }
-
 
     CLocalPlayerFilter filter;
 

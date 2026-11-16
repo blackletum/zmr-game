@@ -3,7 +3,6 @@
 #include "in_buttons.h"
 #include "soundent.h"
 
-
 #include "npcr/npcr_schedule.h"
 #include "npcr/npcr_senses.h"
 
@@ -14,9 +13,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_bot_lookat( "zm_sv_debug_bot_lookat", "0" );
-
 
 class CZMPlayerSenses : public NPCR::CBaseSenses
 {
@@ -28,7 +25,7 @@ public:
     virtual void FindNewEntities( CUtlVector<CBaseEntity*>& vListEntities ) override
     {
         CBaseEntity* pEnt = nullptr;
-        while ( (pEnt = gEntList.FindEntityByClassname( pEnt, "npc_*" )) != nullptr )
+        while ( ( pEnt = gEntList.FindEntityByClassname( pEnt, "npc_*" ) ) != nullptr )
         {
             if ( pEnt->IsBaseZombie() && pEnt->IsAlive() )
                 vListEntities.AddToTail( pEnt );
@@ -38,17 +35,14 @@ public:
     virtual int GetSoundMask() const override { return SOUND_COMBAT | SOUND_DANGER; }
 };
 
-
 extern ConVar bot_mimic;
 extern ConVar bot_mimic_pitch_offset;
 extern ConVar bot_mimic_yaw_offset;
 extern ConVar bot_mimic_target;
 extern ConVar bot_attack;
 
-
 LINK_ENTITY_TO_CLASS( npcr_player_zm, CZMPlayerBot );
 PRECACHE_REGISTER( npcr_player_zm );
-
 
 CZMPlayerBot::CZMPlayerBot()
 {
@@ -87,8 +81,7 @@ void CZMPlayerBot::Spawn()
 CZMPlayer* CZMPlayerBot::CreateZMBot( const char* playername )
 {
     char name[128];
-    Q_strncpy( name, ( playername && (*playername) ) ? playername : "L Ron Hubbard", sizeof( name ) );
-
+    Q_strncpy( name, ( playername && ( *playername ) ) ? playername : "L Ron Hubbard", sizeof( name ) );
 
     CZMPlayer* pPlayer = NPCR::CPlayer<CZMPlayer>::CreateBot<CZMPlayerBot>( name );
 
@@ -107,7 +100,7 @@ CBasePlayer* CZMPlayerBot::BotPutInServer( edict_t* pEdict, const char* playerna
         pPlayer->ClearFlags();
         pPlayer->AddFlag( FL_CLIENT | FL_FAKECLIENT );
     }
-    
+
     return pPlayer;
 }
 
@@ -115,7 +108,6 @@ bool CZMPlayerBot::OverrideUserCmd( CUserCmd& cmd )
 {
     if ( bot_attack.GetBool() )
         cmd.buttons |= IN_ATTACK;
-
 
     if ( bot_mimic.GetInt() <= 0 )
         return false;
@@ -133,7 +125,6 @@ bool CZMPlayerBot::OverrideUserCmd( CUserCmd& cmd )
     const CUserCmd* pPlyCmd = pPlayer->GetLastUserCommand();
     if ( !pPlyCmd )
         return false;
-
 
     cmd = *pPlyCmd;
     cmd.viewangles[PITCH] += bot_mimic_pitch_offset.GetFloat();
@@ -170,7 +161,7 @@ bool CZMPlayerBot::MustStopToShoot() const
 
 ZMBotWeaponTypeRange_t CZMPlayerBot::GetWeaponType( const char* classname )
 {
-    if ( !classname || !(*classname) )
+    if ( !classname || !( *classname ) )
         return BOTWEPRANGE_INVALID;
 
     // ZMRTODO: Get rid of this hardcoded stuff.
@@ -213,7 +204,7 @@ bool CZMPlayerBot::HasWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -232,7 +223,6 @@ bool CZMPlayerBot::EquipWeaponOfType( ZMBotWeaponTypeRange_t wepType )
 
     if ( pWep == m_hActiveWeapon.Get() )
         return true;
-
 
     Weapon_Switch( pWep );
     return pWep == m_hActiveWeapon.Get();
@@ -274,7 +264,6 @@ bool CZMPlayerBot::HasAnyEffectiveRangeWeapons() const
         CZMBaseWeapon* pWep = ToZMBaseWeapon( m_hMyWeapons.Get( i ) );
         if ( !pWep )
             continue;
-
 
         ZMBotWeaponTypeRange_t wepType = GetWeaponType( pWep );
         if ( wepType != BOTWEPRANGE_CLOSERANGE && wepType != BOTWEPRANGE_LONGRANGE )
@@ -320,7 +309,6 @@ float CZMPlayerBot::GetOptimalAttackDistance() const
     if ( !pWep->UsesPrimaryAmmo() )
         return 32.0f;
 
-
     // Skip 'weapon_zm_'
     const char* wep = pWep->GetClassname() + sizeof( "weapon_zm_" ) - 1;
 
@@ -346,7 +334,6 @@ float CZMPlayerBot::GetMaxAttackDistance() const
     // HACK: Melee
     if ( !pWep->UsesPrimaryAmmo() )
         return 50.0f;
-
 
     // Skip 'weapon_zm_'
     const char* wep = pWep->GetClassname() + sizeof( "weapon_zm_" ) - 1;
@@ -384,7 +371,6 @@ CON_COMMAND( bot, "" )
         return;
     }
 
-
     CZMPlayerBot::CreateZMBot();
 }
 
@@ -394,7 +380,6 @@ CON_COMMAND( zm_bot, "" )
     {
         return;
     }
-
 
     const char* name = args.Arg( 1 );
 

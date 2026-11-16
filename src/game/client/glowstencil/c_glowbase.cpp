@@ -1,17 +1,13 @@
 #include "cbase.h"
 #include "clienteffectprecachesystem.h"
 
-
 #include "c_glowbase.h"
 #include "zmr_shareddefs.h"
-
-
 
 CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffectsGlow )
 CLIENTEFFECT_MATERIAL( "dev/glow_color" )
 CLIENTEFFECT_MATERIAL( "dev/halo_add_to_screen" )
 CLIENTEFFECT_REGISTER_END_CONDITIONAL( engine->GetDXSupportLevel() >= 90 )
-
 
 C_BaseGlowEntity::C_BaseGlowEntity()
 {
@@ -51,7 +47,6 @@ void C_BaseGlowEntity::DestroyGlowEffect()
     }
 }
 
-
 IMPLEMENT_CLIENTCLASS_DT( C_BaseGlowProp, DT_BaseGlowProp, CBaseGlowProp )
     RecvPropBool( RECVINFO( m_bGlowEnabled ) ),
     RecvPropInt( RECVINFO( m_GlowColor ) ),
@@ -70,7 +65,6 @@ void C_BaseGlowProp::OnPreDataChanged( DataUpdateType_t updateType )
 void C_BaseGlowProp::OnDataChanged( DataUpdateType_t updateType )
 {
     C_BaseAnimating::OnDataChanged( updateType );
-
 
     if ( m_bOldGlowEnabled != m_bGlowEnabled || m_GlowOldColor != m_GlowColor || m_fOldGlowType != m_fGlowType )
     {
@@ -92,10 +86,10 @@ void C_BaseGlowProp::GetGlowEffectColor( float& r, float& g, float& b ) const
 
 bool C_BaseGlowProp::GlowOccluded() const
 {
-    return (m_fGlowType & GLOWFLAG_OCCLUDED) != 0;
+    return ( m_fGlowType & GLOWFLAG_OCCLUDED ) != 0;
 }
 
 bool C_BaseGlowProp::GlowUnoccluded() const
 {
-    return (m_fGlowType & GLOWFLAG_UNOCCLUDED) != 0;
+    return ( m_fGlowType & GLOWFLAG_UNOCCLUDED ) != 0;
 }

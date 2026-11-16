@@ -2,7 +2,6 @@
 
 #include "zmr_base.h"
 
-
 #ifdef CLIENT_DLL
 #define CZMBaseMeleeWeapon C_ZMBaseMeleeWeapon
 #endif
@@ -10,34 +9,30 @@
 class CZMBaseMeleeWeapon : public CZMBaseWeapon
 {
 public:
-	DECLARE_CLASS( CZMBaseMeleeWeapon, CZMBaseWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMBaseMeleeWeapon, CZMBaseWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
     DECLARE_DATADESC();
 
-
     CZMBaseMeleeWeapon();
-
 
     virtual void ItemBusyFrame() override;
     virtual void ItemPostFrame() override;
 
     virtual bool Deploy() override;
 
-
     virtual void PrimaryAttack() override;
     virtual void SecondaryAttack() override;
 
-
     virtual bool UsesAnimEvent( bool bSecondary ) const { return false; }
-    
+
     virtual float GetRange() const;
-    virtual	float GetDamageForActivity( Activity hitActivity ) const;
+    virtual float GetDamageForActivity( Activity hitActivity ) const;
 
     virtual bool CanPrimaryAttack() const { return true; }
     virtual bool CanSecondaryAttack() const { return false; }
     virtual Activity GetPrimaryAttackActivity() override { return ACT_VM_HITCENTER; }
-	virtual Activity GetSecondaryAttackActivity() override { return ACT_VM_HITCENTER2; }
+    virtual Activity GetSecondaryAttackActivity() override { return ACT_VM_HITCENTER2; }
 
     virtual WeaponSound_t GetPrimaryAttackSound() const { return SINGLE; }
     virtual WeaponSound_t GetSecondaryAttackSound() const { return SINGLE; }
@@ -63,14 +58,11 @@ protected:
     void ImpactEffect( trace_t& tr );
     bool ImpactWater( const Vector& vecStart, const Vector& vecEnd );
 
-
-
 #ifndef CLIENT_DLL
     virtual void Operator_HandleAnimEvent( animevent_t* pEvent, CBaseCombatCharacter* pOperator ) override;
 #else
     virtual bool OnFireEvent( C_BaseViewModel* pViewModel, const Vector& origin, const QAngle& angles, int event, const char* options ) override;
 #endif
-
 
 private:
     CNetworkVar( float, m_flAttackHitTime );

@@ -1,9 +1,7 @@
 #pragma once
 
-
-#include "npcr_path_follow.h"
 #include "npcr_basenpc.h"
-
+#include "npcr_path_follow.h"
 
 namespace NPCR
 {

@@ -2,30 +2,30 @@
 
 #ifndef CLIENT_DLL
 #include "basecombatcharacter.h"
-#include "zmr_team.h"
-#include "mapentities.h"
-#include "gameinterface.h"
 #include "eventqueue.h"
+#include "gameinterface.h"
+#include "mapentities.h"
 #include "viewport_panel_names.h"
 #include "voice_gamemgr.h"
+#include "zmr_team.h"
 #endif
 
 #ifndef CLIENT_DLL
 #include "ammodef.h"
 
-#include "zmr_voting.h"
 #include "zmr_rejoindata.h"
+#include "zmr_voting.h"
 
-#include "zmr_player.h"
 #include "zmr_mapentities.h"
+#include "zmr_player.h"
 #include "zmr_resource_system.h"
 #include "zmr_util.h"
 #else
 #include "c_zmr_player.h"
 #endif
 
-#include "zmr_gamerules.h"
 #include "weapons/zmr_base.h"
+#include "zmr_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -50,9 +50,6 @@ ConVar zm_sv_reward_kill( "zm_sv_reward_kill", "100", FCVAR_NOTIFY | FCVAR_ARCHI
 
 ConVar zm_sv_zombiemax( "zm_sv_zombiemax", "70", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE, "The maximum amount of zombie population allowed." );
 
-
-
-
 #ifndef CLIENT_DLL
 class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
 {
@@ -67,20 +64,19 @@ CVoiceGameMgrHelper g_VoiceGameMgrHelper;
 IVoiceGameMgrHelper* g_pVoiceGameMgrHelper = &g_VoiceGameMgrHelper;
 #endif
 
-
 static CZMViewVectors g_ZMViewVectors(
     Vector( 0, 0, 64 ),         //VEC_VIEW (m_vView)
-                              
-    Vector(-16, -16, 0 ),       //VEC_HULL_MIN (m_vHullMin)
-    Vector( 16,  16,  65 ),     //VEC_HULL_MAX (m_vHullMax)
-                                                
-    Vector(-16, -16, 0 ),       //VEC_DUCK_HULL_MIN (m_vDuckHullMin)
-    Vector( 16,  16,  36 ),     //VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
+
+    Vector( -16, -16, 0 ),       //VEC_HULL_MIN (m_vHullMin)
+    Vector( 16, 16, 65 ),     //VEC_HULL_MAX (m_vHullMax)
+
+    Vector( -16, -16, 0 ),       //VEC_DUCK_HULL_MIN (m_vDuckHullMin)
+    Vector( 16, 16, 36 ),     //VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
     Vector( 0, 0, 35 ),         //VEC_DUCK_VIEW		(m_vDuckView)
-                                                
-    Vector(-10, -10, -10 ),     //VEC_OBS_HULL_MIN	(m_vObsHullMin)
-    Vector( 10,  10,  10 ),     //VEC_OBS_HULL_MAX	(m_vObsHullMax)
-                                                
+
+    Vector( -10, -10, -10 ),     //VEC_OBS_HULL_MIN	(m_vObsHullMin)
+    Vector( 10, 10, 10 ),     //VEC_OBS_HULL_MAX	(m_vObsHullMax)
+
     Vector( 0, 0, 14 ),         //VEC_DEAD_VIEWHEIGHT (m_vDeadViewHeight)
 
     // To keep things like before, we need to keep the view offset the same.
@@ -92,63 +88,56 @@ static CZMViewVectors g_ZMViewVectors(
     Vector( 0, 0, 10 )          // VEC_RAT_HULL_VIEW (vRatView)
 );
 
-
 REGISTER_GAMERULES_CLASS( CZMRules );
 
 BEGIN_NETWORK_TABLE_NOBASE( CZMRules, DT_ZM_Rules )
 
-    #ifdef CLIENT_DLL
-        RecvPropInt( RECVINFO( m_nZombiePop ) ),
-        RecvPropInt( RECVINFO( m_nRounds ), SPROP_UNSIGNED ),
-        RecvPropInt( RECVINFO( m_nRealRounds ), SPROP_UNSIGNED ),
-    #else
-        SendPropInt( SENDINFO( m_nZombiePop ) ),
-        SendPropInt( SENDINFO( m_nRounds ), -1, SPROP_UNSIGNED ),
-        SendPropInt( SENDINFO( m_nRealRounds ), -1, SPROP_UNSIGNED ),
-    #endif
+#ifdef CLIENT_DLL
+    RecvPropInt( RECVINFO( m_nZombiePop ) ),
+    RecvPropInt( RECVINFO( m_nRounds ), SPROP_UNSIGNED ),
+    RecvPropInt( RECVINFO( m_nRealRounds ), SPROP_UNSIGNED ),
+#else
+    SendPropInt( SENDINFO( m_nZombiePop ) ),
+    SendPropInt( SENDINFO( m_nRounds ), -1, SPROP_UNSIGNED ),
+    SendPropInt( SENDINFO( m_nRealRounds ), -1, SPROP_UNSIGNED ),
+#endif
 
 END_NETWORK_TABLE()
-
 
 LINK_ENTITY_TO_CLASS( zm_gamerules, CZMGameRulesProxy );
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMGameRulesProxy, DT_ZM_GameRulesProxy )
 
-
-
 #ifdef CLIENT_DLL
-    void RecvProxy_ZMRules( const RecvProp *pProp, void **pOut, void *pData, int objectID )
-    {
-        CZMRules *pRules = ZMRules();
-        Assert( pRules );
-        *pOut = pRules;
-    }
+void RecvProxy_ZMRules( const RecvProp* pProp, void** pOut, void* pData, int objectID )
+{
+    CZMRules* pRules = ZMRules();
+    Assert( pRules );
+    *pOut = pRules;
+}
 
-    BEGIN_RECV_TABLE( CZMGameRulesProxy, DT_ZM_GameRulesProxy )
-        RecvPropDataTable( "zm_gamerules_data", 0, 0, &REFERENCE_RECV_TABLE( DT_ZM_Rules ), RecvProxy_ZMRules )
-    END_RECV_TABLE()
+BEGIN_RECV_TABLE( CZMGameRulesProxy, DT_ZM_GameRulesProxy )
+    RecvPropDataTable( "zm_gamerules_data", 0, 0, &REFERENCE_RECV_TABLE( DT_ZM_Rules ), RecvProxy_ZMRules )
+END_RECV_TABLE()
 #else
-    void* SendProxy_ZMRules( const SendProp *pProp, const void *pStructBase, const void *pData, CSendProxyRecipients *pRecipients, int objectID )
-    {
-        CZMRules *pRules = ZMRules();
-        Assert( pRules );
-        return pRules;
-    }
+void* SendProxy_ZMRules( const SendProp* pProp, const void* pStructBase, const void* pData, CSendProxyRecipients* pRecipients, int objectID )
+{
+    CZMRules* pRules = ZMRules();
+    Assert( pRules );
+    return pRules;
+}
 
-    BEGIN_SEND_TABLE( CZMGameRulesProxy, DT_ZM_GameRulesProxy )
-        SendPropDataTable( "zm_gamerules_data", 0, &REFERENCE_SEND_TABLE( DT_ZM_Rules ), SendProxy_ZMRules )
-    END_SEND_TABLE()
+BEGIN_SEND_TABLE( CZMGameRulesProxy, DT_ZM_GameRulesProxy )
+SendPropDataTable( "zm_gamerules_data", 0, &REFERENCE_SEND_TABLE( DT_ZM_Rules ), SendProxy_ZMRules )
+END_SEND_TABLE()
 #endif
 
-
 // NOTE: the indices here must match ZMTEAM_SPECTATOR, ZMTEAM_HUMAN, ZMTEAM_ZM, etc.
-const char* g_sTeamNames[] =
-{
+const char* g_sTeamNames[] = {
     "Unassigned",
     "Spectator",
     "Survivors",
     "Zombie Master",
 };
-
 
 CZMRules::CZMRules()
 {
@@ -159,7 +148,6 @@ CZMRules::CZMRules()
     m_nRounds = 0;
     m_nRealRounds = 0;
     m_nRoundMaxHumansAlive = 0;
-
 
     SetZombiePop( 0 );
 
@@ -177,8 +165,6 @@ CZMRules::CZMRules()
         g_Teams.AddToTail( pTeam );
     }
 
-
-
     ExecuteMapConfigs();
 #endif
 }
@@ -194,18 +180,13 @@ CZMRules::~CZMRules()
 void CZMRules::ExecuteMapConfigs()
 {
     const char* mapcfg = STRING( gpGlobals->mapname );
-    if ( !mapcfg || !(*mapcfg) )
+    if ( !mapcfg || !( *mapcfg ) )
         return;
-    
 
     const char* premapcfg = "mapconfig_pre";
     const char* postmapcfg = "mapconfig_post";
 
-
     Log( "Executing map config files: %s, %s and %s\n", premapcfg, mapcfg, postmapcfg );
-
-
-    
 
     // Execute the pre- map config.
     engine->ServerCommand( UTIL_VarArgs( "exec %s\n", premapcfg ) );
@@ -221,21 +202,16 @@ void CZMRules::CreateStandardEntities()
 {
     DevMsg( "Creating standard entities...\n" );
 
-
     BaseClass::CreateStandardEntities();
 
-
-    
     CBaseEntity* pEnt;
 
     // Create the entity that will send our data to the client.
     pEnt = CBaseEntity::Create( "zm_gamerules", vec3_origin, vec3_angle );
     Assert( pEnt );
 
-
     pEnt = CBaseEntity::Create( "zm_objectives_manager", vec3_origin, vec3_angle );
     Assert( pEnt );
-
 
     pEnt = CBaseEntity::Create( "vote_controller", vec3_origin, vec3_angle );
     Assert( pEnt );
@@ -252,7 +228,6 @@ void CZMRules::LevelInitPostEntity()
 
     BaseClass::LevelInitPostEntity();
 
-
     // Find / create ZM fog entity.
     CZMEntFogController* pEnt = static_cast<CZMEntFogController*>( gEntList.FindEntityByClassname( nullptr, "env_fog_controller_zm" ) );
 
@@ -261,7 +236,6 @@ void CZMRules::LevelInitPostEntity()
         pEnt = static_cast<CZMEntFogController*>( CBaseEntity::Create( "env_fog_controller_zm", vec3_origin, vec3_angle ) );
         pEnt->SetGameCreated();
     }
-    
 
     Assert( pEnt );
     m_pZMFog = pEnt;
@@ -291,18 +265,17 @@ bool CZMRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
     // Swap so that lowest is always first
     if ( collisionGroup0 > collisionGroup1 )
     {
-        V_swap( collisionGroup0,collisionGroup1 );
+        V_swap( collisionGroup0, collisionGroup1 );
     }
 
-    if ( (collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
-        collisionGroup1 == COLLISION_GROUP_WEAPON )
+    if ( ( collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT ) &&
+         collisionGroup1 == COLLISION_GROUP_WEAPON )
     {
         return false;
     }
 
     // Disable player collision.
-    if (collisionGroup0 == COLLISION_GROUP_PLAYER && (collisionGroup1 == COLLISION_GROUP_PLAYER || collisionGroup1 == COLLISION_GROUP_PLAYER_MOVEMENT)
-    &&  zm_sv_playercollision.GetInt() <= 1)
+    if ( collisionGroup0 == COLLISION_GROUP_PLAYER && ( collisionGroup1 == COLLISION_GROUP_PLAYER || collisionGroup1 == COLLISION_GROUP_PLAYER_MOVEMENT ) && zm_sv_playercollision.GetInt() <= 1 )
     {
         return false;
     }
@@ -310,19 +283,19 @@ bool CZMRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
     return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 );
 }
 
-bool CZMRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
+bool CZMRules::IsConnectedUserInfoChangeAllowed( CBasePlayer* pPlayer )
 {
     return true;
 }
 
 const CViewVectors* CZMRules::GetViewVectors() const
 {
-	return &g_ZMViewVectors;
+    return &g_ZMViewVectors;
 }
 
 const CZMViewVectors* CZMRules::GetZMViewVectors() const
 {
-	return &g_ZMViewVectors;
+    return &g_ZMViewVectors;
 }
 
 #ifndef CLIENT_DLL
@@ -351,13 +324,13 @@ int CZMRules::PlayerRelationship( CBaseEntity* pPlayer, CBaseEntity* pTarget )
 
 bool CZMRules::ClientCommand( CBaseEntity* pEdict, const CCommand& args )
 {
-	if ( BaseClass::ClientCommand( pEdict, args ) )
-		return true;
+    if ( BaseClass::ClientCommand( pEdict, args ) )
+        return true;
 
-	auto* pPlayer = ToZMPlayer( pEdict );
+    auto* pPlayer = ToZMPlayer( pEdict );
 
-	if ( pPlayer && pPlayer->ClientCommand( args ) )
-		return true;
+    if ( pPlayer && pPlayer->ClientCommand( args ) )
+        return true;
 
     return false;
 }
@@ -365,7 +338,7 @@ bool CZMRules::ClientCommand( CBaseEntity* pEdict, const CCommand& args )
 void CZMRules::DeathNotice( CBasePlayer* pVictim, const CTakeDamageInfo& info )
 {
     // Work out what killed the player, and send a message to all clients about it
-    const char* killer_weapon_name = "world";		// by default, the player is killed by the world
+    const char* killer_weapon_name = "world";  // by default, the player is killed by the world
     int killer_ID = 0;
 
     // Find the killer & the scorer
@@ -388,7 +361,7 @@ void CZMRules::DeathNotice( CBasePlayer* pVictim, const CTakeDamageInfo& info )
         if ( pScorer )
         {
             killer_ID = pScorer->GetUserID();
-            
+
             if ( pInflictor )
             {
                 if ( pInflictor == pScorer )
@@ -429,8 +402,8 @@ void CZMRules::DeathNotice( CBasePlayer* pVictim, const CTakeDamageInfo& info )
         }
     }
 
-    IGameEvent *event = gameeventmanager->CreateEvent( "player_death" );
-    if( event )
+    IGameEvent* event = gameeventmanager->CreateEvent( "player_death" );
+    if ( event )
     {
         event->SetInt( "userid", pVictim->GetUserID() );
         event->SetInt( "attacker", killer_ID );
@@ -440,17 +413,14 @@ void CZMRules::DeathNotice( CBasePlayer* pVictim, const CTakeDamageInfo& info )
     }
 }
 
-
 void CZMRules::ClientSettingsChanged( CBasePlayer* pPlayer )
 {
     CZMPlayer* pZMPlayer = ToZMPlayer( pPlayer );
 
     if ( !pZMPlayer ) return;
 
-
-
-    const char *pCurrentModel = modelinfo->GetModelName( pPlayer->GetModel() );
-    const char *szModelName = engine->GetClientConVarValue( engine->IndexOfEdict( pPlayer->edict() ), "cl_playermodel" );
+    const char* pCurrentModel = modelinfo->GetModelName( pPlayer->GetModel() );
+    const char* szModelName = engine->GetClientConVarValue( engine->IndexOfEdict( pPlayer->edict() ), "cl_playermodel" );
 
     // If we're different.
     if ( Q_stricmp( szModelName, pCurrentModel ) != 0 )
@@ -462,19 +432,17 @@ void CZMRules::ClientSettingsChanged( CBasePlayer* pPlayer )
         {
             engine->ClientCommand( pZMPlayer->edict(), UTIL_VarArgs( "cl_playermodel %s", pCurrentModel ) );
 
-            auto timeleft = (pZMPlayer->GetNextModelChangeTime() - gpGlobals->curtime);
+            auto timeleft = ( pZMPlayer->GetNextModelChangeTime() - gpGlobals->curtime );
             ClientPrint(
                 pZMPlayer,
                 HUD_PRINTTALK,
-                UTIL_VarArgs( "Please wait %.1f more seconds before trying to switch player models.\n", timeleft )
-            );
+                UTIL_VarArgs( "Please wait %.1f more seconds before trying to switch player models.\n", timeleft ) );
             return;
         }
 
-
         pZMPlayer->SetPlayerModel();
 
-        const char *pszNewModel = modelinfo->GetModelName( pZMPlayer->GetModel() );
+        const char* pszNewModel = modelinfo->GetModelName( pZMPlayer->GetModel() );
 
         if ( pCurrentModel != pszNewModel )
         {
@@ -497,7 +465,6 @@ const char* CZMRules::GetGameDescription()
 const char* CZMRules::GetChatFormat( bool bTeamOnly, CBasePlayer* pPlayer )
 {
     if ( !pPlayer ) return nullptr;
-
 
     const char* pszFormat = nullptr;
 
@@ -524,12 +491,10 @@ const char* CZMRules::GetChatFormat( bool bTeamOnly, CBasePlayer* pPlayer )
 
 static ConVar zm_sv_norestartround( "zm_sv_norestartround", "0" );
 
-
 void CZMRules::Think()
 {
     BaseClass::Think();
 
-    
     if ( g_fGameOver )
     {
         if ( m_flIntermissionEndTime != 0.0f && m_flIntermissionEndTime < gpGlobals->curtime )
@@ -561,26 +526,23 @@ extern ConVar mp_chattime;
 
 void CZMRules::GoToIntermission()
 {
-	if ( g_fGameOver )
-		return;
+    if ( g_fGameOver )
+        return;
 
-	g_fGameOver = true;
+    g_fGameOver = true;
 
+    m_flIntermissionEndTime = gpGlobals->curtime + mp_chattime.GetInt();
 
-	m_flIntermissionEndTime = gpGlobals->curtime + mp_chattime.GetInt();
+    for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+    {
+        auto* pPlayer = UTIL_PlayerByIndex( i );
+        if ( !pPlayer )
+            continue;
 
-
-	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		auto* pPlayer = UTIL_PlayerByIndex( i );
-		if ( !pPlayer )
-			continue;
-
-		pPlayer->ShowViewPortPanel( PANEL_SCOREBOARD );
-		pPlayer->AddFlag( FL_FROZEN );
-	}
+        pPlayer->ShowViewPortPanel( PANEL_SCOREBOARD );
+        pPlayer->AddFlag( FL_FROZEN );
+    }
 }
-
 
 static ConVar zm_sv_weaponrespawn( "zm_sv_weaponrespawn", "0", FCVAR_NOTIFY );
 static ConVar zm_sv_ammorespawn( "zm_sv_ammorespawn", "0", FCVAR_NOTIFY );
@@ -611,7 +573,6 @@ bool CZMRules::CanHaveAmmo( CBaseCombatCharacter* pPlayer, int iAmmoIndex )
 
     if ( !pZMPlayer || pZMPlayer->IsZM() ) return false;
 
-
     // Do we have a weapon to use the ammo with?
     // Using dynamic cast until hl2mp weapons are removed.
     CZMBaseWeapon* pWep = ToZMBaseWeapon( pZMPlayer->Weapon_GetWpnForAmmo( iAmmoIndex ) );
@@ -619,7 +580,7 @@ bool CZMRules::CanHaveAmmo( CBaseCombatCharacter* pPlayer, int iAmmoIndex )
     {
         return false;
     }
-    
+
     // Don't allow ammo pickup when reloading (singly reloading weps).
     CZMBaseWeapon* pActive = ToZMBaseWeapon( pZMPlayer->GetActiveWeapon() );
     if ( pActive && !pActive->CanPickupAmmo() )
@@ -631,7 +592,7 @@ bool CZMRules::CanHaveAmmo( CBaseCombatCharacter* pPlayer, int iAmmoIndex )
     {
         return true;
     }
-    
+
     return false;
 }
 
@@ -653,7 +614,6 @@ bool CZMRules::CanHavePlayerItem( CBasePlayer* pPlayer, CBaseCombatWeapon* pBase
         {
             return false;
         }
-
     }
 
     return BaseClass::CanHavePlayerItem( pPlayer, pBaseWeapon );
@@ -670,8 +630,6 @@ void CZMRules::ClientDisconnected( edict_t* pClient )
         // Tell the rejoin system we're leaving.
         GetZMRejoinSystem()->OnPlayerLeave( pPlayer );
 
-
-
         CTeam* teamplayer = pPlayer->GetTeam();
 
         if ( !teamplayer )
@@ -680,18 +638,13 @@ void CZMRules::ClientDisconnected( edict_t* pClient )
             Warning( "Player left the game but didn't have a team!" );
         }
 
-
-
         CTeam* teamhuman = GetGlobalTeam( ZMTEAM_HUMAN );
         CTeam* teamzm = GetGlobalTeam( ZMTEAM_ZM );
 
-        if (teamplayer
-        &&  (teamplayer == teamhuman || teamplayer == teamzm)
-        &&  teamplayer->GetNumPlayers() <= 1 )
+        if ( teamplayer && ( teamplayer == teamhuman || teamplayer == teamzm ) && teamplayer->GetNumPlayers() <= 1 )
         {
             EndRound( ( teamplayer == teamzm ) ? ZMROUND_ZMSUBMIT : ZMROUND_HUMANDEAD );
         }
-
 
         // Remove the player from his team
         if ( teamplayer )
@@ -707,19 +660,14 @@ void CZMRules::PlayerKilled( CBasePlayer* pVictim, const CTakeDamageInfo& info )
 {
     CZMPlayer* pPlayer = ToZMPlayer( pVictim );
 
-
     if ( pPlayer->IsHuman() )
     {
         // ZMRTODO: Use lambdas or some shit to make this more streamlined.
         bool bIsZombieKill = info.GetAttacker() && info.GetAttacker()->IsBaseZombie();
 
-        RewardResources( bIsZombieKill ?
-            zm_sv_reward_zombiekill.GetInt() :
-            zm_sv_reward_kill.GetInt() );
+        RewardResources( bIsZombieKill ? zm_sv_reward_zombiekill.GetInt() : zm_sv_reward_kill.GetInt() );
 
-        RewardScoreZM( bIsZombieKill ?
-            zm_sv_reward_points_zombiekill.GetInt() :
-            zm_sv_reward_points_kill.GetInt() );
+        RewardScoreZM( bIsZombieKill ? zm_sv_reward_points_zombiekill.GetInt() : zm_sv_reward_points_kill.GetInt() );
     }
 
     // Don't use team player count since we haven't been switched to spectator yet.
@@ -739,12 +687,9 @@ void CZMRules::OnClientFinishedPutInServer( CZMPlayer* pPlayer )
     if ( gpGlobals->eLoadType == MapLoad_Background )
         return;
 
-
     if ( IsInRoundEnd() ) return;
 
-
     bool latespawn = ShouldLateSpawn( pPlayer );
-
 
     CTeam* teamhuman = GetGlobalTeam( ZMTEAM_HUMAN );
     CTeam* teamzm = GetGlobalTeam( ZMTEAM_ZM );
@@ -752,13 +697,11 @@ void CZMRules::OnClientFinishedPutInServer( CZMPlayer* pPlayer )
     int numhuman = teamhuman ? teamhuman->GetNumPlayers() : 0;
     int numzm = teamzm ? teamzm->GetNumPlayers() : 0;
 
-    
-    if ( numzm < 1 || (numhuman < 1 && !latespawn) )
+    if ( numzm < 1 || ( numhuman < 1 && !latespawn ) )
     {
         EndRound( ZMROUND_GAMEBEGIN );
         return;
     }
-
 
     if ( latespawn )
     {
@@ -769,10 +712,8 @@ void CZMRules::OnClientFinishedPutInServer( CZMPlayer* pPlayer )
     }
 }
 
-
 ConVar zm_sv_antiafk_replacezm( "zm_sv_antiafk_replacezm", "1", FCVAR_NOTIFY | FCVAR_ARCHIVE, "If the player afking is the only ZM, replace them." );
 ConVar zm_sv_antiafk_punish( "zm_sv_antiafk_punish", "1", FCVAR_NOTIFY | FCVAR_ARCHIVE, "0 = Don't do anything. 1 = Transfer to spectator team, 2 = Kick." );
-
 
 bool CZMRules::CanInactivityPunish( CZMPlayer* pPlayer )
 {
@@ -785,20 +726,20 @@ bool CZMRules::CanInactivityPunish( CZMPlayer* pPlayer )
     if ( !engine->IsDedicatedServer() && ZMUtil::CountPlayers( true ) <= 1 )
         return false;
 
-
     if ( pPlayer->IsZM() && zm_sv_antiafk_replacezm.GetBool() )
     {
         return true;
     }
 
-
     switch ( zm_sv_antiafk_punish.GetInt() )
     {
-    case AFK_PUNISH_SPECTATE :
+    case AFK_PUNISH_SPECTATE:
         if ( pPlayer->IsObserver() ) return false;
         break;
-    case AFK_PUNISH_NOTHING : return false;
-    default : break;
+    case AFK_PUNISH_NOTHING:
+        return false;
+    default:
+        break;
     }
 
     return true;
@@ -806,19 +747,14 @@ bool CZMRules::CanInactivityPunish( CZMPlayer* pPlayer )
 
 void CZMRules::PunishInactivity( CZMPlayer* pPlayer )
 {
-    if (zm_sv_antiafk_replacezm.GetBool()
-    &&  pPlayer->IsZM()
-    &&  !IsInRoundEnd()
-    &&  GetGlobalTeam( ZMTEAM_ZM )->GetNumPlayers() <= 1
-    )
+    if ( zm_sv_antiafk_replacezm.GetBool() && pPlayer->IsZM() && !IsInRoundEnd() && GetGlobalTeam( ZMTEAM_ZM )->GetNumPlayers() <= 1 )
     {
         ReplaceZM( pPlayer );
     }
 
-
     switch ( zm_sv_antiafk_punish.GetInt() )
     {
-    case AFK_PUNISH_SPECTATE :
+    case AFK_PUNISH_SPECTATE:
     {
         if ( !pPlayer->IsObserver() )
         {
@@ -827,10 +763,11 @@ void CZMRules::PunishInactivity( CZMPlayer* pPlayer )
 
         break;
     }
-    case AFK_PUNISH_KICK :
+    case AFK_PUNISH_KICK:
         engine->ServerCommand( UTIL_VarArgs( "kickid %d\n", pPlayer->GetUserID() ) );
         break;
-    default : break;
+    default:
+        break;
     }
 }
 
@@ -843,7 +780,6 @@ bool CZMRules::ReplaceZM( CZMPlayer* pZM )
     CUtlVector<CZMPlayer*> vOther;
     vFirstChoice.Purge();
     vOther.Purge();
-
 
     CZMPlayer* pPlayer;
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -858,10 +794,9 @@ bool CZMRules::ReplaceZM( CZMPlayer* pZM )
 
         if ( pPlayer->IsHLTV() ) continue;
 
-
-        switch( pPlayer->GetParticipation() )
+        switch ( pPlayer->GetParticipation() )
         {
-        case ZMPART_ALLOWZM :
+        case ZMPART_ALLOWZM:
         {
             if ( pPlayer->IsObserver() || !pPlayer->IsAlive() )
             {
@@ -872,7 +807,6 @@ bool CZMRules::ReplaceZM( CZMPlayer* pZM )
         }
         }
     }
-
 
     if ( vFirstChoice.Count() > 0 )
     {
@@ -888,9 +822,7 @@ bool CZMRules::ReplaceZM( CZMPlayer* pZM )
         pChoice->ChangeTeam( ZMTEAM_ZM );
     }
 
-
     pZM->ChangeTeam( ZMTEAM_SPECTATOR );
-
 
     return pChoice != nullptr;
 }
@@ -961,18 +893,17 @@ void CZMRules::InitDefaultAIRelationships()
             CBaseCombatCharacter::SetDefaultRelationship( (Class_T)i, (Class_T)j, D_NU, 0 );
         }
     }
-    
 
-    CBaseCombatCharacter::SetDefaultRelationship( CLASS_ZOMBIE, CLASS_NONE,         D_NU, 0 );
-    CBaseCombatCharacter::SetDefaultRelationship( CLASS_ZOMBIE, CLASS_PLAYER,       D_HT, 0 );
-    CBaseCombatCharacter::SetDefaultRelationship( CLASS_ZOMBIE, CLASS_ZOMBIE,       D_NU, 0 );
+    CBaseCombatCharacter::SetDefaultRelationship( CLASS_ZOMBIE, CLASS_NONE, D_NU, 0 );
+    CBaseCombatCharacter::SetDefaultRelationship( CLASS_ZOMBIE, CLASS_PLAYER, D_HT, 0 );
+    CBaseCombatCharacter::SetDefaultRelationship( CLASS_ZOMBIE, CLASS_ZOMBIE, D_NU, 0 );
 
-    CBaseCombatCharacter::SetDefaultRelationship( CLASS_PLAYER, CLASS_ZOMBIE,       D_HT, 0 );
+    CBaseCombatCharacter::SetDefaultRelationship( CLASS_PLAYER, CLASS_ZOMBIE, D_HT, 0 );
 
     // Let's assume anything that doesn't have a class also hates survivors.
     // This is a quick workaround for zm_frozenfinale final boss not spotting survivors.
     // And for fucksake, in the future, use the ai_relationship-entity.
-    CBaseCombatCharacter::SetDefaultRelationship( CLASS_NONE, CLASS_PLAYER,         D_HT, 0 );
+    CBaseCombatCharacter::SetDefaultRelationship( CLASS_NONE, CLASS_PLAYER, D_HT, 0 );
 }
 
 bool CZMRules::FAllowNPCs()
@@ -980,7 +911,6 @@ bool CZMRules::FAllowNPCs()
     // Make sure background maps don't generate node graph.
     if ( gpGlobals->eLoadType == MapLoad_Background )
         return false;
-
 
     return true;
 }
@@ -993,7 +923,6 @@ void CZMRules::EndRound( ZMRoundEndReason_t reason )
     // Can't end the round when it has already ended!
     if ( IsInRoundEnd() ) return;
 
-
     IGameEvent* pEvent = nullptr;
 
     // Fire round end event for plugins
@@ -1005,9 +934,7 @@ void CZMRules::EndRound( ZMRoundEndReason_t reason )
         gameeventmanager->FireEvent( pEvent, true );
     }
 
-
     RewardPoints( reason );
-
 
     float flIntermissionTime = zm_sv_roundintermissiontime.GetFloat();
 
@@ -1021,13 +948,11 @@ void CZMRules::EndRound( ZMRoundEndReason_t reason )
     m_flRoundRestartTime = gpGlobals->curtime + flIntermissionTime;
     m_bInRoundEnd = true;
 
-
     // Tell clients we don't want to show objectives anymore.
     CZMEntObjectivesManager::ResetObjectives();
 
-
     ++m_nRealRounds;
-    if ( (gpGlobals->curtime - m_flRoundStartTime) > zm_sv_roundmintime.GetFloat() && reason != ZMROUND_GAMEBEGIN )
+    if ( ( gpGlobals->curtime - m_flRoundStartTime ) > zm_sv_roundmintime.GetFloat() && reason != ZMROUND_GAMEBEGIN )
     {
         ++m_nRounds;
     }
@@ -1038,7 +963,6 @@ void CZMRules::EndRound( ZMRoundEndReason_t reason )
         GoToIntermission();
     }
 
-
     // Will be used by clients in the future.
     pEvent = gameeventmanager->CreateEvent( "round_end_post", true );
     if ( pEvent )
@@ -1047,7 +971,6 @@ void CZMRules::EndRound( ZMRoundEndReason_t reason )
 
         gameeventmanager->FireEvent( pEvent, false );
     }
-
 
     // Send round end outputs for mappers.
     CZMEntWin::OnRoundEnd( reason );
@@ -1091,26 +1014,24 @@ void CZMRules::RewardPoints( ZMRoundEndReason_t reason )
 
         if ( !pPlayer ) continue;
 
-
         switch ( reason )
         {
-        case ZMROUND_HUMANDEAD :
-        case ZMROUND_HUMANLOSE :
+        case ZMROUND_HUMANDEAD:
+        case ZMROUND_HUMANLOSE:
             if ( pPlayer->IsZM() )
             {
                 pPlayer->IncrementFragCount( ZM_POINTS_ZM_WIN );
             }
             break;
-        case ZMROUND_HUMANWIN :
+        case ZMROUND_HUMANWIN:
             if ( pPlayer->IsHuman() && pPlayer->IsAlive() )
             {
                 pPlayer->IncrementFragCount( ZM_POINTS_HUMAN_WIN );
             }
             break;
-        default :
+        default:
             break;
         }
-
     }
 }
 
@@ -1118,7 +1039,6 @@ CZMPlayer* CZMRules::ChooseZM()
 {
     int i;
     CZMPlayer* pPlayer;
-
 
     int nHighestPriority = -1;
 
@@ -1130,7 +1050,6 @@ CZMPlayer* CZMRules::ChooseZM()
     vZMs.Purge();
     vZMFirstChoices.Purge();
 
-
     int partflags = GetServerParticipationFlags();
 
     for ( i = 1; i <= gpGlobals->maxClients; i++ )
@@ -1141,23 +1060,22 @@ CZMPlayer* CZMRules::ChooseZM()
 
         if ( pPlayer->IsHLTV() ) continue;
 
-
         switch ( pPlayer->GetParticipation() )
         {
-        case ZMPART_ONLYHUMAN :
+        case ZMPART_ONLYHUMAN:
         {
             if ( partflags & ZMPARTFLAG_NOHUMANSONLY )
                 vZMs.AddToHead( pPlayer );
             break;
         }
-        case ZMPART_ONLYSPEC :
+        case ZMPART_ONLYSPEC:
         {
             if ( partflags & ZMPARTFLAG_NOSPECONLY )
                 vZMs.AddToHead( pPlayer );
             break;
         }
-        default :
-        case ZMPART_ALLOWZM :
+        default:
+        case ZMPART_ALLOWZM:
             vZMs.AddToHead( pPlayer );
 
             if ( pPlayer->GetPickPriority() >= nHighestPriority )
@@ -1168,17 +1086,15 @@ CZMPlayer* CZMRules::ChooseZM()
                     vZMFirstChoices.Purge();
                 }
 
-
                 vZMFirstChoices.AddToHead( pPlayer );
                 nHighestPriority = pPlayer->GetPickPriority();
             }
 
             break;
         }
-        
+
         vBackupZMs.AddToHead( pPlayer );
     }
-
 
     if ( vZMFirstChoices.Count() > 0 )
     {
@@ -1187,7 +1103,6 @@ CZMPlayer* CZMRules::ChooseZM()
 
     // Nothing to pick from...
     if ( !vZMs.Count() && !vBackupZMs.Count() ) return nullptr;
-
 
     if ( vZMs.Count() > 0 )
     {
@@ -1207,9 +1122,7 @@ void CZMRules::BeginRound( CZMPlayer* pZM )
 {
     CZMPlayer* pPlayer;
 
-
     int partflags = GetServerParticipationFlags();
-
 
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
     {
@@ -1219,10 +1132,8 @@ void CZMRules::BeginRound( CZMPlayer* pZM )
 
         if ( pPlayer->IsHLTV() ) continue;
 
-
         // Always increase the priority.
         pPlayer->SetPickPriority( pPlayer->GetPickPriority() + 1 );
-
 
         int team = ZMTEAM_HUMAN;
 
@@ -1230,11 +1141,12 @@ void CZMRules::BeginRound( CZMPlayer* pZM )
         {
             switch ( pPlayer->GetParticipation() )
             {
-            case ZMPART_ONLYSPEC :
-                if ( !(partflags & ZMPARTFLAG_NOSPECONLY) ) // Can our participation be spec only?
+            case ZMPART_ONLYSPEC:
+                if ( !( partflags & ZMPARTFLAG_NOSPECONLY ) ) // Can our participation be spec only?
                     team = ZMTEAM_SPECTATOR;
                 break;
-            default : break;
+            default:
+                break;
             }
         }
         else
@@ -1245,9 +1157,7 @@ void CZMRules::BeginRound( CZMPlayer* pZM )
             pPlayer->SetPickPriority( 0 );
         }
 
-
         pPlayer->SetResources( zm_sv_resource_init.GetInt() );
-
 
         // Don't change team if we're already a spectator.
         if ( team != ZMTEAM_SPECTATOR || !pPlayer->IsObserver() )
@@ -1256,9 +1166,7 @@ void CZMRules::BeginRound( CZMPlayer* pZM )
         }
     }
 
-
     m_nRoundMaxHumansAlive = GetNumAliveHumans();
-
 
     if ( pZM )
     {
@@ -1271,7 +1179,7 @@ void CZMRules::ResetWorld()
     Msg( "The round is restarting...\n" );
 
     IGameEvent* pEvent;
-    
+
     // Send restart event for plugins.
     pEvent = gameeventmanager->CreateEvent( "round_restart_pre", true );
     if ( pEvent )
@@ -1279,10 +1187,7 @@ void CZMRules::ResetWorld()
         gameeventmanager->FireEvent( pEvent, true );
     }
 
-
     RestoreMap();
-
-
 
     // Reset ZM fog in case the values were updated.
     if ( GetZMFogController() )
@@ -1303,19 +1208,15 @@ void CZMRules::ResetWorld()
 
     BeginRound( pZM );
 
-
-
     if ( GetObjManager() ) // Has to be done after restoring, preferably after changing teams.
     {
         GetObjManager()->RoundStart();
     }
 
-
     m_flRoundStartTime = gpGlobals->curtime;
 
     m_flRoundRestartTime = 0.0f;
     m_bInRoundEnd = false;
-
 
     // This will be used for clients in the future.
     pEvent = gameeventmanager->CreateEvent( "round_restart_post", true );
@@ -1338,13 +1239,11 @@ void CZMRules::PlayerSpawn( CBasePlayer* pPlayer )
     if ( !pZMPlayer->IsHuman() )
         return;
 
-
     // Fire game_player_equip
 
     CBaseEntity* pEquip = nullptr;
 
-
-    while ( (pEquip = gEntList.FindEntityByClassname( pEquip, "game_player_equip" )) != nullptr )
+    while ( ( pEquip = gEntList.FindEntityByClassname( pEquip, "game_player_equip" ) ) != nullptr )
     {
         pEquip->Touch( pPlayer );
     }
@@ -1384,7 +1283,6 @@ bool CZMRules::IsSpawnPointValid( CBaseEntity* pSpot, CBasePlayer* pPlayer )
                     if ( pEntity->IsEffectActive( EF_NODRAW ) )
                         return false;
 
-
                     return true;
                 }
 
@@ -1395,7 +1293,6 @@ bool CZMRules::IsSpawnPointValid( CBaseEntity* pSpot, CBasePlayer* pPlayer )
                 }
             }
 
-
             return CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask );
         }
     };
@@ -1404,12 +1301,12 @@ bool CZMRules::IsSpawnPointValid( CBaseEntity* pSpot, CBasePlayer* pPlayer )
     CZMTraceFilterSpawnPoint filter( pPlayer, COLLISION_GROUP_PLAYER );
     trace_t trace;
     UTIL_TraceHull( pSpot->GetAbsOrigin() + Vector( 0.0f, 0.0f, 1.0f ),
-                    pSpot->GetAbsOrigin() + Vector( 0.0f, 0.0f, 2.0f ),
-                    pPlayer->GetPlayerMins(),
-                    pPlayer->GetPlayerMaxs(),
-                    MASK_PLAYERSOLID,
-                    &filter,
-                    &trace );
+        pSpot->GetAbsOrigin() + Vector( 0.0f, 0.0f, 2.0f ),
+        pPlayer->GetPlayerMins(),
+        pPlayer->GetPlayerMaxs(),
+        MASK_PLAYERSOLID,
+        &filter,
+        &trace );
 
     return trace.fraction == 1.0f;
 
@@ -1427,7 +1324,6 @@ bool CZMRules::IsSpawnPointValid( CBaseEntity* pSpot, CBasePlayer* pPlayer )
     */
 }
 
-
 int CZMRules::GetNumAliveHumans()
 {
     int num = 0;
@@ -1442,7 +1338,7 @@ int CZMRules::GetNumAliveHumans()
             ++num;
         }
     }
-    
+
     return num;
 }
 
@@ -1454,25 +1350,22 @@ bool CZMRules::ShouldLateSpawn( CZMPlayer* pPlayer )
     if ( pPlayer->IsHLTV() )
         return false;
 
-
     Participation_t part = pPlayer->GetParticipation();
 
     if ( part == ZMPART_ONLYSPEC )
     {
         int flags = ZMRules()->GetServerParticipationFlags();
 
-        
-        if ( !(flags & ZMPARTFLAG_NOSPECONLY) ) // Server allows spec only?
+        if ( !( flags & ZMPARTFLAG_NOSPECONLY ) ) // Server allows spec only?
             return false;
     }
 
     // Outside late spawning grace period?
-    if ( gpGlobals->curtime > (ZMRules()->GetRoundStartTime() + zm_sv_joingrace.GetFloat()) )
+    if ( gpGlobals->curtime > ( ZMRules()->GetRoundStartTime() + zm_sv_joingrace.GetFloat() ) )
     {
         return false;
     }
 
-    
     // Check if we were spawned this round already
     // to stop people from exploiting retry.
     auto* pData = GetZMRejoinSystem()->FindPlayerData( pPlayer, "Late spawn" );
@@ -1485,17 +1378,23 @@ void InitBodyQue()
 }
 #endif
 
-
 int CZMRules::GetServerParticipationFlags()
 {
     int flags = 0;
 
     switch ( zm_sv_participation.GetInt() )
     {
-    case ZMSERVPART_NOHUMANSONLY : flags |= ZMPARTFLAG_NOHUMANSONLY; break;
-    case ZMSERVPART_NOSPECONLY : flags |= ZMPARTFLAG_NOSPECONLY; break;
-    case ZMSERVPART_NOHUMANSPECONLY : flags |= ZMPARTFLAG_NOHUMANSONLY | ZMPARTFLAG_NOSPECONLY; break;
-    default : break;
+    case ZMSERVPART_NOHUMANSONLY:
+        flags |= ZMPARTFLAG_NOHUMANSONLY;
+        break;
+    case ZMSERVPART_NOSPECONLY:
+        flags |= ZMPARTFLAG_NOSPECONLY;
+        break;
+    case ZMSERVPART_NOHUMANSPECONLY:
+        flags |= ZMPARTFLAG_NOHUMANSONLY | ZMPARTFLAG_NOSPECONLY;
+        break;
+    default:
+        break;
     }
 
     return flags;

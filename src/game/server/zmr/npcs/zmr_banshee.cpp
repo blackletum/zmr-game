@@ -1,25 +1,22 @@
-#include "cbase.h"
-#include "npcevent.h"
 #include "activitylist.h"
+#include "cbase.h"
 #include "eventlist.h"
+#include "npcevent.h"
 
-#include "zmr_gamerules.h"
-#include "npcs/zmr_zombieanimstate.h"
-#include "npcs/zmr_zombiebase.h"
-#include "zmr_banshee_path.h"
-#include "zmr_banshee.h"
 #include "npcs/sched/zmr_zombie_banshee_ceil_ambush.h"
 #include "npcs/sched/zmr_zombie_banshee_leap.h"
+#include "npcs/zmr_zombieanimstate.h"
+#include "npcs/zmr_zombiebase.h"
+#include "zmr_banshee.h"
+#include "zmr_banshee_path.h"
+#include "zmr_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_bansheerangeattack( "zm_sv_debug_bansheerangeattack", "0" );
 
-
-#define ZOMBIE_MODEL        "models/zombie/zm_fast.mdl"
-
+#define ZOMBIE_MODEL "models/zombie/zm_fast.mdl"
 
 ConVar zm_sv_banshee_leapdist_min( "zm_sv_banshee_leapdist_min", "200", FCVAR_NOTIFY, "The minimum distance Banshees will perform a leap." );
 ConVar zm_sv_banshee_leapdist_max( "zm_sv_banshee_leapdist_max", "300", FCVAR_NOTIFY, "The maximum distance Banshees will perform a leap." );
@@ -29,17 +26,11 @@ ConVar zm_sv_banshee_ceilambush_maxheight( "zm_sv_banshee_ceilambush_maxheight",
 
 extern ConVar zm_sk_banshee_melee_continuous_limit;
 
-
 LINK_ENTITY_TO_CLASS( npc_fastzombie, CZMBanshee );
 PRECACHE_REGISTER( npc_fastzombie );
 
-
-
-
 extern ConVar zm_sk_banshee_dmg_claw;
 extern ConVar zm_sk_banshee_health;
-
-
 
 // Banshee motor
 CZMBansheeMotor::CZMBansheeMotor( CZMBaseZombie* pOuter ) : CZMBaseZombieMotor( pOuter )
@@ -72,9 +63,6 @@ bool CZMBansheeMotor::ShouldAdjustVelocity() const
     return !m_bIsInNavJump && BaseClass::ShouldAdjustVelocity();
 }
 
-
-
-
 IMPLEMENT_SERVERCLASS_ST( CZMBanshee, DT_ZM_Banshee )
 END_SEND_TABLE()
 
@@ -82,7 +70,6 @@ CZMBanshee::CZMBanshee() : CZMBaseZombie( ZMCLASS_BANSHEE )
 {
     m_flNextLeapAttack = 0.0f;
     m_nMeleeAttacks = 0;
-
 
     m_pLeapSched = new CBansheeLeapSchedule;
     m_pCeilAmbushSched = new CBansheeCeilAmbushSchedule;
@@ -98,7 +85,6 @@ void CZMBanshee::Precache()
 {
     if ( !IsPrecacheAllowed() )
         return;
-
 
     PrecacheScriptSound( "NPC_FastZombie.LeapAttack" );
     PrecacheScriptSound( "NPC_FastZombie.FootstepRight" );
@@ -122,14 +108,12 @@ void CZMBanshee::Precache()
 
     PrecacheScriptSound( "NPC_FastZombie.Moan1" );
 
-
     BaseClass::Precache();
 }
 
 void CZMBanshee::Spawn()
 {
     SetMaxHealth( zm_sk_banshee_health.GetInt() );
-
 
     BaseClass::Spawn();
 }
@@ -215,7 +199,6 @@ bool CZMBanshee::LeapAttack( const QAngle& angPunch, const Vector& vecPunchVel, 
         }
     }
 
-
     ClawImpactSound( bHit );
 
     return bHit;
@@ -246,18 +229,17 @@ bool CZMBanshee::HasConditionsForRangeAttack( CBaseEntity* pEnemy ) const
         return false;
     }
 
-
     bool bDebugging = zm_sv_debug_bansheerangeattack.GetBool();
 
     // We need to be able to see em.
     trace_t tr;
     UTIL_TraceLine( vecStart, vecEnd, MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
 
-    bool bCanSee = tr.fraction == 1.0f || (tr.m_pEnt && tr.m_pEnt->IsPlayer());
+    bool bCanSee = tr.fraction == 1.0f || ( tr.m_pEnt && tr.m_pEnt->IsPlayer() );
 
     if ( bDebugging )
     {
-        NDebugOverlay::Line( vecStart, vecEnd, (!bCanSee) ? 255 : 0, bCanSee ? 255 : 0, 0, true, 0.1f );
+        NDebugOverlay::Line( vecStart, vecEnd, ( !bCanSee ) ? 255 : 0, bCanSee ? 255 : 0, 0, true, 0.1f );
     }
 
     if ( bCanSee )
@@ -284,7 +266,7 @@ bool CZMBanshee::HasConditionsForRangeAttack( CBaseEntity* pEnemy ) const
 
         if ( bDebugging )
         {
-            NDebugOverlay::SweptBox( vecBoxStart, vecBoxEnd, mins, maxs, vec3_angle, (!ret) ? 255 : 0, ret ? 255 : 0, 0, 0, 0.1f );
+            NDebugOverlay::SweptBox( vecBoxStart, vecBoxEnd, mins, maxs, vec3_angle, ( !ret ) ? 255 : 0, ret ? 255 : 0, 0, 0, 0.1f );
         }
 
         return ret;
@@ -305,11 +287,11 @@ void CZMBanshee::HandleAnimEvent( animevent_t* pEvent )
 
     //if ( pEvent->event == AE_FASTZOMBIE_CLIMB_LEFT || pEvent->event == AE_FASTZOMBIE_CLIMB_RIGHT )
     //{
-        //if( ++m_iClimbCount % 3 == 0 )
-        //{
-			//ENVELOPE_CONTROLLER.SoundChangePitch( m_pLayer2, random->RandomFloat( 100, 150 ), 0.0 );
-            //ENVELOPE_CONTROLLER.SoundPlayEnvelope( m_pLayer2, SOUNDCTRL_CHANGE_VOLUME, envFastZombieVolumeClimb, ARRAYSIZE(envFastZombieVolumeClimb) );
-        //}
+    //if( ++m_iClimbCount % 3 == 0 )
+    //{
+    //ENVELOPE_CONTROLLER.SoundChangePitch( m_pLayer2, random->RandomFloat( 100, 150 ), 0.0 );
+    //ENVELOPE_CONTROLLER.SoundPlayEnvelope( m_pLayer2, SOUNDCTRL_CHANGE_VOLUME, envFastZombieVolumeClimb, ARRAYSIZE(envFastZombieVolumeClimb) );
+    //}
 
     //    return;
     //}
@@ -323,9 +305,8 @@ void CZMBanshee::HandleAnimEvent( animevent_t* pEvent )
     {
         return;
     }
-    
-    if (pEvent->event == AE_ZOMBIE_ATTACK_RIGHT
-    ||  pEvent->event == AE_ZOMBIE_ATTACK_LEFT)
+
+    if ( pEvent->event == AE_ZOMBIE_ATTACK_RIGHT || pEvent->event == AE_ZOMBIE_ATTACK_LEFT )
     {
         Vector right;
         AngleVectors( GetLocalAngles(), nullptr, &right, nullptr );
@@ -356,7 +337,7 @@ void CZMBanshee::OnAnimActivityFinished( Activity completedActivity )
     if ( completedActivity == ACT_MELEE_ATTACK1 )
     {
         bool bCanAttack = GetEnemy() && HasConditionsForClawAttack( GetEnemy() );
-        
+
         int attacklimit = zm_sk_banshee_melee_continuous_limit.GetInt();
         //
         // If we loop, we're the "fast" attack
@@ -371,7 +352,6 @@ void CZMBanshee::OnAnimActivityFinished( Activity completedActivity )
             float delay = SequenceDuration();
             SetNextAttack( gpGlobals->curtime + delay );
             SetNextMove( gpGlobals->curtime + delay );
-
 
             EmitSound( "NPC_FastZombie.Frenzy" );
 
@@ -407,7 +387,7 @@ float CZMBanshee::IdleSound()
     return 1.0f;
 }
 
-#define ALERT_SOUND_NEAR_DIST       512.0f
+#define ALERT_SOUND_NEAR_DIST 512.0f
 
 void CZMBanshee::AlertSound()
 {

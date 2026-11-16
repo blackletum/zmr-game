@@ -2,48 +2,45 @@
 #include "in_buttons.h"
 #include "nav_mesh.h"
 
-#include "npcr_motor_player.h"
 #include "npcr_manager.h"
+#include "npcr_motor_player.h"
 #include "npcr_player.h"
-
 
 #ifdef NPCR_BOT_CMDS
 template<typename ForEachFunc>
 void ForTargetedBots( const char* comp, ForEachFunc f )
 {
-    NPCR::g_NPCManager.ForEachNPC( [ comp, f ]( NPCR::CBaseNPC* pNPC )
-    {
-        bool passes = false;
-
-        auto* pChar = pNPC->GetCharacter();
-
-        if ( comp && *comp )
+    NPCR::g_NPCManager.ForEachNPC( [comp, f]( NPCR::CBaseNPC* pNPC )
         {
-            auto* pPlayerBot = ToBasePlayer( pChar );
-            if ( pPlayerBot )
+            bool passes = false;
+
+            auto* pChar = pNPC->GetCharacter();
+
+            if ( comp && *comp )
             {
-			    passes = Q_stricmp( pPlayerBot->GetPlayerName(), comp ) != -1;
+                auto* pPlayerBot = ToBasePlayer( pChar );
+                if ( pPlayerBot )
+                {
+                    passes = Q_stricmp( pPlayerBot->GetPlayerName(), comp ) != -1;
+                }
+                else
+                {
+                    passes = Q_stricmp( STRING( pChar->GetEntityName() ), comp ) != -1;
+                }
             }
             else
             {
-                passes = Q_stricmp( STRING( pChar->GetEntityName() ), comp ) != -1;
+                passes = true;
             }
-        }
-        else
-        {
-            passes = true;
-        }
 
-        if ( passes )
-        {
-            f( pNPC );
-        }
+            if ( passes )
+            {
+                f( pNPC );
+            }
 
-        return false;
-    } );
+            return false;
+        } );
 }
-
-
 
 ConVar bot_attack( "bot_attack", "0" );
 ConVar bot_mimic( "bot_mimic", "0" );
@@ -54,20 +51,19 @@ CON_COMMAND( bot_sendcmd, "Sends command to all bot players" )
     if ( !UTIL_IsCommandIssuedByServerAdmin() )
         return;
 
-
-    NPCR::g_NPCManager.ForEachNPC( [ &args ]( NPCR::CBaseNPC* pNPC )
-    {
-        CBasePlayer* pPlayer = ToBasePlayer( pNPC->GetCharacter() );
-        if ( pPlayer )
+    NPCR::g_NPCManager.ForEachNPC( [&args]( NPCR::CBaseNPC* pNPC )
         {
-            if ( !pPlayer->ClientCommand( args ) )
+            CBasePlayer* pPlayer = ToBasePlayer( pNPC->GetCharacter() );
+            if ( pPlayer )
             {
-                engine->ClientCommand( pPlayer->edict(), "%s", args.ArgS() );
+                if ( !pPlayer->ClientCommand( args ) )
+                {
+                    engine->ClientCommand( pPlayer->edict(), "%s", args.ArgS() );
+                }
             }
-        }
 
-        return false;
-    } );
+            return false;
+        } );
 }
 #endif
 
@@ -77,9 +73,8 @@ CON_COMMAND( bot_teleport, "Teleport given bots to your crosshair." )
         return;
 
     auto* pPlayer = UTIL_GetCommandClient();
-    if( !pPlayer )
+    if ( !pPlayer )
         return;
-
 
     CTraceFilterSimple filter( pPlayer, COLLISION_GROUP_NONE );
     Vector fwd;
@@ -88,15 +83,13 @@ CON_COMMAND( bot_teleport, "Teleport given bots to your crosshair." )
     pPlayer->EyeVectors( &fwd );
 
     UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + fwd * MAX_TRACE_LENGTH, MASK_SOLID, &filter, &tr );
-    
-
 
     const char* comp = args.Arg( 2 );
 
-    ForTargetedBots( comp, [ &tr ]( NPCR::CBaseNPC* pNPC )
-    {
-        pNPC->GetCharacter()->Teleport( &tr.endpos, nullptr, nullptr );
-    } );
+    ForTargetedBots( comp, [&tr]( NPCR::CBaseNPC* pNPC )
+        {
+            pNPC->GetCharacter()->Teleport( &tr.endpos, nullptr, nullptr );
+        } );
 }
 
 CON_COMMAND( bot_goto_selected, "Tells given bots to move to specific nav area." )
@@ -105,9 +98,8 @@ CON_COMMAND( bot_goto_selected, "Tells given bots to move to specific nav area."
         return;
 
     auto* pPlayer = UTIL_GetCommandClient();
-    if( !pPlayer )
+    if ( !pPlayer )
         return;
-
 
     auto* pArea = TheNavMesh->GetSelectedArea();
 
@@ -120,10 +112,9 @@ CON_COMMAND( bot_goto_selected, "Tells given bots to move to specific nav area."
         pPlayer->EyeVectors( &fwd );
 
         UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + fwd * MAX_TRACE_LENGTH, MASK_SOLID, &filter, &tr );
-    
+
         pArea = TheNavMesh->GetNavArea( tr.endpos );
     }
-
 
     if ( !pArea )
     {
@@ -131,19 +122,17 @@ CON_COMMAND( bot_goto_selected, "Tells given bots to move to specific nav area."
         return;
     }
 
-
     const char* comp = args.Arg( 2 );
 
-    ForTargetedBots( comp, [ pArea ]( NPCR::CBaseNPC* pNPC )
-    {
-        pNPC->OnForcedMove( pArea );
-    } );
+    ForTargetedBots( comp, [pArea]( NPCR::CBaseNPC* pNPC )
+        {
+            pNPC->OnForcedMove( pArea );
+        } );
 }
 
 ConVar bot_mimic_pitch_offset( "bot_mimic_pitch_offset", "0" );
 // A specific target?
 ConVar bot_mimic_target( "bot_mimic_target", "0", 0, "A specific bot that will mimic the actions" );
-
 
 NPCR::CPlayerCmdHandler::CPlayerCmdHandler( CBaseCombatCharacter* pNPC ) : NPCR::CBaseNPC( pNPC )
 {
@@ -177,7 +166,6 @@ void NPCR::CPlayerCmdHandler::BuildPlayerCmd( CUserCmd& cmd )
     HANDLE_BTN( PressReload, IN_RELOAD, cmd )
     HANDLE_BTN( PressUse, IN_USE, cmd )
 
-
     // Movement
     // ZMRTODO: Build the movement direction here instead of in the motor?
     // The bot angles here vs in the motor::Update() may be drastically different.
@@ -198,7 +186,6 @@ void NPCR::CPlayerCmdHandler::BuildPlayerCmd( CUserCmd& cmd )
         cmd.buttons |= IN_MOVELEFT;
     else if ( cmd.sidemove < 0.0f )
         cmd.buttons |= IN_MOVERIGHT;
-
 
     cmd.viewangles = GetEyeAngles();
 }

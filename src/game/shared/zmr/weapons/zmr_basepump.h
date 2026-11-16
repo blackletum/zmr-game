@@ -1,13 +1,10 @@
 #pragma once
 
-
 #include "zmr_base.h"
-
 
 #ifdef CLIENT_DLL
 #define CZMBasePumpWeapon C_ZMBasePumpWeapon
 #endif
-
 
 enum PumpState_t
 {
@@ -41,30 +38,27 @@ public:
 
     virtual KeyValues* ToKeyValues() const override;
 
-    
     float flPumpTime;
 };
-
 
 // ZMRTODO: Separate pump and single reload weapon classes.
 class CZMBasePumpWeapon : public CZMBaseWeapon
 {
 public:
     DECLARE_CLASS( CZMBasePumpWeapon, CZMBaseWeapon );
-    DECLARE_NETWORKCLASS(); 
+    DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
-
 
     CZMBasePumpWeapon();
 
     const CZMBasePumpConfig* GetBasePumpConfig() const;
 
-    virtual bool CanAct( ZMWepActionType_t type = WEPACTION_GENERIC ) const override; 
+    virtual bool CanAct( ZMWepActionType_t type = WEPACTION_GENERIC ) const override;
 
     virtual void Drop( const Vector& vecVelocity ) override;
     virtual bool Holster( CBaseCombatWeapon* pSwitchTo ) override;
     virtual void Shoot( int iAmmoType = -1, int nBullets = -1, int nAmmo = -1, float flMaxRange = -1.0f, bool bSecondary = false ) override;
-    virtual	void CheckReload() override;
+    virtual void CheckReload() override;
     virtual bool Reload() override;
     virtual void ItemPostFrame() override;
     virtual void FinishReload() override;
@@ -83,7 +77,7 @@ public:
 
     virtual bool IsInReload() const override;
     bool NeedsPump() const { return m_iPumpState != PUMPSTATE_NONE; }
-    
+
 protected:
     CNetworkVar( int, m_iPumpState );
     CNetworkVar( int, m_iReloadState );

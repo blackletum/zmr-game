@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifdef CLIENT_DLL
 #include "npcr/c_npcr_nonplayer.h"
 
@@ -8,4 +7,3 @@
 #else
 #include "npcr/npcr_nonplayer.h"
 #endif
-

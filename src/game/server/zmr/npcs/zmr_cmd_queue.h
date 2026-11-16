@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "cbase.h"
-
 
 enum ZombieCommandType_t : unsigned char
 {
@@ -21,20 +19,19 @@ public:
     CZMCommandBase( CZMPlayer* pCommander ) { m_hCommander.Set( pCommander ); }
     virtual ~CZMCommandBase() {}
 
-    virtual ZombieCommandType_t     GetCommandType() const { return COMMAND_NONE; }
+    virtual ZombieCommandType_t GetCommandType() const { return COMMAND_NONE; }
 
-    CZMPlayer*                      GetCommander() const { return m_hCommander.Get(); }
+    CZMPlayer* GetCommander() const { return m_hCommander.Get(); }
 
     //virtual bool                    IsSameCommand( CZMCommandBase* pCom ) { return GetCommandType() == pCom->GetCommandType(); }
 
-    virtual float                   GetExpireTime() const { return 0.0f; }
+    virtual float GetExpireTime() const { return 0.0f; }
 
+    virtual CBaseEntity* GetObjectTarget() const { return nullptr; }
+    virtual void SetObjectTarget( CBaseEntity * pEnt ) {}
 
-    virtual CBaseEntity*            GetObjectTarget() const { return nullptr; }
-    virtual void                    SetObjectTarget( CBaseEntity* pEnt ) {}
-
-    virtual const Vector&           GetVectorTarget() const { return vec3_origin; }
-    virtual void                    SetVectorTarget( const Vector& vecPos ) {}
+    virtual const Vector& GetVectorTarget() const { return vec3_origin; }
+    virtual void SetVectorTarget( const Vector& vecPos ) {}
 
 private:
     CHandle<CZMPlayer> m_hCommander;
@@ -48,10 +45,10 @@ public:
         m_vecTarget = vecPos;
     }
 
-    virtual ZombieCommandType_t     GetCommandType() const override { return COMMAND_MOVE; }
+    virtual ZombieCommandType_t GetCommandType() const override { return COMMAND_MOVE; }
 
-    virtual const Vector&           GetVectorTarget() const override { return m_vecTarget; }
-    virtual void                    SetVectorTarget( const Vector& vecPos ) override { m_vecTarget = vecPos; }
+    virtual const Vector& GetVectorTarget() const override { return m_vecTarget; }
+    virtual void SetVectorTarget( const Vector& vecPos ) override { m_vecTarget = vecPos; }
 
 private:
     Vector m_vecTarget;
@@ -67,7 +64,7 @@ public:
         m_bBreak = bBreak;
     }
 
-    virtual ZombieCommandType_t     GetCommandType() const override { return COMMAND_SWAT; }
+    virtual ZombieCommandType_t GetCommandType() const override { return COMMAND_SWAT; }
 
     /*
     virtual bool                    IsSameCommand( CZMCommandBase* pCom )
@@ -83,11 +80,10 @@ public:
     }
     */
 
+    virtual CBaseEntity* GetObjectTarget() const override { return m_hSwatObject.Get(); }
+    virtual void SetObjectTarget( CBaseEntity* pEnt ) override { m_hSwatObject.Set( pEnt ); }
 
-    virtual CBaseEntity*            GetObjectTarget() const override { return m_hSwatObject.Get(); }
-    virtual void                    SetObjectTarget( CBaseEntity* pEnt ) override { m_hSwatObject.Set( pEnt ); }
-
-    bool    BreakObject() const { return m_bBreak; }
+    bool BreakObject() const { return m_bBreak; }
 
 private:
     CHandle<CBaseEntity> m_hSwatObject;
@@ -99,10 +95,9 @@ class CZMCommandCeilingAmbush final : public CZMCommandBase
 public:
     CZMCommandCeilingAmbush( CZMPlayer* pCommander ) : CZMCommandBase( pCommander ) {}
 
+    virtual ZombieCommandType_t GetCommandType() const override { return COMMAND_CEILINGAMBUSH; }
 
-    virtual ZombieCommandType_t     GetCommandType() const override { return COMMAND_CEILINGAMBUSH; }
-
-    virtual float                   GetExpireTime() const override { return 3.0f; }
+    virtual float GetExpireTime() const override { return 3.0f; }
 };
 
 struct ZMCommandSlot_t
@@ -111,7 +106,7 @@ struct ZMCommandSlot_t
     {
         Assert( pCom );
         pCommand = pCom;
-        
+
         UpdateTimer( pCommand->GetExpireTime() );
     }
 
@@ -144,14 +139,13 @@ public:
         Assert( pCommand->GetCommandType() != COMMAND_NONE );
 
         int index = FindCommandIndex( pCommand->GetCommandType() );
-        if ( index != -1/* && m_vCommands[index]->pCommand->IsSameCommand( pCommand ) */)
+        if ( index != -1 /* && m_vCommands[index]->pCommand->IsSameCommand( pCommand ) */ )
         {
             delete m_vCommands[index]->pCommand;
             m_vCommands[index]->pCommand = pCommand;
             m_vCommands[index]->UpdateTimer( pCommand->GetExpireTime() );
             return false;
         }
-
 
         m_vCommands.AddToTail( new ZMCommandSlot_t( pCommand ) );
 
@@ -201,9 +195,10 @@ public:
 
                 delete slot;
             }
-            else break;
+            else
+                break;
         }
-        
+
         return bRemoved;
     }
 
@@ -215,7 +210,7 @@ public:
             m_vCommands.Remove( index );
             return true;
         }
-        
+
         return false;
     }
 

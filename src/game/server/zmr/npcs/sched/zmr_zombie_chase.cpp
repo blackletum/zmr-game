@@ -6,7 +6,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CZombieChaseSchedule::CZombieChaseSchedule()
 {
     m_pAttackSched = new CZombieClawAttackSched;
@@ -28,7 +27,6 @@ CZombieChaseSchedule::~CZombieChaseSchedule()
     delete m_pGotoSwatSched;
 }
 
-
 void CZombieChaseSchedule::OnStart()
 {
     CZMBaseZombie* pOuter = GetOuter();
@@ -39,13 +37,11 @@ void CZombieChaseSchedule::OnStart()
         return;
     }
 
-
     const Vector vecStart = pOuter->GetAbsOrigin();
     const Vector vecEnd = pEnemy->GetAbsOrigin();
 
     CNavArea* start = TheNavMesh->GetNearestNavArea( vecStart, true, 10000.0f, true );
     CNavArea* goal = TheNavMesh->GetNearestNavArea( vecEnd, true, 10000.0f, true );
-
 
     m_PathCost = *pOuter->GetPathCost();
     m_PathCost.SetStepHeight( pOuter->GetMotor()->GetStepHeight() );
@@ -60,15 +56,11 @@ void CZombieChaseSchedule::OnStart()
         return;
     }
 
-
     pOuter->SetCurrentPath( &m_Path );
-
 
     // Zero out costs because chase update will recompute the path.
     m_PathCost.SetStartPos( vec3_origin, nullptr );
     m_PathCost.SetGoalPos( vec3_origin, nullptr );
-
-
 
     m_SwatScanTimer.Start( 3.0f );
     m_BlockerTimer.Start( 0.2f );
@@ -106,7 +98,6 @@ void CZombieChaseSchedule::OnUpdate()
         return;
     }
 
-
     // Scan for a better target to chase.
     if ( !m_EnemyScanTimer.HasStarted() || m_EnemyScanTimer.IsElapsed() )
     {
@@ -119,7 +110,7 @@ void CZombieChaseSchedule::OnUpdate()
             float flNewDist = vecMyPos.DistTo( pEnt->WorldSpaceCenter() );
 
             // We have to be reasonably closer to the potential enemy.
-            if ( flNewDist < (flCurDist*0.8f) )
+            if ( flNewDist < ( flCurDist * 0.8f ) )
             {
                 pOuter->AcquireEnemy( pEnt );
             }
@@ -127,7 +118,6 @@ void CZombieChaseSchedule::OnUpdate()
 
         m_EnemyScanTimer.Start( 0.5f );
     }
-
 
     if ( pOuter->CanMove() )
     {
@@ -148,17 +138,13 @@ void CZombieChaseSchedule::OnUpdate()
         }
     }
 
-
     // See if we have anything blocking us.
     if ( m_BlockerTimer.IsElapsed() && pOuter->GetBlockerFinder()->GetTimesBlocked() > 1 && pOuter->GetBlockerFinder()->GetBlocker() )
     {
         CBaseEntity* pBlocker = pOuter->GetBlockerFinder()->GetBlocker();
 
         // Only swat if we've been stuck for a while.
-        bool bSwat =    pOuter->CanSwatPhysicsObjects()
-                &&      CZMBaseZombie::CanSwatObject( pBlocker )
-                &&      m_StuckTimer.HasStarted()
-                &&      !m_StuckTimer.IsElapsed();
+        bool bSwat = pOuter->CanSwatPhysicsObjects() && CZMBaseZombie::CanSwatObject( pBlocker ) && m_StuckTimer.HasStarted() && !m_StuckTimer.IsElapsed();
 
         bool bBreak = pOuter->CanBreakObject( pBlocker, true );
         if ( bSwat || bBreak )
@@ -179,7 +165,6 @@ void CZombieChaseSchedule::OnUpdate()
         m_BlockerTimer.Start( 0.5f );
     }
 
-
     if ( pOuter->CanSwatPhysicsObjects() && m_SwatScanTimer.IsElapsed() )
     {
         m_SwatScanTimer.Start( 3.0f );
@@ -189,7 +174,6 @@ void CZombieChaseSchedule::OnUpdate()
         if ( IsIntercepted() )
             return;
     }
-
 
     if ( pOuter->CanMove() )
     {

@@ -1,17 +1,15 @@
 #include "cbase.h"
 
-#include "zmr_zombiebase.h"
 #include "zmr_blockerfinder.h"
+#include "zmr_zombiebase.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar npcr_debug_zm_blocker( "npcr_debug_zm_blocker", "0" );
 
-
-#define HULL_SIZE               16.0f
-#define CHECK_DISTANCE          24.0f
+#define HULL_SIZE      16.0f
+#define CHECK_DISTANCE 24.0f
 
 CZMBlockerScanner::CZMBlockerScanner( CZMBaseZombie* pNPC )
     : NPCR::CEventListener( pNPC, pNPC ) // We need to be updated.
@@ -25,7 +23,6 @@ CZMBlockerScanner::CZMBlockerScanner( CZMBaseZombie* pNPC )
 
 CZMBlockerScanner::~CZMBlockerScanner()
 {
-
 }
 
 bool CZMBlockerScanner::ShouldUpdateBlocker() const
@@ -50,7 +47,6 @@ void CZMBlockerScanner::Update()
         {
             m_nTimesBlocked = 0;
         }
-        
 
         m_NextBlockerCheck.Start( 0.4f );
         return;
@@ -74,7 +70,6 @@ void CZMBlockerScanner::FindBlocker()
 {
     VPROF_BUDGET( "CZMBlockerScanner::FindBlocker", "NPCR" );
 
-
     Vector dir;
     CZMBaseZombie* pChar = GetOuter();
 
@@ -90,38 +85,32 @@ void CZMBlockerScanner::FindBlocker()
         AngleVectors( pChar->GetAbsAngles(), &dir );
     }
 
-
     float offset = pChar->GetMotor()->GetStepHeight();
-    float height = (pChar->GetMotor()->GetHullHeight() - offset) / 2.0f;
+    float height = ( pChar->GetMotor()->GetHullHeight() - offset ) / 2.0f;
     float hullsize = pChar->GetMotor()->GetHullWidth();
-    
+
     Vector mins, maxs;
     Vector vecStart, vecEnd;
     trace_t tr;
-        
 
     vecStart = pChar->GetAbsOrigin() + dir * hullsize / 2.0f;
     vecStart.z += height + offset;
     vecEnd = vecStart + dir * CHECK_DISTANCE;
 
-
-    mins.x = mins.y =  -(hullsize / 2.0f);
-    maxs.x = maxs.y = (hullsize / 2.0f);
+    mins.x = mins.y = -( hullsize / 2.0f );
+    maxs.x = maxs.y = ( hullsize / 2.0f );
     mins.z = -height;
     maxs.z = height;
 
-        
     UTIL_TraceHull( vecStart, vecEnd, mins, maxs, MASK_NPCSOLID, pChar, COLLISION_GROUP_NONE, &tr );
     bool bHit = tr.DidHit() && tr.m_pEnt != nullptr;
-
 
     const bool bIsDebugging = npcr_debug_zm_blocker.GetBool();
 
     if ( bIsDebugging )
     {
-        NDebugOverlay::SweptBox( vecStart, vecEnd, mins, maxs, QAngle( 0, 0, 0 ), bHit ? 255 : 0, (!bHit) ? 255 : 0, 0, 255, 0.1f );
+        NDebugOverlay::SweptBox( vecStart, vecEnd, mins, maxs, QAngle( 0, 0, 0 ), bHit ? 255 : 0, ( !bHit ) ? 255 : 0, 0, 255, 0.1f );
     }
-
 
     if ( bHit )
     {
@@ -136,7 +125,7 @@ void CZMBlockerScanner::FindBlocker()
         {
             m_nTimesBlocked = 1;
         }
-        
+
         m_hBlocker.Set( tr.m_pEnt );
     }
     else

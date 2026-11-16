@@ -2,7 +2,6 @@
 
 #include "Multiplayer/multiplayer_animstate.h"
 
-
 class CTEPlayerAnimEvent : public CBaseTempEntity
 {
 public:

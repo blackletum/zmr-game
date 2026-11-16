@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 struct ZMPotentialPlayer_t
 {
     C_ZMPlayer* GetPlayer() const;
@@ -16,12 +14,10 @@ public:
     CZMFlashlightSystem();
     ~CZMFlashlightSystem();
 
-
     virtual void LevelInitPostEntity() override;
     virtual void LevelShutdownPostEntity() override;
 
     virtual void Update( float delta ) override;
-
 
     bool AddPlayerToExpensiveList( C_ZMPlayer* pPlayer );
     int GetNumExpensiveFlashlights() const;
@@ -31,7 +27,6 @@ public:
 protected:
     void Disable();
     int FindPlayer( int entindex ) const;
-
 
     float m_flNextUpdate;
 

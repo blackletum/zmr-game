@@ -1,50 +1,45 @@
-#include "cbase.h"
-#include "hudelement.h"
-#include "hud_macros.h"
-#include "c_playerresource.h"
-#include "clientmode.h"
 #include "baseviewport.h"
-#include <vgui_controls/Panel.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
 #include "c_baseplayer.h"
+#include "c_playerresource.h"
 #include "c_team.h"
-
+#include "cbase.h"
+#include "clientmode.h"
+#include "hud_macros.h"
+#include "hudelement.h"
+#include <vgui/ILocalize.h>
+#include <vgui/ISurface.h>
+#include <vgui_controls/Panel.h>
 
 #include "zmr_shareddefs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
-
 
 static ConVar hud_deathnotice_time( "hud_deathnotice_time", "6", 0 );
 
 ConVar zm_cl_deathnotice_enabled( "zm_cl_deathnotice_enabled", "1", FCVAR_ARCHIVE, "Are deathnotices displayed?" );
 ConVar zm_cl_deathnotice_console_enabled( "zm_cl_deathnotice_console_enabled", "1", FCVAR_ARCHIVE, "Are deathnotices displayed in console?" );
 
-
-
 struct DeathNoticePlayer
 {
     wchar_t wszName[MAX_PLAYER_NAME_LENGTH];
-    int     iTeam;
+    int iTeam;
 };
 
-struct DeathNoticeItem 
+struct DeathNoticeItem
 {
-    DeathNoticePlayer	Killer;
-    DeathNoticePlayer   Victim;
-    bool                bAloneDeath;
-    float               flCreatedTime;
+    DeathNoticePlayer Killer;
+    DeathNoticePlayer Victim;
+    bool bAloneDeath;
+    float flCreatedTime;
 };
 
 class CZMHudDeathNotice : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE( CZMHudDeathNotice, Panel );
+
 public:
     CZMHudDeathNotice( const char* pElementName );
 
@@ -56,17 +51,15 @@ public:
     virtual void ApplySchemeSettings( IScheme* scheme ) override;
 
     void RetireExpiredDeathNotices();
-    
+
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
 
 private:
-
     CPanelAnimationVarAliasType( float, m_flLineHeight, "LineHeight", "15", "proportional_float" );
     CPanelAnimationVar( int, m_nMaxDeathNotices, "MaxDeathNotices", "6" );
     CPanelAnimationVar( float, m_flDeathNoticeFadeInTime, "DeathNoticeFadeInTime", "0.4" );
     CPanelAnimationVar( float, m_flDeathNoticeFadeOutTime, "DeathNoticeFadeOutTime", "0.8" );
     CPanelAnimationVar( HFont, m_hTextFont, "TextFont", "HudNumbersTimer" );
-
 
     // Texture for skull symbol
     CHudTexture* m_iconD_skull;
@@ -80,8 +73,7 @@ private:
 
 DECLARE_HUDELEMENT( CZMHudDeathNotice );
 
-CZMHudDeathNotice::CZMHudDeathNotice( const char* pElementName ) :
-    CHudElement( pElementName ), BaseClass( nullptr, "ZMHudDeathNotice" )
+CZMHudDeathNotice::CZMHudDeathNotice( const char* pElementName ) : CHudElement( pElementName ), BaseClass( nullptr, "ZMHudDeathNotice" )
 {
     SetParent( g_pClientMode->GetViewport() );
 
@@ -95,15 +87,15 @@ CZMHudDeathNotice::CZMHudDeathNotice( const char* pElementName ) :
 
     SetHiddenBits( HIDEHUD_MISCSTATUS );
 
-	m_iSkullTextureId = surface()->DrawGetTextureId( "vgui/zmr_deathnotice/generic" );
-	if ( m_iSkullTextureId == -1 )
-	{
-		m_iSkullTextureId = surface()->CreateNewTextureID();
-		surface()->DrawSetTextureFile( m_iSkullTextureId, "vgui/zmr_deathnotice/generic", true, false );
-	}
+    m_iSkullTextureId = surface()->DrawGetTextureId( "vgui/zmr_deathnotice/generic" );
+    if ( m_iSkullTextureId == -1 )
+    {
+        m_iSkullTextureId = surface()->CreateNewTextureID();
+        surface()->DrawSetTextureFile( m_iSkullTextureId, "vgui/zmr_deathnotice/generic", true, false );
+    }
 }
 
-void CZMHudDeathNotice::ApplySchemeSettings( IScheme *scheme )
+void CZMHudDeathNotice::ApplySchemeSettings( IScheme* scheme )
 {
     BaseClass::ApplySchemeSettings( scheme );
     SetPaintBackgroundEnabled( false );
@@ -111,7 +103,7 @@ void CZMHudDeathNotice::ApplySchemeSettings( IScheme *scheme )
 
 void CZMHudDeathNotice::Init()
 {
-    ListenForGameEvent( "player_death" );	
+    ListenForGameEvent( "player_death" );
 }
 
 void CZMHudDeathNotice::VidInit()
@@ -160,16 +152,16 @@ void CZMHudDeathNotice::Paint()
         int textHeight;
         surface()->GetTextSize( m_hTextFont, item.Victim.wszName, textWidth, textHeight );
 
-        int y = yStart + m_flOffset + (m_flLineHeight * i);
+        int y = yStart + m_flOffset + ( m_flLineHeight * i );
 
-        float scale = ScreenHeight() / 480.0f;	//scale based on 640x480
+        float scale = ScreenHeight() / 480.0f; //scale based on 640x480
         int iconWide = scale * 16;
         int iconTall = scale * 16;
 
         int x = GetWide() - textWidth - iconWide;
 
         int alpha = GetCurrentAlpha( item, displayTime );
-        
+
         // Only draw killers name if it wasn't a suicide
         if ( !item.bAloneDeath )
         {
@@ -204,7 +196,7 @@ void CZMHudDeathNotice::Paint()
         color[3] = alpha;
         surface()->DrawSetTextColor( color );
         surface()->DrawSetTextPos( x, y );
-        surface()->DrawSetTextFont( m_hTextFont );	//reset the font, draw icon can change it
+        surface()->DrawSetTextFont( m_hTextFont ); //reset the font, draw icon can change it
         surface()->DrawUnicodeString( item.Victim.wszName );
     }
 }
@@ -218,7 +210,7 @@ int CZMHudDeathNotice::GetCurrentAlpha( const DeathNoticeItem& item, float displ
     {
         alpha = Lerp( aliveTime / m_flDeathNoticeFadeInTime, 0, 255 );
     }
-    
+
     float timeleft = item.flCreatedTime + displayTime - gpGlobals->curtime;
     if ( m_flDeathNoticeFadeOutTime > 0.0f && timeleft < m_flDeathNoticeFadeOutTime )
     {
@@ -234,12 +226,12 @@ void CZMHudDeathNotice::RetireExpiredDeathNotices()
 
     // Loop backwards because we might remove one
     int iSize = m_DeathNotices.Size();
-    for ( int i = iSize-1; i >= 0; i-- )
+    for ( int i = iSize - 1; i >= 0; i-- )
     {
         const DeathNoticeItem& item = m_DeathNotices[i];
         if ( item.flCreatedTime + displayTime < gpGlobals->curtime )
         {
-            m_DeathNotices.Remove(i);
+            m_DeathNotices.Remove( i );
             m_flOffset += m_flLineHeight;
         }
     }
@@ -257,7 +249,6 @@ void CZMHudDeathNotice::FireGameEvent( IGameEvent* event )
     int victim = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
     const char* killedwith = event->GetString( "weapon" );
 
-
     char fullkilledwith[128];
     if ( killedwith && *killedwith )
     {
@@ -267,7 +258,6 @@ void CZMHudDeathNotice::FireGameEvent( IGameEvent* event )
     {
         fullkilledwith[0] = 0;
     }
-
 
     int iKillerTeam = 0;
     int iVictimTeam = 0;
@@ -282,32 +272,35 @@ void CZMHudDeathNotice::FireGameEvent( IGameEvent* event )
         iKillerTeam = g_PR->GetTeam( killer );
     }
 
-
     // Do we have too many death messages in the queue?
     if ( m_DeathNotices.Count() > 0 &&
-        m_DeathNotices.Count() >= m_nMaxDeathNotices )
+         m_DeathNotices.Count() >= m_nMaxDeathNotices )
     {
         // Remove the oldest one in the queue, which will always be the first
         m_DeathNotices.Remove( 0 );
     }
 
     // Get the names of the players
-    const char *killer_name = g_PR->GetPlayerName( killer );
-    const char *victim_name = g_PR->GetPlayerName( victim );
+    const char* killer_name = g_PR->GetPlayerName( killer );
+    const char* victim_name = g_PR->GetPlayerName( victim );
 
     if ( !killer_name || !*killer_name || Q_strcmp( killer_name, PLAYER_ERROR_NAME ) == 0 )
     {
         killer_name = "";
 
-
         if ( fullkilledwith[0] != '\0' )
         {
             // ZMRTODO: Put this somewhere else.
-            if ( Q_strcmp( &fullkilledwith[6], "zombie" ) == 0 ) killer_name = "Shambler";
-            else if ( Q_strcmp( &fullkilledwith[6], "fastzombie" ) == 0 ) killer_name = "Banshee";
-            else if ( Q_strcmp( &fullkilledwith[6], "poisonzombie" ) == 0 ) killer_name = "Hulk";
-            else if ( Q_strcmp( &fullkilledwith[6], "dragzombie" ) == 0 )  killer_name = "Drifter";
-            else if ( Q_strcmp( &fullkilledwith[6], "burnzombie" ) == 0 ) killer_name = "Immolator";
+            if ( Q_strcmp( &fullkilledwith[6], "zombie" ) == 0 )
+                killer_name = "Shambler";
+            else if ( Q_strcmp( &fullkilledwith[6], "fastzombie" ) == 0 )
+                killer_name = "Banshee";
+            else if ( Q_strcmp( &fullkilledwith[6], "poisonzombie" ) == 0 )
+                killer_name = "Hulk";
+            else if ( Q_strcmp( &fullkilledwith[6], "dragzombie" ) == 0 )
+                killer_name = "Drifter";
+            else if ( Q_strcmp( &fullkilledwith[6], "burnzombie" ) == 0 )
+                killer_name = "Immolator";
 
             if ( killer_name[0] != '\0' )
             {
@@ -316,14 +309,12 @@ void CZMHudDeathNotice::FireGameEvent( IGameEvent* event )
         }
     }
 
-
     if ( !victim_name || !*victim_name || Q_strcmp( victim_name, PLAYER_ERROR_NAME ) == 0 )
     {
         victim_name = "";
     }
 
-
-    bool bAloneDeath = ( killer == victim || (!killer && killer_name[0] == '\0') );
+    bool bAloneDeath = ( killer == victim || ( !killer && killer_name[0] == '\0' ) );
 
     float displayTime = hud_deathnotice_time.GetFloat();
 
@@ -342,7 +333,6 @@ void CZMHudDeathNotice::FireGameEvent( IGameEvent* event )
         m_DeathNotices.AddToTail( deathMsg );
     }
 
-
     // Record the death notice in the console
     if ( zm_cl_deathnotice_console_enabled.GetBool() )
     {
@@ -358,7 +348,6 @@ void CZMHudDeathNotice::FireGameEvent( IGameEvent* event )
             {
                 Q_snprintf( szMsg, sizeof( szMsg ), "%s died.", victim_name );
             }
-            
         }
         else
         {

@@ -1,12 +1,12 @@
 #include "cbase.h"
 #include "filesystem.h"
 
+#include <GameUI/IGameUI.h>
+#include <ienginevgui.h>
+#include <vgui/ISurface.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/TextEntry.h>
-#include <vgui/ISurface.h>
-#include <GameUI/IGameUI.h>
-#include <ienginevgui.h>
 //#include "game_controls/vguitextwindow.h"
 
 #include "c_zmr_legacy_objpanel.h"
@@ -16,19 +16,15 @@
 #include "c_zmr_music.h"
 #endif
 
-#include "zmr_mainmenu.h"
 #include "zmr_loadingbg.h"
-
-
+#include "zmr_mainmenu.h"
 
 static CDllDemandLoader g_GameUI( "GameUI" );
-
 
 class CZMLoadingScreenText : public vgui::TextEntry
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMLoadingScreenText, vgui::TextEntry );
-
 
     CZMLoadingScreenText( vgui::Panel* pParent, const char* name );
     ~CZMLoadingScreenText();
@@ -54,7 +50,6 @@ void CZMLoadingScreenText::ApplySchemeSettings( vgui::IScheme* pScheme )
     SetFgColor( COLOR_WHITE );
 }
 
-
 class CZMLoadingPanel : public vgui::EditablePanel, public CGameEventListener
 {
 public:
@@ -63,17 +58,14 @@ public:
     CZMLoadingPanel( vgui::VPANEL parent );
     ~CZMLoadingPanel();
 
-
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
 
     virtual void ApplySchemeSettings( vgui::IScheme* pScheme ) override;
 
     virtual void PaintBackground() override;
 
-
     MESSAGE_FUNC( OnActivate, "activate" );
     MESSAGE_FUNC( OnDeactivate, "deactivate" );
-
 
     IGameUI* GetGameUI() const;
 
@@ -81,12 +73,10 @@ private:
     bool LoadGameUI();
     void ReleaseGameUI();
 
-
     void ChangeTip();
 
     void SetMapNameText( const char* mapname );
     void SetTipText( const char* msg );
-
 
     vgui::Label* m_pMapNameLabel;
     vgui::Label* m_pTipLabel;
@@ -129,12 +119,10 @@ private:
     CZMLoadingPanel* m_Panel;
 };
 
-
 using namespace vgui;
 
 static CZMLoadingPanelInterface g_ZMLoadingUIInt;
 IZMUi* g_pZMLoadingUI = static_cast<IZMUi*>( &g_ZMLoadingUIInt );
-
 
 CZMLoadingPanel::CZMLoadingPanel( VPANEL parent ) : BaseClass( nullptr, "ZMLoadingPanel" )
 {
@@ -145,19 +133,14 @@ CZMLoadingPanel::CZMLoadingPanel( VPANEL parent ) : BaseClass( nullptr, "ZMLoadi
     m_pMapNameLabel = new Label( this, "MapNameLabel", "" );
     m_pTipLabel = new Label( this, "TipLabel", "" );
 
-
-	m_pTextMessage = new CZMLoadingScreenText( this, "TextMessage" );
+    m_pTextMessage = new CZMLoadingScreenText( this, "TextMessage" );
     m_pTextMessage->SetMultiline( true );
     m_pTextMessage->SetVerticalScrollbar( false );
-
-
 
     // Has to be set to load fonts correctly.
     SetScheme( vgui::scheme()->LoadSchemeFromFile( "resource/ClientScheme.res", "ClientScheme" ) );
 
-
     SetProportional( true );
-
 
     //SetParent( parent );
     MakePopup( false ); // IMPORTANT: Makes sure console and others aren't painted on top.
@@ -169,8 +152,6 @@ CZMLoadingPanel::CZMLoadingPanel( VPANEL parent ) : BaseClass( nullptr, "ZMLoadi
         Warning( "Failed to load GameUI!!\n" );
     }
 
-
-    
     m_nTexBackgroundId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBackgroundId, "console/background01_widescreen", true, false );
 
@@ -182,7 +163,6 @@ CZMLoadingPanel::CZMLoadingPanel( VPANEL parent ) : BaseClass( nullptr, "ZMLoadi
 
     m_nTexTipBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexTipBgId, "zmr_mainmenu/bg_tip", true, false );
-
 
     ListenForGameEvent( "server_spawn" );
 }
@@ -209,7 +189,6 @@ void CZMLoadingPanel::FireGameEvent( IGameEvent* pEvent )
 
             SetMapNameText( bValid ? fixedname : "" );
 
-
             char* buffer = new char[4096];
             buffer[0] = '\0';
             ZMLegacyObjPanel::LoadObjectivesFromFile( mapname, buffer, 4096 );
@@ -217,11 +196,10 @@ void CZMLoadingPanel::FireGameEvent( IGameEvent* pEvent )
             // Don't display html.
             if ( *buffer && Q_stristr( buffer, "html" ) == nullptr )
             {
-	            m_pTextMessage->SetVisible( true );
-	            m_pTextMessage->SetText( buffer );
-	            m_pTextMessage->GotoTextStart();
+                m_pTextMessage->SetVisible( true );
+                m_pTextMessage->SetText( buffer );
+                m_pTextMessage->GotoTextStart();
             }
-
 
             delete[] buffer;
         }
@@ -237,13 +215,11 @@ bool CZMLoadingPanel::LoadGameUI()
 {
     if ( m_pGameUI ) return true;
 
-
     CreateInterfaceFn gameUIFactory = g_GameUI.GetFactory();
 
     if ( gameUIFactory )
     {
         m_pGameUI = static_cast<IGameUI*>( gameUIFactory( GAMEUI_INTERFACE_VERSION, nullptr ) );
-
 
         return m_pGameUI != nullptr;
     }
@@ -261,12 +237,9 @@ void CZMLoadingPanel::ApplySchemeSettings( IScheme* pScheme )
 {
     m_BgColor = GetSchemeColor( "ZMLoadingBg", COLOR_BLACK, pScheme );
 
-
     LoadControlSettings( "resource/ui/zmloadingpanel.res" );
 
-
     BaseClass::ApplySchemeSettings( pScheme );
-
 
     int w, h;
     surface()->GetScreenSize( w, h );
@@ -285,12 +258,10 @@ void CZMLoadingPanel::OnActivate()
         //
         m_pTextMessage->SetVisible( false );
 
-
         return;
     }
 
     m_bActive = true;
-
 
     SetMapNameText( "" );
 
@@ -301,7 +272,6 @@ void CZMLoadingPanel::OnActivate()
 #if defined( ZMR_FINAL ) && defined( _WIN32 )
     ZMMusic::g_ZMMusicManager.SetMusicState( ZMMusic::MUSICSTATE_LOADINGSCREEN );
 #endif
-
 
     // Tell main menu we're being drawn.
     auto mainMenuPanel = g_pZMMainMenu->GetPanel()->GetVPanel();
@@ -318,7 +288,6 @@ void CZMLoadingPanel::OnDeactivate()
     }
 
     m_bActive = false;
-
 
 #if defined( ZMR_FINAL ) && defined( _WIN32 )
     ZMMusic::g_ZMMusicManager.SetMusicState( ZMMusic::MUSICSTATE_NONE );
@@ -337,7 +306,6 @@ void CZMLoadingPanel::PaintBackground()
     int scr_width, scr_height;
     surface()->GetScreenSize( scr_width, scr_height );
 
-
     // Draw background
     {
         surface()->DrawSetColor( COLOR_WHITE );
@@ -345,7 +313,6 @@ void CZMLoadingPanel::PaintBackground()
         surface()->DrawSetTexture( m_nTexBackgroundId );
         surface()->DrawTexturedRect( 0, 0, scr_width, scr_height );
     }
-
 
     surface()->DrawSetColor( m_BgColor );
 
@@ -357,18 +324,14 @@ void CZMLoadingPanel::PaintBackground()
 
         float repeats;
 
-
-
         int h = m_pMapNameLabel->GetTall() + 10;
 
         int offset_y = m_pMapNameLabel->GetYPos() + m_pMapNameLabel->GetTall() / 2 - h / 2;
 
-
-        repeats = w / (nTexWidth * (h / (float)nTexHeight));
+        repeats = w / ( nTexWidth * ( h / (float)nTexHeight ) );
 
         surface()->DrawSetTexture( m_nTexBgId );
         surface()->DrawTexturedSubRect( 0, offset_y, w, offset_y + h, 0.0f, 0.0f, repeats, 1.0f );
-
 
         // Draw the zombie strip 1024x256
         h = YRES( 180 );
@@ -376,12 +339,11 @@ void CZMLoadingPanel::PaintBackground()
 
         nTexHeight = 256;
 
-        repeats = w / (nTexWidth * (h / (float)nTexHeight));
+        repeats = w / ( nTexWidth * ( h / (float)nTexHeight ) );
 
         surface()->DrawSetTexture( m_nTexStripBgId );
         surface()->DrawTexturedSubRect( 0, offset_y, w, offset_y + h, 0.0f, 0.0f, repeats, 1.0f );
     }
-
 
     {
         // Tip background
@@ -395,7 +357,6 @@ void CZMLoadingPanel::PaintBackground()
         //m_pTipLabel->GetContentSize( w, h );
         ////w += m_pTipLabel->GetXPos();
 
-
         //surface()->DrawSetTexture( m_nTexTipBgId );
         //surface()->DrawTexturedRect( x - padding_x, y - padding_y, x + w + padding_x, y + h + padding_y );
     }
@@ -404,7 +365,6 @@ void CZMLoadingPanel::PaintBackground()
 void CZMLoadingPanel::SetMapNameText( const char* mapname )
 {
     m_bHasMapName = mapname && *mapname;
-
 
     auto* pLabel = static_cast<Label*>( FindChildByName( "MapNameLabel" ) );
     if ( pLabel )
@@ -430,12 +390,10 @@ void CZMLoadingPanel::ChangeTip()
     if ( !pTipManager )
         return;
 
-
     const CZMTip* pTip = nullptr;
 
     ZMConstTips_t tips;
 
-    
     ZMConstTips_t vTips;
     pTipManager->GetTips( vTips );
 
@@ -446,7 +404,6 @@ void CZMLoadingPanel::ChangeTip()
             tips.AddToTail( vTips[i] );
         }
     }
-
 
     if ( !tips.Count() )
     {
@@ -459,12 +416,10 @@ void CZMLoadingPanel::ChangeTip()
         }
     }
 
-
     if ( tips.Count() )
     {
-        pTip = tips[random->RandomInt( 0, tips.Count() -1 )];
+        pTip = tips[random->RandomInt( 0, tips.Count() - 1 )];
     }
-    
 
     if ( pTip )
     {
@@ -474,7 +429,6 @@ void CZMLoadingPanel::ChangeTip()
         SetTipText( buffer );
     }
 }
-
 
 static void GetMapDisplayName( char* buffer, int len )
 {
@@ -491,29 +445,25 @@ static void GetMapDisplayName( char* buffer, int len )
         start += 4;
     }
 
-
     Q_strncpy( cpy, start, sizeof( cpy ) );
 
     // Replace underscore with space
     char* us = cpy;
-    while ( (us = Q_strstr( us, "_" )) != nullptr )
+    while ( ( us = Q_strstr( us, "_" ) ) != nullptr )
     {
         *us = ' ';
         ++us;
     }
 
-
     Q_strncpy( buffer, cpy, len );
 }
-
 
 void ZMOverrideLoadingUI()
 {
     if ( !g_pZMLoadingUI ) return;
 
-
     CZMLoadingPanel* pMenu = static_cast<CZMLoadingPanel*>( g_pZMLoadingUI->GetPanel() );
-    
+
     if ( pMenu->GetGameUI() )
     {
         pMenu->GetGameUI()->SetLoadingBackgroundDialog( pMenu->GetVPanel() );

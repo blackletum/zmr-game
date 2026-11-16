@@ -6,9 +6,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern ConVar zm_sv_debug_rejoindata;
-
 
 // Whenever a player disconnects, save their rounds.
 // If the round is the same, disallow late spawn.
@@ -33,7 +31,7 @@ public:
         Assert( pRules );
 
         bool res = pRules->GetRoundsPlayed( true ) != m_nLastRoundPlayed;
-        
+
         if ( zm_sv_debug_rejoindata.GetBool() )
         {
             DevMsg( "Validating player's late spawning. Res: %i\n", res );
@@ -42,7 +40,6 @@ public:
         return res;
     }
 };
-
 
 class CZMRejoinLateSpawn : public CZMRejoinListener
 {
@@ -56,6 +53,5 @@ public:
         return new CZMRejoinLateSpawnData( nRounds );
     }
 };
-
 
 static CZMRejoinLateSpawn g_ZMRejoinLateSpawn;

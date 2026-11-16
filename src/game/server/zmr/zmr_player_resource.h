@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "player_resource.h"
-
 
 class CZMPlayerResource : public CPlayerResource
 {

@@ -3,7 +3,6 @@
 #include "npcr_basenpc.h"
 #include "npcr_component.h"
 
-
 NPCR::EventComponent::EventComponent()
 {
     m_bSelfCall = false;
@@ -45,18 +44,12 @@ CBaseCombatCharacter* NPCR::CComponent::GetOuter() const
     return GetNPC()->GetCharacter();
 }
 
-
-
 NPCR::CEventListener::CEventListener( NPCR::CEventDispatcher* pOwner, NPCR::CBaseNPC* pNPC ) : NPCR::CComponent( pOwner, pNPC )
 {
-
 }
-
-
 
 NPCR::CEventDispatcher::CEventDispatcher( NPCR::CEventDispatcher* pOwner, NPCR::CBaseNPC* pNPC ) : NPCR::CComponent( pOwner, pNPC )
 {
-
 }
 
 void NPCR::CEventDispatcher::AddComponent( CComponent* c )
@@ -82,7 +75,7 @@ int NPCR::CEventDispatcher::FindComponent( CComponent* c ) const
 NPCR::CComponent* NPCR::CEventDispatcher::NextComponent( CComponent* c ) const
 {
     int index = FindComponent( c );
-    if ( index >= 0 && (index + 1) < m_Components.Count() )
+    if ( index >= 0 && ( index + 1 ) < m_Components.Count() )
     {
         return m_Components[index + 1];
     }
@@ -97,6 +90,6 @@ NPCR::CComponent* NPCR::CEventDispatcher::PreviousComponent( CComponent* c ) con
     {
         return m_Components[index];
     }
-            
+
     return nullptr;
 }

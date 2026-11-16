@@ -7,9 +7,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZOMBIE_MODEL        "models/zombie/hulk.mdl"
-
+#define ZOMBIE_MODEL "models/zombie/hulk.mdl"
 
 extern ConVar zm_sk_hulk_health;
 extern ConVar zm_sk_hulk_dmg;
@@ -19,7 +17,6 @@ extern ConVar zm_sk_hulk_hitmult_head;
 extern ConVar zm_sk_hulk_hitmult_stomach;
 extern ConVar zm_sk_hulk_hitmult_chest;
 extern ConVar zm_sk_hulk_hitmult_arms;
-
 
 LINK_ENTITY_TO_CLASS( npc_poisonzombie, CZMHulk );
 PRECACHE_REGISTER( npc_poisonzombie );
@@ -40,7 +37,6 @@ void CZMHulk::Precache()
     if ( !IsPrecacheAllowed() )
         return;
 
-
     PrecacheScriptSound( "NPC_PoisonZombie.Die" );
     PrecacheScriptSound( "NPC_PoisonZombie.Idle" );
     PrecacheScriptSound( "NPC_PoisonZombie.Pain" );
@@ -58,7 +54,6 @@ void CZMHulk::Precache()
 void CZMHulk::Spawn()
 {
     SetMaxHealth( zm_sk_hulk_health.GetInt() );
-
 
     BaseClass::Spawn();
 
@@ -83,21 +78,21 @@ NPCR::CPathCostGroundOnly* CZMHulk::GetPathCost() const
 
 void CZMHulk::HandleAnimEvent( animevent_t* pEvent )
 {
-	if ( pEvent->event == AE_ZOMBIE_ATTACK_RIGHT )
-	{
-		Vector forward, right;
+    if ( pEvent->event == AE_ZOMBIE_ATTACK_RIGHT )
+    {
+        Vector forward, right;
 
-		AngleVectors( GetLocalAngles(), &forward, &right, nullptr );
+        AngleVectors( GetLocalAngles(), &forward, &right, nullptr );
 
-		right = right * 200;
-		forward = forward * 200;
+        right = right * 200;
+        forward = forward * 200;
 
         QAngle viewpunch( -15, -20, -10 );
         Vector punchvel = right + forward;
 
-		ClawAttack( GetClawAttackRange(), zm_sk_hulk_dmg.GetInt(), viewpunch, punchvel );
-		return;
-	}
+        ClawAttack( GetClawAttackRange(), zm_sk_hulk_dmg.GetInt(), viewpunch, punchvel );
+        return;
+    }
 
     BaseClass::HandleAnimEvent( pEvent );
 }
@@ -106,24 +101,24 @@ bool CZMHulk::ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) cons
 {
     switch ( iHitGroup )
     {
-    case HITGROUP_LEFTARM :
-    case HITGROUP_RIGHTARM :
+    case HITGROUP_LEFTARM:
+    case HITGROUP_RIGHTARM:
         info.ScaleDamage( zm_sk_hulk_hitmult_arms.GetFloat() );
         return true;
-    case HITGROUP_CHEST :
+    case HITGROUP_CHEST:
         info.ScaleDamage( zm_sk_hulk_hitmult_chest.GetFloat() );
         return true;
-    case HITGROUP_STOMACH :
+    case HITGROUP_STOMACH:
         info.ScaleDamage( zm_sk_hulk_hitmult_stomach.GetFloat() );
         return true;
-    case HITGROUP_HEAD :
+    case HITGROUP_HEAD:
         info.ScaleDamage( zm_sk_hulk_hitmult_head.GetFloat() );
         return true;
-    case HITGROUP_LEFTLEG :
-    case HITGROUP_RIGHTLEG :
+    case HITGROUP_LEFTLEG:
+    case HITGROUP_RIGHTLEG:
         info.ScaleDamage( zm_sk_hulk_hitmult_legs.GetFloat() );
         return true;
-    default :
+    default:
         break;
     }
 
@@ -137,9 +132,8 @@ bool CZMHulk::CanBePenetrated() const
 
 bool CZMHulk::ShouldPlayIdleSound() const
 {
-    return  BaseClass::ShouldPlayIdleSound()
-    &&      GetEnemy() == nullptr // We must be idling.
-    &&      random->RandomInt( 0, 99 ) == 0;
+    return BaseClass::ShouldPlayIdleSound() && GetEnemy() == nullptr // We must be idling.
+        && random->RandomInt( 0, 99 ) == 0;
 }
 
 float CZMHulk::IdleSound()

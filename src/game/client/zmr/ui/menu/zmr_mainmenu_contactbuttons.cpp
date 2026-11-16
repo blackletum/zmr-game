@@ -1,17 +1,11 @@
 #include "cbase.h"
 
-#include <vgui/ISystem.h>
 #include <steam/steam_api.h>
-
+#include <vgui/ISystem.h>
 
 #include "zmr_mainmenu_contactbuttons.h"
 
-
-
 DECLARE_BUILD_FACTORY( CZMMainMenuContactButtonList );
-
-
-
 
 class CZMMainMenuContactButton : public vgui::Panel
 {
@@ -23,7 +17,6 @@ public:
     CZMMainMenuContactButton( vgui::Panel* pParent, const char* name, const char* image = "", const char* url = "" );
     ~CZMMainMenuContactButton();
 
-
     //virtual void ApplySchemeSettings( vgui::IScheme* pScheme ) override;
     //virtual void ApplySettings( KeyValues* kv ) override;
 
@@ -32,7 +25,6 @@ public:
     virtual void OnMousePressed( vgui::MouseCode code ) override;
     virtual void OnCursorEntered() override { SetCursor( vgui::dc_hand ); }
     virtual void OnCursorExited() override { SetCursor( vgui::dc_arrow ); }
-
 
     void SetImage( const char* name );
 
@@ -49,8 +41,6 @@ private:
 
 using namespace vgui;
 
-
-
 CZMMainMenuContactButton::CZMMainMenuContactButton(
     Panel* pParent,
     const char* name,
@@ -60,10 +50,8 @@ CZMMainMenuContactButton::CZMMainMenuContactButton(
     SetMouseInputEnabled( true );
     SetPaintBackgroundEnabled( false );
 
-
-
     m_pImage = scheme()->GetImage( image, true );
-    
+
     if ( *url )
     {
         int len = Q_strlen( url ) + 1;
@@ -74,14 +62,9 @@ CZMMainMenuContactButton::CZMMainMenuContactButton(
     {
         m_pszUrl = nullptr;
     }
-    
 
-    
-
-    
     m_Color = Color( 255, 255, 255, 60 );
     m_OverColor = COLOR_WHITE;
-
 
     m_flNextClick = 0.0f;
 }
@@ -101,9 +84,7 @@ void CZMMainMenuContactButton::OnMousePressed( vgui::MouseCode code )
     {
         auto* pSteamFriends = steamapicontext->SteamFriends();
         auto* pSteamUtils = steamapicontext->SteamUtils();
-        if (pSteamFriends
-        &&  pSteamUtils
-        &&  pSteamUtils->IsOverlayEnabled() )
+        if ( pSteamFriends && pSteamUtils && pSteamUtils->IsOverlayEnabled() )
         {
             pSteamFriends->ActivateGameOverlayToWebPage( m_pszUrl );
         }
@@ -111,7 +92,6 @@ void CZMMainMenuContactButton::OnMousePressed( vgui::MouseCode code )
         {
             system()->ShellExecute( "open", m_pszUrl );
         }
-
 
         m_flNextClick = gpGlobals->curtime + 5.0f;
     }
@@ -131,14 +111,10 @@ void CZMMainMenuContactButton::Paint()
 }
 //
 
-
-
-
 CZMMainMenuContactButtonList::CZMMainMenuContactButtonList( Panel* pParent, const char* name ) : BaseClass( pParent, name )
 {
     SetPaintBackgroundEnabled( false );
 }
-
 
 CZMMainMenuContactButtonList::~CZMMainMenuContactButtonList()
 {
@@ -153,7 +129,6 @@ void CZMMainMenuContactButtonList::ApplySchemeSettings( vgui::IScheme* pScheme )
     int len = GetChildCount();
 
     SetWide( len * size );
-
 
     for ( int i = 0; i < len; i++ )
     {

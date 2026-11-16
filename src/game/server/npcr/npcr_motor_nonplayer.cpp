@@ -1,13 +1,11 @@
 #include "cbase.h"
 
 #include "npcr_basenpc.h"
-#include "npcr_nonplayer.h"
 #include "npcr_motor_nonplayer.h"
+#include "npcr_nonplayer.h"
 #include "npcr_path_follow.h"
 
-
 extern ConVar npcr_debug_navigator;
-
 
 NPCR::CNonPlayerMotor::CNonPlayerMotor( CNPCRNonPlayer* pNPC ) : NPCR::CBaseMotor( pNPC )
 {
@@ -18,14 +16,12 @@ NPCR::CNonPlayerMotor::CNonPlayerMotor( CNPCRNonPlayer* pNPC ) : NPCR::CBaseMoto
 
 NPCR::CNonPlayerMotor::~CNonPlayerMotor()
 {
-    
 }
 
 CNPCRNonPlayer* NPCR::CNonPlayerMotor::GetOuter() const
 {
     return static_cast<CNPCRNonPlayer*>( BaseClass::GetOuter() );
 }
-
 
 bool NPCR::CNonPlayerMotor::ShouldApplyGroundMove() const
 {
@@ -57,7 +53,6 @@ void NPCR::CNonPlayerMotor::Move()
     bool bWasOnGround = IsOnGround();
 
     float flUpdateInterval = GetNPC()->GetUpdateInterval();
-    
 
     CBaseEntity* pNewGround = UpdateGround();
 
@@ -69,7 +64,6 @@ void NPCR::CNonPlayerMotor::Move()
     {
         GetNPC()->OnLeftGround( pOldGround );
     }
-
 
     bool bIsOnGround = pNewGround != nullptr;
 
@@ -100,7 +94,6 @@ void NPCR::CNonPlayerMotor::Move()
 
     Vector vecOrigPos = GetNPC()->GetPosition();
 
-
     bool bDidMove = GroundMove();
     if ( bDidMove )
     {
@@ -111,7 +104,6 @@ void NPCR::CNonPlayerMotor::Move()
         // We no longer need to decelerate when moving.
         m_bDoDecelerate = false;
     }
-
 
     // Apply friction.
     if ( bIsOnGround )
@@ -141,18 +133,14 @@ void NPCR::CNonPlayerMotor::Move()
         }
     }
 
-
     // Do the actual moving.
 
-
     m_vecVelocity += m_vecAcceleration * flUpdateInterval;
-
-
 
     // Apply base velocity (from trigger_push, etc.)
     Vector vecBaseVel = GetOuter()->GetBaseVelocity();
     bool bApplyBaseVel = ( vecBaseVel.LengthSqr() > 1.0f ) ? true : false;
-    
+
     // If we're currently applying the base velocity, we simply substract it after moving.
     // If we're done with base velocity, we need to apply it to the velocity as to keep the velocity.
     if ( bApplyBaseVel )
@@ -191,8 +179,6 @@ void NPCR::CNonPlayerMotor::Move()
     //    m_vecVelocity -= vecBaseVel;
     //}
 
-
-
     if ( bIsOnGround )
     {
         float flMoveSpeed = GetMovementSpeed();
@@ -209,18 +195,14 @@ void NPCR::CNonPlayerMotor::Move()
         }
     }
 
-
     // Velocity needs to be clamped.
     // See k_flMaxVelocity
     const float flAbsMaxVel = 2000.0f;
-    if (fabsf( m_vecVelocity.x ) > flAbsMaxVel
-    ||  fabsf( m_vecVelocity.y ) > flAbsMaxVel
-    ||  fabsf( m_vecVelocity.z ) > flAbsMaxVel)
+    if ( fabsf( m_vecVelocity.x ) > flAbsMaxVel || fabsf( m_vecVelocity.y ) > flAbsMaxVel || fabsf( m_vecVelocity.z ) > flAbsMaxVel )
     {
         m_vecVelocity.NormalizeInPlace();
         m_vecVelocity *= flAbsMaxVel;
     }
-
 
     SetVelocity( m_vecVelocity );
 }
@@ -242,7 +224,6 @@ bool NPCR::CNonPlayerMotor::GroundMove()
     m_vecMoveDir = m_vecDesiredMoveDir;
     float distToGoal = m_vecMoveDir.NormalizeInPlace();
 
-
     Vector left( -m_vecMoveDir.y, m_vecMoveDir.x, 0.0f );
     m_vecMoveDir = CrossProduct( left, GetGroundNormal() );
     m_vecMoveDir.NormalizeInPlace();
@@ -254,24 +235,19 @@ bool NPCR::CNonPlayerMotor::GroundMove()
         NDebugOverlay::Line( pos, pos + m_vecMoveDir * 16.0f, 0, 255, 0, true, 0.1f );
     }
 
-
     float flMaxSpd = GetMovementSpeed();
     if ( flMaxSpd <= 0.0f ) return false;
-
 
     // Accelerate
     float fwdSpd = DotProduct( m_vecVelocity, m_vecMoveDir );
     if ( fwdSpd < flMaxSpd )
     {
-        float ratio = 1.0f - ( (fwdSpd <= 0.0f) ? 0.0f : (fwdSpd / flMaxSpd) );
+        float ratio = 1.0f - ( ( fwdSpd <= 0.0f ) ? 0.0f : ( fwdSpd / flMaxSpd ) );
         m_vecAcceleration += ratio * GetMaxAcceleration() * m_vecMoveDir;
     }
 
-
-    
-
     // Only allow deceleration after we've gone near full speed.
-    if ( fwdSpd > (flMaxSpd*0.9f) )
+    if ( fwdSpd > ( flMaxSpd * 0.9f ) )
     {
         m_bDoDecelerate = true;
     }
@@ -284,7 +260,6 @@ bool NPCR::CNonPlayerMotor::GroundMove()
         const float flMinDecDist = pPath->GetGoalTolerance() + 16.0f;
 
         const float flMinSpeed = 16.0f;
-
 
         float decDist = flMaxSpd * 0.5f;
         if ( decDist < flMinDecDist )

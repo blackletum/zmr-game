@@ -1,23 +1,19 @@
 #include "cbase.h"
-#include "npcevent.h"
 #include "eventlist.h"
+#include "npcevent.h"
 
-#include "zmr_gamerules.h"
 #include "zmr_drifter.h"
+#include "zmr_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZOMBIE_MODEL            "models/humans/zm_draggy.mdl"
-
+#define ZOMBIE_MODEL "models/humans/zm_draggy.mdl"
 
 extern ConVar zm_sk_dragzombie_health;
 extern ConVar zm_sk_dragzombie_dmg;
 
-
 int CZMDrifter::AE_DRAGGY_SICK;
-
 
 LINK_ENTITY_TO_CLASS( npc_dragzombie, CZMDrifter );
 PRECACHE_REGISTER( npc_dragzombie );
@@ -38,7 +34,6 @@ void CZMDrifter::Precache()
     if ( !IsPrecacheAllowed() )
         return;
 
-
     PrecacheScriptSound( "NPC_DragZombie.Die" );
     PrecacheScriptSound( "NPC_DragZombie.Idle" );
     PrecacheScriptSound( "NPC_DragZombie.Pain" );
@@ -48,11 +43,7 @@ void CZMDrifter::Precache()
     PrecacheScriptSound( "NPC_DragZombie.FastBreath" );
     PrecacheScriptSound( "NPC_DragZombie.Moan1" );
 
-
-
-
     REGISTER_PRIVATE_ANIMEVENT( AE_DRAGGY_SICK );
-
 
     BaseClass::Precache();
 }
@@ -60,7 +51,6 @@ void CZMDrifter::Precache()
 void CZMDrifter::Spawn()
 {
     SetMaxHealth( zm_sk_dragzombie_health.GetInt() );
-
 
     BaseClass::Spawn();
 }
@@ -78,7 +68,6 @@ void CZMDrifter::HandleAnimEvent( animevent_t* pEvent )
         // Move to client?
         UTIL_BloodSpray( vecSpit, vecSpitDir, BLOOD_COLOR_RED, random->RandomInt( 4, 16 ), FX_BLOODSPRAY_ALL );
 
-
         Vector vecMins, vecMaxs;
         GetAttackHull( vecMins, vecMaxs );
 
@@ -91,9 +80,8 @@ void CZMDrifter::HandleAnimEvent( animevent_t* pEvent )
         {
             AngleVectors( GetAbsAngles(), &vecDir );
         }
-        
-        vecDir.z = 0.0f;
 
+        vecDir.z = 0.0f;
 
         CUtlVector<CBaseEntity*> vHitEnts;
         MeleeAttackTrace(
@@ -124,13 +112,10 @@ void CZMDrifter::HandleAnimEvent( animevent_t* pEvent )
             }
         }
 
-
         EmitSound( "NPC_DragZombie.MeleeAttack" );
-
 
         // Tell our components we just attacked.
         OnAttacked();
-
 
         return;
     }
@@ -149,9 +134,8 @@ void CZMDrifter::GetAttackHull( Vector& mins, Vector& maxs ) const
 
 bool CZMDrifter::ShouldPlayIdleSound() const
 {
-    return  BaseClass::ShouldPlayIdleSound()
-    &&      GetEnemy() == nullptr // We must be idling.
-    &&      random->RandomInt( 0, 99 ) == 0;
+    return BaseClass::ShouldPlayIdleSound() && GetEnemy() == nullptr // We must be idling.
+        && random->RandomInt( 0, 99 ) == 0;
 }
 
 float CZMDrifter::IdleSound()

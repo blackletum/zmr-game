@@ -2,11 +2,9 @@
 
 #include "npcr_path.h"
 
-
 ConVar npcr_debug_path( "npcr_debug_path", "0" );
 
 ConVar npcr_preferred_navbuildmethod( "npcr_preferred_navbuildmethod", "0", 0, "Preferred build method. 0 = Nav mesh, 1 = AI Graph" );
-
 
 NPCR::CBaseNavPath::CBaseNavPath()
 {
@@ -34,7 +32,6 @@ NPCR::NavBuildMethod_t NPCR::CBaseNavPath::GetBuildMethod()
 
 void NPCR::CBaseNavPath::OnPathSuccess()
 {
-
 }
 
 void NPCR::CBaseNavPath::OnPathFailed()
@@ -46,15 +43,13 @@ bool NPCR::CBaseNavPath::Compute( const Vector& vecStart, const Vector& vecGoal,
 {
     Invalidate();
 
-
     bool bPathResult;
-
 
     const NavBuildMethod_t buildMethod = GetBuildMethod();
 
     switch ( buildMethod )
     {
-    case BUILD_DIRECT :
+    case BUILD_DIRECT:
         if ( ShouldDraw() )
         {
             DevMsg( "Building direct path...\n" );
@@ -62,7 +57,7 @@ bool NPCR::CBaseNavPath::Compute( const Vector& vecStart, const Vector& vecGoal,
 
         bPathResult = BuildSimplePath( vecStart, vecGoal, true );
         break;
-    case BUILD_AIGRAPH :
+    case BUILD_AIGRAPH:
         if ( ShouldDraw() )
         {
             DevMsg( "Building AI graph path...\n" );
@@ -70,8 +65,8 @@ bool NPCR::CBaseNavPath::Compute( const Vector& vecStart, const Vector& vecGoal,
 
         bPathResult = BuildGraphPath( vecStart, vecGoal, cost );
         break;
-    case BUILD_NAVMESH :
-    default :
+    case BUILD_NAVMESH:
+    default:
         if ( ShouldDraw() )
         {
             DevMsg( "Building nav mesh path...\n" );
@@ -80,7 +75,6 @@ bool NPCR::CBaseNavPath::Compute( const Vector& vecStart, const Vector& vecGoal,
         bPathResult = BuildNavPath( vecStart, vecGoal, pStartArea, pGoalArea, cost );
         break;
     }
-    
 
     return bPathResult;
 }
@@ -99,7 +93,6 @@ bool NPCR::CBaseNavPath::Compute( CBaseCombatCharacter* pNPC, CBaseCombatCharact
 {
     Invalidate();
 
-
     CNavArea* pStartArea = pNPC->GetLastKnownArea();
     CNavArea* pGoalArea = pTarget->GetLastKnownArea();
 
@@ -112,7 +105,6 @@ bool NPCR::CBaseNavPath::Compute( CBaseCombatCharacter* pNPC, CBaseCombatCharact
 bool NPCR::CBaseNavPath::Compute( CBaseCombatCharacter* pNPC, CBaseEntity* pTarget, const CBasePathCost& cost, float maxDistanceToArea )
 {
     Invalidate();
-
 
     CNavArea* pStartArea = pNPC->GetLastKnownArea();
     const Vector vecGoal = pTarget->WorldSpaceCenter();
@@ -135,7 +127,6 @@ bool NPCR::CBaseNavPath::BuildSimplePath( const Vector& vecStart, const Vector& 
         res = BuildSimplePath( vecStart, vecGoal, pStart, pGoal );
     }
 
-
     if ( !res )
     {
         // Even THAT failed, just a straight path with no areas.
@@ -148,7 +139,6 @@ bool NPCR::CBaseNavPath::BuildSimplePath( const Vector& vecStart, const Vector& 
         m_Links[1].area = nullptr;
         m_Links[1].pos = vecGoal;
         m_Links[1].navTravel = TRAVEL_ONGROUND;
-
 
         m_Links[0].fwd = m_Links[1].pos - m_Links[0].pos;
         m_Links[0].fwd_dot = 1.0f;
@@ -174,7 +164,6 @@ bool NPCR::CBaseNavPath::BuildSimplePath( const Vector& vecStart, const Vector& 
     if ( !pGoalArea )
         return false;
 
-
     m_nLinkCount = 2;
 
     m_Links[0].area = pStartArea;
@@ -187,7 +176,6 @@ bool NPCR::CBaseNavPath::BuildSimplePath( const Vector& vecStart, const Vector& 
     m_Links[1].pos.z = pGoalArea->GetZ( vecGoal );
     m_Links[1].navTravel = TRAVEL_ONGROUND;
 
-
     m_Links[0].fwd = m_Links[1].pos - m_Links[0].pos;
     m_Links[0].fwd_dot = 1.0f;
     m_Links[0].length = m_Links[0].fwd.NormalizeInPlace();
@@ -195,7 +183,6 @@ bool NPCR::CBaseNavPath::BuildSimplePath( const Vector& vecStart, const Vector& 
     m_Links[1].fwd = m_Links[1].fwd;
     m_Links[1].fwd_dot = 1.0f;
     m_Links[1].length = 0.0f;
-
 
     OnPathCreated();
 
@@ -206,7 +193,7 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
 {
     // Count total areas.
     int totalAreas = 0;
-    for ( CNavArea* area = pLastArea; ; area = area->GetParent() )
+    for ( CNavArea* area = pLastArea;; area = area->GetParent() )
     {
         // This should not be possible!!!
         // We should end at the starting area.
@@ -256,7 +243,6 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
         }
     }
 
-
     NavLink_t* first = &m_Links[0];
     if ( first->area->Contains( vecStart ) )
     {
@@ -283,11 +269,10 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
 
     m_Links[0].fwd_dot = 1.0f;
 
-
     int i = 1;
     for ( ; i < m_nLinkCount; i++ )
     {
-        NavLink_t* from = &m_Links[i-1];
+        NavLink_t* from = &m_Links[i - 1];
         NavLink_t* to = &m_Links[i];
 
         // Only handle ground traveling for now.
@@ -303,14 +288,14 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
     }
 
     // Update the currently last link.
-    NavLink_t* prev = &m_Links[i-1];
+    NavLink_t* prev = &m_Links[i - 1];
     prev->fwd = vecGoal - prev->pos;
     prev->length = prev->fwd.NormalizeInPlace();
 
     // Set forward dot of every link.
     for ( i = 1; i < m_nLinkCount; i++ )
     {
-        NavLink_t* from = &m_Links[i-1];
+        NavLink_t* from = &m_Links[i - 1];
         NavLink_t* to = &m_Links[i];
 
         to->fwd_dot = from->fwd.Dot( to->fwd );
@@ -323,7 +308,6 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
         //    --m_nLinkCount;
         //}
     }
-    
 
     if ( m_nLinkCount < MAX_PATH_LINKS )
     {
@@ -360,25 +344,22 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
             {
                 last->area->GetClosestPointOnArea( vecGoal, &last->pos );
             }
-        
         }
 
         prev->fwd = last->pos - prev->pos;
         prev->length = prev->fwd.NormalizeInPlace();
     }
 
-
     //
     // Check for any jumps we have to do.
     //
     for ( i = 1; i < m_nLinkCount; i++ )
     {
-        NavLink_t* from = &m_Links[i-1];
+        NavLink_t* from = &m_Links[i - 1];
         NavLink_t* to = &m_Links[i];
 
         if ( from->area == to->area )
             continue;
-
 
         Vector fromPos, toPos;
         if ( !CBasePathCost::ComputePortalPoints( from->area, to->area, fromPos, toPos ) )
@@ -392,26 +373,25 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
 
         const float flStepHeight = cost.GetStepHeight();
 
-        if ( height > flStepHeight || fromPos.DistToSqr( toPos ) > (cost.GetMaxWalkGap()*cost.GetMaxWalkGap()) )
+        if ( height > flStepHeight || fromPos.DistToSqr( toPos ) > ( cost.GetMaxWalkGap() * cost.GetMaxWalkGap() ) )
         {
             NavLink_t* jumpstart = from;
-            
 
             // We need to insert the jump start link here.
             int movecount = m_nLinkCount - i;
-            if ( (movecount + i) < MAX_PATH_LINKS ) // If we can't insert an empty space just use the previous one
+            if ( ( movecount + i ) < MAX_PATH_LINKS ) // If we can't insert an empty space just use the previous one
             {
                 jumpstart = to;
 
-                memmove( &(m_Links[i+1]), &(m_Links[i]), movecount * sizeof(*m_Links) );
-                to = &m_Links[i+1];
+                memmove( &( m_Links[i + 1] ), &( m_Links[i] ), movecount * sizeof( *m_Links ) );
+                to = &m_Links[i + 1];
 
                 // Jump over the nav jump link next iteration
                 ++i; // Don't use i after this point
 
                 ++m_nLinkCount;
             }
-            
+
             to->area->GetClosestPointOnArea( to->pos, &to->pos );
 
             jumpstart->navTravel = TRAVEL_NAVJUMP;
@@ -427,13 +407,12 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
             // Also updates Z
             jumpstart->area->GetClosestPointOnArea( jumpstart->pos, &jumpstart->pos );
         }
-        else if ( height < (-flStepHeight) && (i + 1) < m_nLinkCount )
+        else if ( height < ( -flStepHeight ) && ( i + 1 ) < m_nLinkCount )
         {
             // We're going down, check if there's a drastic drop
             const Vector down = Vector( 0.0f, 0.0f, -1.0f );
 
-
-            NavLink_t* droplink = &m_Links[i+1];
+            NavLink_t* droplink = &m_Links[i + 1];
 
             // We don't change directions much, it's all good.
             if ( droplink->fwd_dot > 0.4f )
@@ -448,8 +427,6 @@ bool NPCR::CBaseNavPath::ComputeNavPathDetails( const Vector& vecStart, CNavArea
         }
     }
 
-
-
     OnPathCreated();
 
     return true;
@@ -463,7 +440,6 @@ bool NPCR::CBaseNavPath::BuildNavPath( const Vector& vecStart, const Vector& vec
         return cost.CanBuildSimpleRoute( vecStart, vecGoal ) ? BuildSimplePath( vecStart, vecGoal, true ) : false;
     }
 
-
     if ( pStartArea == pGoalArea )
     {
         return BuildSimplePath( vecStart, vecGoal, pStartArea, pGoalArea );
@@ -475,7 +451,6 @@ bool NPCR::CBaseNavPath::BuildNavPath( const Vector& vecStart, const Vector& vec
 
     if ( !closestArea )
         return false;
-
 
     if ( !ComputeNavPathDetails( vecStart, pStartArea, closestArea, vecGoal, cost ) )
     {
@@ -497,7 +472,6 @@ bool NPCR::CBaseNavPath::BuildGraphPath( const Vector& vecStart, const Vector& v
         return BuildSimplePath( vecStart, vecGoal, true );
     }
 
-
     AI_Waypoint_t* first = FindGraphPath( startID, endID, cost );
 
     if ( !first )
@@ -510,9 +484,8 @@ bool NPCR::CBaseNavPath::BuildGraphPath( const Vector& vecStart, const Vector& v
     m_nLinkCount = 0;
     m_Links[0].fwd_dot = 1.0f;
 
-
     // Translate waypoints to links.
-    
+
     int i = 0;
     AI_Waypoint_t* cur = first;
     do
@@ -524,28 +497,23 @@ bool NPCR::CBaseNavPath::BuildGraphPath( const Vector& vecStart, const Vector& v
         m_Links[i].pos = cur->GetPos();
         m_Links[i].navTravel = cur->NavType() != NAV_JUMP ? TRAVEL_ONGROUND : TRAVEL_NAVJUMP;
         //m_Links[i].navTraverse = GO_NORTH;
-        
 
         ++i;
         ++m_nLinkCount;
 
         // We need one free extra space for the actual goal pos.
-        if ( m_nLinkCount >= (MAX_PATH_LINKS-1) ) 
+        if ( m_nLinkCount >= ( MAX_PATH_LINKS - 1 ) )
             break;
-    }
-    while ( (cur = cur->GetNext()) != nullptr );
-
+    } while ( ( cur = cur->GetNext() ) != nullptr );
 
     // Delete all waypoints. We don't need them anymore.
     DeleteAll( first );
 
-
-    // Add last 
+    // Add last
     ++m_nLinkCount;
     int last = m_nLinkCount - 1;
     m_Links[last].area = nullptr;
     m_Links[last].pos = vecGoal;
-
 
     // Set links' vectors.
     int prev = 0;
@@ -559,9 +527,6 @@ bool NPCR::CBaseNavPath::BuildGraphPath( const Vector& vecStart, const Vector& v
     m_Links[last].fwd = m_Links[last].pos - m_Links[prev].pos;
     m_Links[last].length = m_Links[last].fwd.NormalizeInPlace();
 
-
-
-
     OnPathCreated();
 
     return true;
@@ -571,7 +536,7 @@ float NPCR::CBaseNavPath::ComputeLength()
 {
     float length = 0.0f;
 
-    for ( int i = 0; i < m_nLinkCount-1; i++ )
+    for ( int i = 0; i < m_nLinkCount - 1; i++ )
     {
         length += m_Links[i].length;
     }
@@ -600,16 +565,13 @@ void NPCR::CBaseNavPath::Draw()
     if ( !IsValid() )
         return;
 
-
     NavLink_t* lastlink = nullptr;
     for ( int i = 1; i < LinkCount(); i++ )
     {
-        NavLink_t* from = &m_Links[i-1];
+        NavLink_t* from = &m_Links[i - 1];
         NavLink_t* to = &m_Links[i];
 
-
         DrawSegment( from, to );
-
 
         lastlink = to;
     }
@@ -622,10 +584,18 @@ void NPCR::CBaseNavPath::DrawSegment( const NPCR::NavLink_t* from, const NPCR::N
     int r, g, b;
     switch ( from->navTravel )
     {
-    case TRAVEL_NAVJUMP :   r = g = 0; b = 255; break;
-    case TRAVEL_DROPDOWN :  r = g = 255; b = 0; break;
-    case TRAVEL_ONGROUND :
-    default :               r = g = b = 255; break;
+    case TRAVEL_NAVJUMP:
+        r = g = 0;
+        b = 255;
+        break;
+    case TRAVEL_DROPDOWN:
+        r = g = 255;
+        b = 0;
+        break;
+    case TRAVEL_ONGROUND:
+    default:
+        r = g = b = 255;
+        break;
     }
 
     NDebugOverlay::Line( from->pos, to->pos, r, g, b, true, 0.1f );
@@ -665,7 +635,7 @@ const NPCR::NavLink_t* NPCR::CBaseNavPath::NextLink( const NPCR::NavLink_t* link
 
 const NPCR::NavLink_t* NPCR::CBaseNavPath::LastLink() const
 {
-    return LinkCount() ? &m_Links[LinkCount()-1] : nullptr;
+    return LinkCount() ? &m_Links[LinkCount() - 1] : nullptr;
 }
 
 int NPCR::CBaseNavPath::GetLinkOffset( const NPCR::NavLink_t* link ) const

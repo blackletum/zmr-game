@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "zmr_basepump.h"
-
 
 #ifdef CLIENT_DLL
 #define CZMWeaponRifle C_ZMWeaponRifle
@@ -17,7 +15,6 @@ public:
 
     CZMWeaponRifle();
     ~CZMWeaponRifle();
-
 
     virtual Vector GetBulletSpread() const override;
     virtual bool Holster( CBaseCombatWeapon* pSwitchTo = nullptr ) override;

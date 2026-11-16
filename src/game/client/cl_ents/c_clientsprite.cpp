@@ -1,16 +1,13 @@
 #include "cbase.h"
-#include "gamestringpool.h"
 #include "cmodel.h"
+#include "gamestringpool.h"
 
 #include "c_clientsprite.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
 int UTIL_CreateClientModel( const char* pszModel );
-
 
 C_ClientSprite::C_ClientSprite()
 {
@@ -33,11 +30,10 @@ bool C_ClientSprite::Initialize()
         return false;
     }
 
-
-	if ( InitializeAsClientEntity( STRING( GetModelName() ), RENDER_GROUP_TRANSLUCENT_ENTITY ) == false )
-	{
-		return false;
-	}
+    if ( InitializeAsClientEntity( STRING( GetModelName() ), RENDER_GROUP_TRANSLUCENT_ENTITY ) == false )
+    {
+        return false;
+    }
 
     Spawn();
 
@@ -48,11 +44,11 @@ bool C_ClientSprite::Initialize()
 
 bool C_ClientSprite::KeyValue( const char* szKeyName, const char* szValue )
 {
-	if ( FStrEq( szKeyName, "model" ) )
-	{
-		SetModelName( AllocPooledString( szValue ) );
+    if ( FStrEq( szKeyName, "model" ) )
+    {
+        SetModelName( AllocPooledString( szValue ) );
         return true;
-	}
+    }
     else if ( FStrEq( szKeyName, "rendermode" ) )
     {
         SetRenderMode( (RenderMode_t)atoi( szValue ) );
@@ -74,5 +70,5 @@ bool C_ClientSprite::KeyValue( const char* szKeyName, const char* szValue )
         SetNeedsServer();
     }
 
-	return BaseClass::KeyValue( szKeyName, szValue );
+    return BaseClass::KeyValue( szKeyName, szValue );
 }

@@ -1,35 +1,30 @@
 #include "cbase.h"
 
-#include "team.h"
-#include "items.h"
-#include "props.h"
 #include "IEffects.h"
 #include "envspark.h"
+#include "items.h"
 #include "precipitation_shared.h"
+#include "props.h"
+#include "team.h"
 
-
-#include "zmr_gamerules.h"
-#include "zmr_player.h"
-#include "zmr_shareddefs.h"
 #include "npcs/zmr_zombiebase_shared.h"
 #include "weapons/zmr_base.h"
+#include "zmr_gamerules.h"
 #include "zmr_mapitemaction.h"
+#include "zmr_player.h"
+#include "zmr_shareddefs.h"
 
 #include "zmr_entities.h"
-
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
-#define MODEL_MANIPULATE        "models/manipulatable.mdl"
-#define MODEL_ZOMBIESPAWN       "models/zombiespawner.mdl"
-#define MODEL_RALLYPOINT        "models/rallypoint.mdl"
-#define MODEL_SPAWNNODE         "models/spawnnode.mdl"
-#define MODEL_AMBUSHTRIGGER     "models/trap.mdl"
-#define MODEL_MANITRIGGER       "models/trap.mdl"
-
+#define MODEL_MANIPULATE    "models/manipulatable.mdl"
+#define MODEL_ZOMBIESPAWN   "models/zombiespawner.mdl"
+#define MODEL_RALLYPOINT    "models/rallypoint.mdl"
+#define MODEL_SPAWNNODE     "models/spawnnode.mdl"
+#define MODEL_AMBUSHTRIGGER "models/trap.mdl"
+#define MODEL_MANITRIGGER   "models/trap.mdl"
 
 /*
     func_win
@@ -45,7 +40,6 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( func_win, CZMEntWin );
 
-
 void CZMEntWin::OnRoundEnd( ZMRoundEndReason_t reason )
 {
     // Fire outputs for all func_wins.
@@ -53,33 +47,40 @@ void CZMEntWin::OnRoundEnd( ZMRoundEndReason_t reason )
 
     switch ( reason )
     {
-    case ZMROUND_HUMANLOSE :
-    case ZMROUND_HUMANDEAD :
-    case ZMROUND_HUMANWIN :
-    case ZMROUND_ZMSUBMIT : output = true; break;
-    default : break;
+    case ZMROUND_HUMANLOSE:
+    case ZMROUND_HUMANDEAD:
+    case ZMROUND_HUMANWIN:
+    case ZMROUND_ZMSUBMIT:
+        output = true;
+        break;
+    default:
+        break;
     }
 
     if ( !output ) return;
 
-
     CZMEntWin* pWin;
     COutputEvent* pEvent;
     CBaseEntity* pEnt = nullptr;
-    
-    while ( (pEnt = gEntList.FindEntityByClassname( pEnt, "func_win" )) != nullptr )
+
+    while ( ( pEnt = gEntList.FindEntityByClassname( pEnt, "func_win" ) ) != nullptr )
     {
         pWin = dynamic_cast<CZMEntWin*>( pEnt );
         if ( !pWin ) continue;
 
-
         switch ( reason )
         {
-        case ZMROUND_HUMANLOSE :
-        case ZMROUND_HUMANDEAD : pEvent = &(pWin->m_OnLose); break;
-        case ZMROUND_HUMANWIN : pEvent = &(pWin->m_OnWin); break;
-        case ZMROUND_ZMSUBMIT :
-        default : pEvent = &(pWin->m_OnSubmit); break;
+        case ZMROUND_HUMANLOSE:
+        case ZMROUND_HUMANDEAD:
+            pEvent = &( pWin->m_OnLose );
+            break;
+        case ZMROUND_HUMANWIN:
+            pEvent = &( pWin->m_OnWin );
+            break;
+        case ZMROUND_ZMSUBMIT:
+        default:
+            pEvent = &( pWin->m_OnSubmit );
+            break;
         }
 
         pEvent->FireOutput( nullptr, nullptr );
@@ -87,23 +88,22 @@ void CZMEntWin::OnRoundEnd( ZMRoundEndReason_t reason )
 }
 
 void CZMEntWin::Spawn()
-{ 
+{
     SetSolid( SOLID_NONE );
     AddEffects( EF_NODRAW );
-    
+
     SetMoveType( MOVETYPE_NONE );
 }
 
-void CZMEntWin::InputHumanWin( inputdata_t &inputdata )
+void CZMEntWin::InputHumanWin( inputdata_t& inputdata )
 {
     ZMRules()->EndRound( ZMROUND_HUMANWIN );
 }
 
-void CZMEntWin::InputHumanLose( inputdata_t &inputdata )
+void CZMEntWin::InputHumanLose( inputdata_t& inputdata )
 {
     ZMRules()->EndRound( ZMROUND_HUMANLOSE );
 }
-
 
 /*
     BaseUsable
@@ -124,19 +124,19 @@ CZMEntBaseUsable::CZMEntBaseUsable()
     m_bActive = false;
 }
 
-void CZMEntBaseUsable::InputToggle( inputdata_t &inputdata )
+void CZMEntBaseUsable::InputToggle( inputdata_t& inputdata )
 {
     m_bActive = !m_bActive;
     UpdateUsable();
 }
 
-void CZMEntBaseUsable::InputHide( inputdata_t &inputdata )
+void CZMEntBaseUsable::InputHide( inputdata_t& inputdata )
 {
     m_bActive = false;
     UpdateUsable();
 }
 
-void CZMEntBaseUsable::InputUnhide( inputdata_t &inputdata )
+void CZMEntBaseUsable::InputUnhide( inputdata_t& inputdata )
 {
     m_bActive = true;
     UpdateUsable();
@@ -187,13 +187,12 @@ int CZMEntBaseSimple::UpdateTransmitState()
     return FL_EDICT_FULLCHECK;
 }
 
-
 /*
     Zombie spawn
 */
 IMPLEMENT_SERVERCLASS_ST( CZMEntZombieSpawn, DT_ZM_EntZombieSpawn )
     SendPropInt( SENDINFO( m_fZombieFlags ) ),
-    SendPropArray3( SENDINFO_ARRAY3(m_iZombieCosts), SendPropInt( SENDINFO_ARRAY(m_iZombieCosts), 16 ) ), // Resource cost is not likely to surpass 16 bits
+    SendPropArray3( SENDINFO_ARRAY3( m_iZombieCosts ), SendPropInt( SENDINFO_ARRAY( m_iZombieCosts ), 16 ) ), // Resource cost is not likely to surpass 16 bits
 END_SEND_TABLE()
 
 BEGIN_DATADESC( CZMEntZombieSpawn )
@@ -225,7 +224,6 @@ BEGIN_DATADESC( CZMEntZombieSpawn )
     DEFINE_INPUTFUNC( FIELD_INTEGER, "SetDrifterCost", InputSetZombieCost3 ),
     DEFINE_INPUTFUNC( FIELD_INTEGER, "SetImmolatorCost", InputSetZombieCost4 ),
 
-
     DEFINE_KEYFIELD( m_fZombieFlags, FIELD_INTEGER, "zombieflags" ),
     //DEFINE_KEYFIELD( m_nSpawnQueueCapacity, FIELD_INTEGER, "spawnqueuecapacity" ),
     DEFINE_KEYFIELD( m_sRallyName, FIELD_STRING, "rallyname" ),
@@ -253,15 +251,14 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( info_zombiespawn, CZMEntZombieSpawn );
 PRECACHE_REGISTER( info_zombiespawn );
 
-
 CZMEntZombieSpawn::CZMEntZombieSpawn()
 {
     m_vSpawnNodes.Purge();
     m_vSpawnQueue.Purge();
 
-    for (int i = 0; i < ZMCLASS_MAX; i++)
+    for ( int i = 0; i < ZMCLASS_MAX; i++ )
     {
-        m_iZombieCosts.Set(i, -1);
+        m_iZombieCosts.Set( i, -1 );
     }
 
     m_iZombieNodeCounter = 0;
@@ -283,7 +280,6 @@ void CZMEntZombieSpawn::Spawn()
 
     InitSpawnNodes();
 
-
     //if ( m_nSpawnQueueCapacity < 1 )
     //    m_nSpawnQueueCapacity = 10;
 
@@ -299,21 +295,18 @@ void CZMEntZombieSpawn::Spawn()
         }
     }
 
-
-
     m_vSpawnQueue.EnsureCapacity( 10 );
 
     StopSpawning();
 
-    
     CBaseEntity* pEnt = nullptr;
-    while ( !m_hRallyPoint.Get() && (pEnt = gEntList.FindEntityByName( pEnt, m_sRallyName )) != nullptr )
+    while ( !m_hRallyPoint.Get() && ( pEnt = gEntList.FindEntityByName( pEnt, m_sRallyName ) ) != nullptr )
     {
         m_hRallyPoint.Set( dynamic_cast<CZMEntRallyPoint*>( pEnt ) );
     }
 }
 
-bool CZMEntZombieSpawn::AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID )
+bool CZMEntZombieSpawn::AcceptInput( const char* szInputName, CBaseEntity* pActivator, CBaseEntity* pCaller, variant_t Value, int outputID )
 {
     bool base = BaseClass::AcceptInput( szInputName, pActivator, pCaller, Value, outputID );
 
@@ -323,22 +316,24 @@ bool CZMEntZombieSpawn::AcceptInput( const char *szInputName, CBaseEntity *pActi
     return base;
 }
 
-void CZMEntZombieSpawn::InputToggle( inputdata_t &inputdata )
+void CZMEntZombieSpawn::InputToggle( inputdata_t& inputdata )
 {
     BaseClass::InputToggle( inputdata );
 
-    if ( IsActive() ) StartSpawning();
-    else StopSpawning();
+    if ( IsActive() )
+        StartSpawning();
+    else
+        StopSpawning();
 }
 
-void CZMEntZombieSpawn::InputHide( inputdata_t &inputdata )
+void CZMEntZombieSpawn::InputHide( inputdata_t& inputdata )
 {
     BaseClass::InputHide( inputdata );
 
     StopSpawning();
 }
 
-void CZMEntZombieSpawn::InputUnhide( inputdata_t &inputdata )
+void CZMEntZombieSpawn::InputUnhide( inputdata_t& inputdata )
 {
     BaseClass::InputUnhide( inputdata );
 
@@ -347,7 +342,7 @@ void CZMEntZombieSpawn::InputUnhide( inputdata_t &inputdata )
 
 bool CZMEntZombieSpawn::CanSpawn( ZombieClass_t zclass ) const
 {
-    return (GetZombieFlags() == 0 || (GetZombieFlags() & (1 << zclass)) );
+    return ( GetZombieFlags() == 0 || ( GetZombieFlags() & ( 1 << zclass ) ) );
 }
 
 bool CZMEntZombieSpawn::QueueUnit( CZMPlayer* pPlayer, ZombieClass_t zclass, int amount )
@@ -358,9 +353,7 @@ bool CZMEntZombieSpawn::QueueUnit( CZMPlayer* pPlayer, ZombieClass_t zclass, int
         return false;
     }
 
-
     if ( !CanSpawn( zclass ) ) return false;
-
 
     int plyindex = pPlayer ? pPlayer->entindex() : 0;
     bool added = false;
@@ -378,7 +371,6 @@ bool CZMEntZombieSpawn::QueueUnit( CZMPlayer* pPlayer, ZombieClass_t zclass, int
         }
     }
 
-
     if ( !added && m_vSpawnQueue.Count() < 10 )
     {
         queue_info_t queue;
@@ -390,9 +382,7 @@ bool CZMEntZombieSpawn::QueueUnit( CZMPlayer* pPlayer, ZombieClass_t zclass, int
         m_vSpawnQueue.AddToTail( queue );
     }
 
-
     StartSpawning();
-
 
     SendMenuUpdate();
 
@@ -403,16 +393,13 @@ void CZMEntZombieSpawn::QueueClear( int inamount, int inpos )
 {
     if ( !m_vSpawnQueue.Count() ) return;
 
-
     int pos = inpos;
     if ( pos < 0 || pos >= m_vSpawnQueue.Count() ) pos = m_vSpawnQueue.Count() - 1;
-
 
     int amount = inamount;
     if ( amount < 1 || amount > m_vSpawnQueue.Count() ) amount = m_vSpawnQueue.Count();
 
-
-    if ( (pos + amount) > m_vSpawnQueue.Count() )
+    if ( ( pos + amount ) > m_vSpawnQueue.Count() )
     {
         amount = m_vSpawnQueue.Count() - pos;
     }
@@ -439,7 +426,7 @@ void CZMEntZombieSpawn::SetNextSpawnThink()
     // Only set next spawn think if we're not already thinking.
     float delay = GetSpawnDelay();
 
-    if ( GetNextThink() == TICK_NEVER_THINK || (GetNextThink() - gpGlobals->curtime) > delay )
+    if ( GetNextThink() == TICK_NEVER_THINK || ( GetNextThink() - gpGlobals->curtime ) > delay )
     {
         SetNextThink( gpGlobals->curtime + delay );
     }
@@ -453,8 +440,8 @@ void CZMEntZombieSpawn::StopSpawning()
 
 void CZMEntZombieSpawn::SendMenuUpdate()
 {
-	CRecipientFilter filter;
-	filter.MakeReliable();
+    CRecipientFilter filter;
+    filter.MakeReliable();
 
     CZMPlayer* pZM;
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -469,25 +456,24 @@ void CZMEntZombieSpawn::SendMenuUpdate()
 
     if ( !filter.GetRecipientCount() ) return;
 
-
-	UserMessageBegin( filter, "ZMBuildMenuUpdate" );
+    UserMessageBegin( filter, "ZMBuildMenuUpdate" );
     {
-		WRITE_SHORT( entindex() );
+        WRITE_SHORT( entindex() );
 
-		WRITE_BOOL( IsActive() );
+        WRITE_BOOL( IsActive() );
 
         int count = m_vSpawnQueue.Count();
         WRITE_BYTE( count );
 
-		for ( int i = 0; i < count; i++ )
-		{
+        for ( int i = 0; i < count; i++ )
+        {
             Assert( m_vSpawnQueue[i].m_zclass != ZMCLASS_INVALID );
 
-			WRITE_BYTE( m_vSpawnQueue[i].m_zclass );
-			WRITE_BYTE( m_vSpawnQueue[i].m_nCount );
-		}
+            WRITE_BYTE( m_vSpawnQueue[i].m_zclass );
+            WRITE_BYTE( m_vSpawnQueue[i].m_nCount );
+        }
     }
-	MessageEnd();
+    MessageEnd();
 }
 
 void CZMEntZombieSpawn::SetRallyPoint( const Vector& pos )
@@ -517,11 +503,9 @@ void CZMEntZombieSpawn::SpawnThink()
         return;
     }
 
-
     queue_info_t& queue = m_vSpawnQueue.Element( 0 );
 
     ZombieClass_t zclass = queue.m_zclass;
-
 
     int cost = m_iZombieCosts[zclass] == -1 ? CZMBaseZombie::GetCost( zclass ) : m_iZombieCosts[zclass];
     bool bCreate = true;
@@ -530,7 +514,6 @@ void CZMEntZombieSpawn::SpawnThink()
     if ( queue.m_iSpawnerIndex > 0 )
     {
         pPlayer = ToZMPlayer( UTIL_PlayerByIndex( queue.m_iSpawnerIndex ) );
-
 
         if ( pPlayer )
         {
@@ -547,7 +530,6 @@ void CZMEntZombieSpawn::SpawnThink()
     if ( bCreate && !CZMBaseZombie::HasEnoughPopToSpawn( zclass ) )
         bCreate = false;
 
-    
     if ( bCreate )
     {
         CZMBaseZombie* pZombie = CreateZombie( zclass, pPlayer );
@@ -555,13 +537,11 @@ void CZMEntZombieSpawn::SpawnThink()
         {
             queue.m_nCount--;
 
-
             // We no longer have zombies in this slot, remove us.
             if ( !queue.m_nCount )
             {
                 m_vSpawnQueue.Remove( 0 );
             }
-            
 
             if ( pPlayer )
             {
@@ -569,14 +549,11 @@ void CZMEntZombieSpawn::SpawnThink()
                 pZombie->InitCost( cost );
             }
 
-
             // Tell everyone that has this menu open that a zombie has been spawned.
             SendMenuUpdate();
         }
     }
 
-
-    
     if ( m_vSpawnQueue.Count() )
     {
         SetNextSpawnThink();
@@ -598,11 +575,9 @@ CZMBaseZombie* CZMEntZombieSpawn::CreateZombie( ZombieClass_t zclass, CZMPlayer*
         return nullptr;
     }
 
-
     CZMBaseZombie* pZombie = static_cast<CZMBaseZombie*>( CreateEntityByName( classname ) );
 
     if ( !pZombie ) return nullptr;
-
 
     Vector spawnpos;
     QAngle ang = vec3_angle;
@@ -614,7 +589,6 @@ CZMBaseZombie* CZMEntZombieSpawn::CreateZombie( ZombieClass_t zclass, CZMPlayer*
         return nullptr;
     }
 
-
     pZombie->Teleport( &spawnpos, nullptr, &vec3_origin );
     ang.x = ang.z = 0.0f;
     pZombie->SetAbsAngles( ang );
@@ -623,7 +597,6 @@ CZMBaseZombie* CZMEntZombieSpawn::CreateZombie( ZombieClass_t zclass, CZMPlayer*
     //UTIL_DropToFloor( pZombie, MASK_NPCSOLID );
 
     pZombie->SetZombieModelGroupName( m_sZombieModelGroup );
-
 
     // We can be marked for deletion...
     if ( DispatchSpawn( pZombie ) != 0 )
@@ -636,10 +609,9 @@ CZMBaseZombie* CZMEntZombieSpawn::CreateZombie( ZombieClass_t zclass, CZMPlayer*
 
     pZombie->Activate();
 
-
     // Fire outputs in case the mapper wants to do something with the zombies spawned here
     m_OnSpawnNPC.Set( pZombie, pZombie, this );
-	m_OnSpawnZMClass[pZombie->GetZombieClass()].Set( pZombie, pZombie, this );
+    m_OnSpawnZMClass[pZombie->GetZombieClass()].Set( pZombie, pZombie, this );
 
     if ( pSpawnPoint != this )
     {
@@ -649,7 +621,6 @@ CZMBaseZombie* CZMEntZombieSpawn::CreateZombie( ZombieClass_t zclass, CZMPlayer*
         variant.SetEntity( pZombie );
         pSpawnPoint->FireNamedOutput( "OnSpawnNPC", variant, pZombie, pSpawnPoint );
     }
-
 
     auto* pRallypoint = m_hRallyPoint.Get();
     if ( pRallypoint )
@@ -664,7 +635,6 @@ CZMBaseZombie* CZMEntZombieSpawn::CreateZombie( ZombieClass_t zclass, CZMPlayer*
 
         pZombie->Command( nullptr, pRallypoint->GetAbsOrigin(), 256.0f ); // Some additional tolerance.
     }
-    
 
     return pZombie;
 }
@@ -674,14 +644,13 @@ void CZMEntZombieSpawn::InitSpawnNodes()
     if ( m_vSpawnNodes.Count() )
         return;
 
- 
     CZMEntSpawnNode* temp;
     bool recursive = false;
 
     CZMEntSpawnNode* start = nullptr;
 
     CBaseEntity* pEnt = nullptr;
-    while ( start == nullptr && (pEnt = gEntList.FindEntityByName( pEnt, m_sFirstNodeName )) != nullptr )
+    while ( start == nullptr && ( pEnt = gEntList.FindEntityByName( pEnt, m_sFirstNodeName ) ) != nullptr )
     {
         start = dynamic_cast<CZMEntSpawnNode*>( pEnt );
     }
@@ -694,7 +663,7 @@ void CZMEntZombieSpawn::InitSpawnNodes()
 
         m_vSpawnNodes.AddToTail( next );
 
-        while ( (pEnt = gEntList.FindEntityByName( pEnt, next->m_sNextNodeName )) != nullptr )
+        while ( ( pEnt = gEntList.FindEntityByName( pEnt, next->m_sNextNodeName ) ) != nullptr )
         {
             temp = dynamic_cast<CZMEntSpawnNode*>( pEnt );
 
@@ -703,11 +672,11 @@ void CZMEntZombieSpawn::InitSpawnNodes()
                 // Check for recursion.
                 for ( int i = 0; i < m_vSpawnNodes.Count(); i++ )
                 {
-                        if ( temp == m_vSpawnNodes.Element( i ) )
-                        {
-                            recursive = true;
-                            break;
-                        }
+                    if ( temp == m_vSpawnNodes.Element( i ) )
+                    {
+                        recursive = true;
+                        break;
+                    }
                 }
 
                 if ( recursive )
@@ -729,8 +698,7 @@ CBaseEntity* CZMEntZombieSpawn::FindSpawnPoint( CZMBaseZombie* pZombie, Vector& 
 {
     if ( !pZombie ) return nullptr;
 
-
-    const int nNodes =  m_vSpawnNodes.Count();
+    const int nNodes = m_vSpawnNodes.Count();
 
     //
     // We have spawn nodes.
@@ -743,14 +711,13 @@ CBaseEntity* CZMEntZombieSpawn::FindSpawnPoint( CZMBaseZombie* pZombie, Vector& 
         if ( m_iZombieNodeCounter >= nNodes )
             m_iZombieNodeCounter = 0;
 
-
         int startindex = m_iZombieNodeCounter;
 
         int endindex = startindex - 1;
         if ( endindex < 0 )
             endindex = nNodes - 1;
 
-        for ( int i = startindex; ; i++ )
+        for ( int i = startindex;; i++ )
         {
             if ( i >= nNodes )
                 i = 0;
@@ -817,7 +784,6 @@ CBaseEntity* CZMEntZombieSpawn::FindSpawnPoint( CZMBaseZombie* pZombie, Vector& 
     return nullptr;
 }
 
-
 /*
     Spawnnode
 */
@@ -828,7 +794,6 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( info_spawnnode, CZMEntSpawnNode );
 PRECACHE_REGISTER( info_spawnnode );
-
 
 CZMEntSpawnNode::CZMEntSpawnNode()
 {
@@ -847,7 +812,6 @@ void CZMEntSpawnNode::Spawn()
     SetSolid( SOLID_NONE );
 }
 
-
 /*
     Rallypoint
 */
@@ -857,19 +821,17 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( info_rallypoint, CZMEntRallyPoint );
 PRECACHE_REGISTER( info_rallypoint );
 
-
 void CZMEntRallyPoint::Precache()
 {
     PrecacheModel( MODEL_RALLYPOINT );
 }
 
 void CZMEntRallyPoint::Spawn()
-{ 
+{
     SetModel( MODEL_RALLYPOINT );
 
     SetSolid( SOLID_NONE );
 }
-
 
 /*
     Manipulate trigger
@@ -884,10 +846,8 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( info_manipulate_trigger, CZMEntManipulateTrigger );
 PRECACHE_REGISTER( info_manipulate_trigger );
 
-
 CZMEntManipulateTrigger::CZMEntManipulateTrigger()
 {
-
 }
 
 CZMEntManipulateTrigger::~CZMEntManipulateTrigger()
@@ -906,7 +866,7 @@ void CZMEntManipulateTrigger::Precache()
 }
 
 void CZMEntManipulateTrigger::Spawn()
-{ 
+{
     SetModel( MODEL_MANITRIGGER );
 
     SetSolid( SOLID_NONE );
@@ -920,7 +880,7 @@ ConVar zm_sv_trap_triggerrange( "zm_sv_trap_triggerrange", "100", FCVAR_NOTIFY, 
 void CZMEntManipulateTrigger::ScanThink()
 {
     CBaseEntity* pEnt = nullptr;
-    while ( (pEnt = gEntList.FindEntityInSphere( pEnt, GetAbsOrigin(), zm_sv_trap_triggerrange.GetFloat() )) != nullptr )
+    while ( ( pEnt = gEntList.FindEntityInSphere( pEnt, GetAbsOrigin(), zm_sv_trap_triggerrange.GetFloat() ) ) != nullptr )
     {
         CZMPlayer* pPlayer = ToZMPlayer( pEnt );
 
@@ -940,13 +900,11 @@ void CZMEntManipulateTrigger::ScanThink()
     SetNextThink( gpGlobals->curtime + 0.5f );
 }
 
-
 /*
     Ambush trigger
 */
 
 ConVar zm_sv_ambush_triggerrange( "zm_sv_ambush_triggerrange", "100", FCVAR_NOTIFY, "How close survivors have to get to an ambush to trigger it." );
-
 
 //IMPLEMENT_SERVERCLASS_ST( CZMEntManipulateTrigger, DT_ZM_EntManipulateTrigger )
 //END_SEND_TABLE()
@@ -958,7 +916,6 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( info_ambush_trigger, CZMEntAmbushTrigger );
 PRECACHE_REGISTER( info_ambush_trigger );
 
-
 CZMEntAmbushTrigger::CZMEntAmbushTrigger()
 {
     m_nAmbushZombies = 0;
@@ -966,7 +923,6 @@ CZMEntAmbushTrigger::CZMEntAmbushTrigger()
 
 CZMEntAmbushTrigger::~CZMEntAmbushTrigger()
 {
-
 }
 
 void CZMEntAmbushTrigger::Precache()
@@ -975,7 +931,7 @@ void CZMEntAmbushTrigger::Precache()
 }
 
 void CZMEntAmbushTrigger::Spawn()
-{ 
+{
     SetModel( MODEL_AMBUSHTRIGGER );
 
     SetSolid( SOLID_NONE );
@@ -992,7 +948,6 @@ void CZMEntAmbushTrigger::SetAmbushZombies( int count )
         return;
     }
 
-
     m_nAmbushZombies = count;
 }
 
@@ -1006,31 +961,30 @@ void CZMEntAmbushTrigger::RemoveZombieFromAmbush()
 
 void CZMEntAmbushTrigger::Trigger( CBaseEntity* pActivator )
 {
-    g_ZombieManager.ForEachAliveZombie( [ this, pActivator ]( CZMBaseZombie* pZombie )
-    {
-        if ( pZombie->GetAmbushTrigger() == this )
+    g_ZombieManager.ForEachAliveZombie( [this, pActivator]( CZMBaseZombie* pZombie )
         {
-            pZombie->RemoveFromAmbush( false );
-
-            if ( !pZombie->GetEnemy() )
+            if ( pZombie->GetAmbushTrigger() == this )
             {
-                pZombie->AcquireEnemy( pActivator );
+                pZombie->RemoveFromAmbush( false );
+
+                if ( !pZombie->GetEnemy() )
+                {
+                    pZombie->AcquireEnemy( pActivator );
+                }
             }
-        }
-    } );
+        } );
 }
 
 void CZMEntAmbushTrigger::ScanThink()
 {
     CBaseEntity* pEnt = nullptr;
-    while ( (pEnt = gEntList.FindEntityInSphere( pEnt, GetAbsOrigin(), zm_sv_ambush_triggerrange.GetFloat() )) != nullptr )
+    while ( ( pEnt = gEntList.FindEntityInSphere( pEnt, GetAbsOrigin(), zm_sv_ambush_triggerrange.GetFloat() ) ) != nullptr )
     {
         CZMPlayer* pPlayer = ToZMPlayer( pEnt );
 
         if ( pPlayer && pPlayer->IsHuman() && pPlayer->IsAlive() )
         {
             Trigger( pPlayer );
-
 
             UTIL_Remove( this );
             return;
@@ -1039,7 +993,6 @@ void CZMEntAmbushTrigger::ScanThink()
 
     SetNextThink( gpGlobals->curtime + 0.3f );
 }
-
 
 /*
     Manipulate orb
@@ -1067,7 +1020,6 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( info_manipulate, CZMEntManipulate );
 PRECACHE_REGISTER( info_manipulate );
 
-
 CZMEntManipulate::CZMEntManipulate()
 {
     m_vTriggers.Purge();
@@ -1088,15 +1040,13 @@ void CZMEntManipulate::Spawn()
 {
     BaseClass::Spawn();
 
-
     if ( m_nCost <= 0 ) m_nCost = 10;
     if ( m_nTrapCost <= 0 ) m_nTrapCost = m_nCost * 1.5;
-
 
     SetModel( MODEL_MANIPULATE );
 }
 
-bool CZMEntManipulate::AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID )
+bool CZMEntManipulate::AcceptInput( const char* szInputName, CBaseEntity* pActivator, CBaseEntity* pCaller, variant_t Value, int outputID )
 {
     bool base = BaseClass::AcceptInput( szInputName, pActivator, pCaller, Value, outputID );
 
@@ -1106,7 +1056,7 @@ bool CZMEntManipulate::AcceptInput( const char *szInputName, CBaseEntity *pActiv
     return base;
 }
 
-void CZMEntManipulate::InputToggle( inputdata_t &inputdata )
+void CZMEntManipulate::InputToggle( inputdata_t& inputdata )
 {
     BaseClass::InputToggle( inputdata );
 
@@ -1116,24 +1066,24 @@ void CZMEntManipulate::InputToggle( inputdata_t &inputdata )
     }
 }
 
-void CZMEntManipulate::InputHide( inputdata_t &inputdata )
+void CZMEntManipulate::InputHide( inputdata_t& inputdata )
 {
     BaseClass::InputHide( inputdata );
 
     RemoveTriggers();
 }
 
-void CZMEntManipulate::InputUnhide( inputdata_t &inputdata )
+void CZMEntManipulate::InputUnhide( inputdata_t& inputdata )
 {
     BaseClass::InputUnhide( inputdata );
 }
 
-void CZMEntManipulate::InputPress( inputdata_t &inputdata )
+void CZMEntManipulate::InputPress( inputdata_t& inputdata )
 {
     Trigger( nullptr );
 }
 
-void CZMEntManipulate::InputSetTrapCost( inputdata_t &inputdata )
+void CZMEntManipulate::InputSetTrapCost( inputdata_t& inputdata )
 {
     if ( inputdata.value.Int() <= 0 )
         m_nTrapCost = m_nCost * 1.5;
@@ -1141,7 +1091,7 @@ void CZMEntManipulate::InputSetTrapCost( inputdata_t &inputdata )
         m_nTrapCost = inputdata.value.Int();
 }
 
-void CZMEntManipulate::InputSetCost( inputdata_t &inputdata )
+void CZMEntManipulate::InputSetCost( inputdata_t& inputdata )
 {
     if ( inputdata.value.Int() <= 0 )
         m_nCost = 10;
@@ -1152,7 +1102,6 @@ void CZMEntManipulate::InputSetCost( inputdata_t &inputdata )
 void CZMEntManipulate::Trigger( CBaseEntity* pActivator )
 {
     if ( !IsActive() ) return;
-
 
     if ( pActivator && pActivator->IsPlayer() )
     {
@@ -1171,12 +1120,7 @@ void CZMEntManipulate::Trigger( CBaseEntity* pActivator )
         }
     }
 
-
-
     m_OnPressed.FireOutput( pActivator, this );
-
-
-
 
     RemoveTriggers();
 
@@ -1192,7 +1136,6 @@ void CZMEntManipulate::CreateTrigger( const Vector& pos )
 
     if ( !pTrigger ) return;
 
-
     pTrigger->SetOwnerEntity( this );
 
     m_vTriggers.AddToTail( pTrigger );
@@ -1202,7 +1145,6 @@ void CZMEntManipulate::RemoveTrigger( CZMEntManipulateTrigger* pTrigger )
 {
     int i = m_vTriggers.Find( pTrigger );
     if ( i < 0 ) return;
-
 
     m_vTriggers.Remove( i );
 
@@ -1227,8 +1169,8 @@ void CZMEntManipulate::RemoveTriggers()
 
 void CZMEntManipulate::SendMenuUpdate()
 {
-	CRecipientFilter filter;
-	filter.MakeReliable();
+    CRecipientFilter filter;
+    filter.MakeReliable();
 
     CZMPlayer* pZM;
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -1243,16 +1185,14 @@ void CZMEntManipulate::SendMenuUpdate()
 
     if ( !filter.GetRecipientCount() ) return;
 
-
-	UserMessageBegin( filter, "ZMManiMenuUpdate" );
+    UserMessageBegin( filter, "ZMManiMenuUpdate" );
     {
-		WRITE_SHORT( entindex() );
+        WRITE_SHORT( entindex() );
 
-		WRITE_BOOL( IsActive() );
+        WRITE_BOOL( IsActive() );
     }
-	MessageEnd();
+    MessageEnd();
 }
-
 
 /*
     Player count trigger
@@ -1269,13 +1209,11 @@ public:
 
     void CountThink();
 
-
-    void InputToggle( inputdata_t &inputData );
-    void InputDisable( inputdata_t &inputData );
-    void InputEnable( inputdata_t &inputData );
+    void InputToggle( inputdata_t& inputData );
+    void InputDisable( inputdata_t& inputData );
+    void InputEnable( inputdata_t& inputData );
 
     COutputEvent m_OnCount;
-
 
     void UpdateState( bool );
     inline bool IsActive() const { return m_bActive; };
@@ -1291,7 +1229,6 @@ BEGIN_DATADESC( CZMEntTriggerPlayerCount )
 
     DEFINE_THINKFUNC( CountThink ),
 
-
     DEFINE_INPUTFUNC( FIELD_VOID, "Toggle", InputToggle ),
     DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
     DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
@@ -1300,7 +1237,6 @@ BEGIN_DATADESC( CZMEntTriggerPlayerCount )
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_playercount, CZMEntTriggerPlayerCount );
-
 
 CZMEntTriggerPlayerCount::CZMEntTriggerPlayerCount()
 {
@@ -1319,17 +1255,17 @@ void CZMEntTriggerPlayerCount::Spawn()
     SetNextThink( gpGlobals->curtime + 1.0f );
 }
 
-void CZMEntTriggerPlayerCount::InputToggle( inputdata_t &inputData )
+void CZMEntTriggerPlayerCount::InputToggle( inputdata_t& inputData )
 {
     UpdateState( !m_bActive );
 }
 
-void CZMEntTriggerPlayerCount::InputEnable( inputdata_t &inputData )
+void CZMEntTriggerPlayerCount::InputEnable( inputdata_t& inputData )
 {
     UpdateState( true );
 }
 
-void CZMEntTriggerPlayerCount::InputDisable( inputdata_t &inputData )
+void CZMEntTriggerPlayerCount::InputDisable( inputdata_t& inputData )
 {
     UpdateState( false );
 }
@@ -1337,7 +1273,6 @@ void CZMEntTriggerPlayerCount::InputDisable( inputdata_t &inputData )
 void CZMEntTriggerPlayerCount::UpdateState( bool newstate )
 {
     if ( m_bActive == newstate ) return;
-
 
     m_bActive = newstate;
 
@@ -1356,7 +1291,6 @@ void CZMEntTriggerPlayerCount::CountThink()
 {
     if ( !IsActive() ) return;
 
-
     int count = 0;
 
     touchlink_t* root = static_cast<touchlink_t*>( GetDataObject( TOUCHLINK ) );
@@ -1369,14 +1303,12 @@ void CZMEntTriggerPlayerCount::CountThink()
         return;
     }
 
-
     for ( touchlink_t* link = root->nextLink; link != root; link = link->nextLink )
     {
         CZMPlayer* pPlayer = dynamic_cast<CZMPlayer*>( link->entityTouched.Get() );
 
         if ( pPlayer && pPlayer->IsHuman() && pPlayer->IsAlive() ) ++count;
     }
-
 
     CTeam* team = GetGlobalTeam( ZMTEAM_HUMAN );
 
@@ -1387,7 +1319,6 @@ void CZMEntTriggerPlayerCount::CountThink()
         SetNextThink( gpGlobals->curtime + 1.0f );
         return;
     }
-
 
     int totalplayers = team->GetNumPlayers();
 
@@ -1417,15 +1348,13 @@ public:
 
     void Spawn();
 
-    void InputCount( inputdata_t &inputData );
-    void InputToggle( inputdata_t &inputData );
-    void InputDisable( inputdata_t &inputData );
-    void InputEnable( inputdata_t &inputData );
-
+    void InputCount( inputdata_t& inputData );
+    void InputToggle( inputdata_t& inputData );
+    void InputDisable( inputdata_t& inputData );
+    void InputEnable( inputdata_t& inputData );
 
     COutputEvent m_OnCount;
     COutputEvent m_OnNotCount;
-
 
     void UpdateState( bool );
     inline bool IsActive() { return m_bActive; };
@@ -1436,9 +1365,9 @@ private:
     bool m_bActive;
 };
 
-#define SF_ENTCOUNT_PLAYERS     1 // Humans, in our case.
-#define SF_ENTCOUNT_NPCS        2
-#define SF_ENTCOUNT_PROPS       3
+#define SF_ENTCOUNT_PLAYERS 1 // Humans, in our case.
+#define SF_ENTCOUNT_NPCS    2
+#define SF_ENTCOUNT_PROPS   3
 
 BEGIN_DATADESC( CZMEntTriggerEntityCount )
     DEFINE_KEYFIELD( m_iCountToFire, FIELD_INTEGER, "counttofire" ), // It just has to be an integer...
@@ -1456,7 +1385,6 @@ BEGIN_DATADESC( CZMEntTriggerEntityCount )
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_entitycount, CZMEntTriggerEntityCount );
-
 
 CZMEntTriggerEntityCount::CZMEntTriggerEntityCount()
 {
@@ -1477,25 +1405,24 @@ void CZMEntTriggerEntityCount::Spawn()
     InitTrigger();
 }
 
-void CZMEntTriggerEntityCount::InputToggle( inputdata_t &inputData )
+void CZMEntTriggerEntityCount::InputToggle( inputdata_t& inputData )
 {
     m_bActive = !m_bActive;
 }
 
-void CZMEntTriggerEntityCount::InputEnable( inputdata_t &inputData )
+void CZMEntTriggerEntityCount::InputEnable( inputdata_t& inputData )
 {
     m_bActive = true;
 }
 
-void CZMEntTriggerEntityCount::InputDisable( inputdata_t &inputData )
+void CZMEntTriggerEntityCount::InputDisable( inputdata_t& inputData )
 {
     m_bActive = false;
 }
 
-void CZMEntTriggerEntityCount::InputCount( inputdata_t &inputData )
+void CZMEntTriggerEntityCount::InputCount( inputdata_t& inputData )
 {
     if ( !IsActive() ) return;
-
 
     int count = 0;
 
@@ -1507,17 +1434,15 @@ void CZMEntTriggerEntityCount::InputCount( inputdata_t &inputData )
         return;
     }
 
-
     for ( touchlink_t* link = root->nextLink; link != root; link = link->nextLink )
     {
         CBaseEntity* pEnt = link->entityTouched.Get();
 
         if ( !pEnt ) continue;
 
-        
         switch ( m_iTriggerFlags )
         {
-        case SF_ENTCOUNT_PLAYERS :
+        case SF_ENTCOUNT_PLAYERS:
         {
             CZMPlayer* pPlayer = ToZMPlayer( pEnt );
 
@@ -1528,7 +1453,7 @@ void CZMEntTriggerEntityCount::InputCount( inputdata_t &inputData )
 
             break;
         }
-        case SF_ENTCOUNT_NPCS :
+        case SF_ENTCOUNT_NPCS:
         {
             CZMBaseZombie* pNPC = ToZMBaseZombie( pEnt );
 
@@ -1539,7 +1464,7 @@ void CZMEntTriggerEntityCount::InputCount( inputdata_t &inputData )
 
             break;
         }
-        case SF_ENTCOUNT_PROPS :
+        case SF_ENTCOUNT_PROPS:
         {
             CPhysicsProp* pProp = dynamic_cast<CPhysicsProp*>( pEnt );
 
@@ -1555,10 +1480,10 @@ void CZMEntTriggerEntityCount::InputCount( inputdata_t &inputData )
 
             break;
         }
-        default : break;
+        default:
+            break;
         }
     }
-
 
     if ( count >= m_iCountToFire )
     {
@@ -1613,16 +1538,13 @@ void CZMEntLoadout::Spawn()
     AddEffects( EF_NODRAW );
     SetMoveType( MOVETYPE_NONE );
 
-
     // Make sure we don't give out negative weapons, lul.
     for ( int i = 0; i < LOADOUTWEAPON_MAX; i++ )
     {
         if ( m_iCounts[i] < 0 ) m_iCounts[i] = 0;
     }
 
-
     Reset();
-
 
     CZMRules* pRules = ZMRules();
 
@@ -1645,58 +1567,49 @@ void CZMEntLoadout::Reset()
 {
     switch ( GetMethod() )
     {
-    case LOADOUTMETHOD_RANDOM :
+    case LOADOUTMETHOD_RANDOM:
     {
         for ( int i = 0; i < LOADOUTWEAPON_MAX; i++ )
         {
             m_iCurRandom[i] = m_iCounts[i];
         }
         break;
-
     }
-    case LOADOUTMETHOD_CATEGORY : // My favorite...
-    default :
+    case LOADOUTMETHOD_CATEGORY: // My favorite...
+    default:
     {
         for ( int i = 0; i < LOADOUTLOCATION_MAX; i++ )
         {
             m_vCurCat[i].Purge();
         }
 
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_IMPROVISED]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_IMPROVISED]; i++ )
             m_vCurCat[LOADOUTLOCATION_MELEE].AddToTail( LOADOUTWEAPON_IMPROVISED );
 
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_SLEDGE]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_SLEDGE]; i++ )
             m_vCurCat[LOADOUTLOCATION_MELEE].AddToTail( LOADOUTWEAPON_SLEDGE );
 
-
-        
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_PISTOL]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_PISTOL]; i++ )
             m_vCurCat[LOADOUTLOCATION_PISTOL].AddToTail( LOADOUTWEAPON_PISTOL );
 
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_REVOLVER]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_REVOLVER]; i++ )
             m_vCurCat[LOADOUTLOCATION_PISTOL].AddToTail( LOADOUTWEAPON_REVOLVER );
 
-
-
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_MAC10]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_MAC10]; i++ )
             m_vCurCat[LOADOUTLOCATION_LARGE].AddToTail( LOADOUTWEAPON_MAC10 );
 
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_SHOTGUN]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_SHOTGUN]; i++ )
             m_vCurCat[LOADOUTLOCATION_LARGE].AddToTail( LOADOUTWEAPON_SHOTGUN );
 
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_RIFLE]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_RIFLE]; i++ )
             m_vCurCat[LOADOUTLOCATION_LARGE].AddToTail( LOADOUTWEAPON_RIFLE );
 
-
-
-        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_MOLOTOV]; i++)
+        for ( int i = 0; i < m_iCounts[LOADOUTWEAPON_MOLOTOV]; i++ )
             m_vCurCat[LOADOUTLOCATION_EQUIPMENT].AddToTail( LOADOUTWEAPON_MOLOTOV );
 
         break;
-
     }
     }
-
 }
 
 void CZMEntLoadout::DistributeToPlayer( CZMPlayer* pPlayer )
@@ -1704,11 +1617,10 @@ void CZMEntLoadout::DistributeToPlayer( CZMPlayer* pPlayer )
     if ( !pPlayer ) return;
 
     if ( !pPlayer->IsHuman() || !pPlayer->IsAlive() ) return;
-    
 
     switch ( GetMethod() )
     {
-    case LOADOUTMETHOD_RANDOM :
+    case LOADOUTMETHOD_RANDOM:
     {
         CUtlVector<LoadoutWeapon_t> vRemaining;
 
@@ -1728,9 +1640,9 @@ void CZMEntLoadout::DistributeToPlayer( CZMPlayer* pPlayer )
         }
         break;
     }
-    
-    case LOADOUTMETHOD_CATEGORY :
-    default :
+
+    case LOADOUTMETHOD_CATEGORY:
+    default:
     {
         for ( int i = LOADOUTLOCATION_START; i < LOADOUTLOCATION_MAX; i++ )
         {
@@ -1766,7 +1678,6 @@ void CZMEntLoadout::GiveWeapon( CZMPlayer* pPlayer, LoadoutWeapon_t loadout_wep 
 
     const char* loadoutClass = loadouts[loadout_wep];
 
-
     bool ammo = false;
 
     switch ( loadout_wep )
@@ -1778,16 +1689,15 @@ void CZMEntLoadout::GiveWeapon( CZMPlayer* pPlayer, LoadoutWeapon_t loadout_wep 
     case LOADOUTWEAPON_MAC10:
         ammo = true;
         break;
-    default :
+    default:
         break;
     }
-
 
     CUtlVector<const ZMItemAction::ItemBaseData_t*> items;
 
     // See if it's a single item.
     auto* pData = ZMItemAction::g_ZMMapItemSystem.GetItemData( loadoutClass );
-    
+
     if ( pData )
     {
         items.AddToTail( pData );
@@ -1799,7 +1709,6 @@ void CZMEntLoadout::GiveWeapon( CZMPlayer* pPlayer, LoadoutWeapon_t loadout_wep 
         ZMItemAction::g_ZMMapItemSystem.GetMapItemsByClass( flag, items );
     }
 
-
     // Get a random weapon from the items.
     const char* wepname = items.Count() > 0 ? items[random->RandomInt( 0, items.Count() - 1 )]->m_pszClassname : "";
     auto* pWeapon = ToZMBaseWeapon( pPlayer->Weapon_Create( wepname ) );
@@ -1810,9 +1719,7 @@ void CZMEntLoadout::GiveWeapon( CZMPlayer* pPlayer, LoadoutWeapon_t loadout_wep 
         return;
     }
 
-
     pPlayer->Weapon_Equip( pWeapon );
-
 
     if ( ammo )
     {
@@ -1821,7 +1728,6 @@ void CZMEntLoadout::GiveWeapon( CZMPlayer* pPlayer, LoadoutWeapon_t loadout_wep 
 
     DevMsg( "Gave %s weapon %s!\n", pPlayer->GetPlayerName(), wepname );
 }
-
 
 /*
     Block hidden trigger
@@ -1837,7 +1743,6 @@ BEGIN_DATADESC( CZMEntTriggerBlockHidden )
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_blockspotcreate, CZMEntTriggerBlockHidden );
-
 
 CZMEntTriggerBlockHidden::CZMEntTriggerBlockHidden()
 {
@@ -1857,21 +1762,20 @@ void CZMEntTriggerBlockHidden::Spawn()
     InitTrigger();
 }
 
-void CZMEntTriggerBlockHidden::InputToggle( inputdata_t &inputData )
+void CZMEntTriggerBlockHidden::InputToggle( inputdata_t& inputData )
 {
     m_bActive = !m_bActive;
 }
 
-void CZMEntTriggerBlockHidden::InputEnable( inputdata_t &inputData )
+void CZMEntTriggerBlockHidden::InputEnable( inputdata_t& inputData )
 {
     m_bActive = true;
 }
 
-void CZMEntTriggerBlockHidden::InputDisable( inputdata_t &inputData )
+void CZMEntTriggerBlockHidden::InputDisable( inputdata_t& inputData )
 {
     m_bActive = false;
 }
-
 
 /*
     Block phys explosion
@@ -1879,7 +1783,7 @@ void CZMEntTriggerBlockHidden::InputDisable( inputdata_t &inputData )
 CUtlVector<CZMEntTriggerBlockPhysExp*> g_ZMBlockPhysExp;
 
 BEGIN_DATADESC( CZMEntTriggerBlockPhysExp )
-    DEFINE_KEYFIELD( m_bActive, FIELD_BOOLEAN, "Active" ),
+DEFINE_KEYFIELD( m_bActive, FIELD_BOOLEAN, "Active" ),
 
     DEFINE_INPUTFUNC( FIELD_VOID, "Toggle", InputToggle ),
     DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
@@ -1887,7 +1791,6 @@ BEGIN_DATADESC( CZMEntTriggerBlockPhysExp )
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_blockphysexplosion, CZMEntTriggerBlockPhysExp );
-
 
 CZMEntTriggerBlockPhysExp::CZMEntTriggerBlockPhysExp()
 {
@@ -1907,26 +1810,25 @@ void CZMEntTriggerBlockPhysExp::Spawn()
     InitTrigger();
 }
 
-void CZMEntTriggerBlockPhysExp::InputToggle( inputdata_t &inputData )
+void CZMEntTriggerBlockPhysExp::InputToggle( inputdata_t& inputData )
 {
     m_bActive = !m_bActive;
 }
 
-void CZMEntTriggerBlockPhysExp::InputEnable( inputdata_t &inputData )
+void CZMEntTriggerBlockPhysExp::InputEnable( inputdata_t& inputData )
 {
     m_bActive = true;
 }
 
-void CZMEntTriggerBlockPhysExp::InputDisable( inputdata_t &inputData )
+void CZMEntTriggerBlockPhysExp::InputDisable( inputdata_t& inputData )
 {
     m_bActive = false;
 }
 
-
 /*
     Give resources
 */
-#define SF_GIVERES_LIMIT            ( 1 << 0 )
+#define SF_GIVERES_LIMIT ( 1 << 0 )
 
 class CZMEntGiveResources : public CServerOnlyPointEntity
 {
@@ -1934,10 +1836,9 @@ public:
     DECLARE_CLASS( CZMEntGiveResources, CServerOnlyPointEntity )
     DECLARE_DATADESC()
 
-
     void Spawn();
 
-    void InputGiveResources( inputdata_t &inputData );
+    void InputGiveResources( inputdata_t& inputData );
 };
 
 BEGIN_DATADESC( CZMEntGiveResources )
@@ -1945,7 +1846,6 @@ BEGIN_DATADESC( CZMEntGiveResources )
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( func_giveresources, CZMEntGiveResources );
-
 
 void CZMEntGiveResources::Spawn()
 {
@@ -1959,7 +1859,6 @@ void CZMEntGiveResources::InputGiveResources( inputdata_t& inputData )
     CZMRules::RewardResources( inputData.value.Int(), HasSpawnFlags( SF_GIVERES_LIMIT ) );
 }
 
-
 /*
     Trigger give points
 */
@@ -1969,10 +1868,9 @@ public:
     DECLARE_CLASS( CZMEntTriggerGivePoints, CBaseTrigger )
     DECLARE_DATADESC()
 
-
     void Spawn();
 
-    void InputAward( inputdata_t &inputData );
+    void InputAward( inputdata_t& inputData );
 };
 
 BEGIN_DATADESC( CZMEntTriggerGivePoints )
@@ -1981,7 +1879,6 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_givepoints, CZMEntTriggerGivePoints );
 
-
 void CZMEntTriggerGivePoints::Spawn()
 {
     BaseClass::Spawn();
@@ -1989,7 +1886,7 @@ void CZMEntTriggerGivePoints::Spawn()
     InitTrigger();
 }
 
-void CZMEntTriggerGivePoints::InputAward( inputdata_t &inputData )
+void CZMEntTriggerGivePoints::InputAward( inputdata_t& inputData )
 {
     touchlink_t* root = static_cast<touchlink_t*>( GetDataObject( TOUCHLINK ) );
 
@@ -1999,7 +1896,6 @@ void CZMEntTriggerGivePoints::InputAward( inputdata_t &inputData )
         return;
     }
 
-
     int award = inputData.value.Int();
 
     for ( touchlink_t* link = root->nextLink; link != root; link = link->nextLink )
@@ -2007,7 +1903,6 @@ void CZMEntTriggerGivePoints::InputAward( inputdata_t &inputData )
         CZMPlayer* pPlayer = ToZMPlayer( link->entityTouched.Get() );
 
         if ( !pPlayer ) continue;
-
 
         if ( pPlayer->IsHuman() && pPlayer->IsAlive() )
         {
@@ -2026,11 +1921,9 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( env_delayed_physexplosion, CZMPhysExplosion );
 PRECACHE_REGISTER( env_delayed_physexplosion );
 
-
 ConVar zm_sv_physexp_debug( "zm_sv_physexp_debug", "0" );
 ConVar zm_sv_physexp_disorientateplayer( "zm_sv_physexp_disorientateplayer", "10", FCVAR_NOTIFY | FCVAR_ARCHIVE, "Maximum angular disorientation applied to players." );
 ConVar zm_sv_physexp_player_mult( "zm_sv_physexp_player_mult", "0.05", FCVAR_NOTIFY | FCVAR_ARCHIVE, "How much players are pushed." );
-
 
 CZMPhysExplosion::CZMPhysExplosion()
 {
@@ -2056,18 +1949,14 @@ CZMPhysExplosion* CZMPhysExplosion::CreatePhysExplosion( const Vector& pos, floa
         return nullptr;
     }
 
-
-
     pExp->SetMagnitude( magnitude );
     pExp->SetRadius( radius );
-
 
     if ( DispatchSpawn( pExp ) != 0 )
     {
         UTIL_RemoveImmediate( pExp );
         return nullptr;
     }
-
 
     pExp->Teleport( &pos, nullptr, nullptr );
     pExp->Activate();
@@ -2090,7 +1979,7 @@ void CZMPhysExplosion::Precache()
 void CZMPhysExplosion::DelayThink()
 {
     CPASAttenuationFilter filter( this, 1.0f );
-    
+
     EmitSound_t snd;
     snd.m_pSoundName = "ZMPower.PhysExplode_Boom";
     snd.m_pOrigin = &GetAbsOrigin();
@@ -2098,7 +1987,6 @@ void CZMPhysExplosion::DelayThink()
 
     g_pEffects->Sparks( GetAbsOrigin(), 10, 5 );
     g_pEffects->Sparks( GetAbsOrigin(), 15, 3 );
-
 
     Push();
 
@@ -2113,8 +2001,7 @@ void CZMPhysExplosion::Push()
 
     float flRadius = MAX( GetRadius(), 1.0f );
 
-
-    while ( (pEnt = gEntList.FindEntityInSphere( pEnt, src, flRadius )) != nullptr )
+    while ( ( pEnt = gEntList.FindEntityInSphere( pEnt, src, flRadius ) ) != nullptr )
     {
         // Physics objects
         bool bValid = pEnt->GetMoveType() == MOVETYPE_VPHYSICS;
@@ -2128,23 +2015,16 @@ void CZMPhysExplosion::Push()
                 continue;
         }
 
-
         end = pEnt->BodyTarget( src );
 
-
-
-        Vector dir = (end - src);
+        Vector dir = ( end - src );
         float dist = dir.NormalizeInPlace();
-
 
         float ratio = 1.0f - dist / flRadius;
         if ( ratio < 0.0f )
             ratio = 0.0f;
 
-
-
         IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
-
 
         //
         // Player
@@ -2169,7 +2049,6 @@ void CZMPhysExplosion::Push()
                 pPlayer->ViewPunch( ang );
             }
 
-
             //
             // Push em.
             //
@@ -2177,7 +2056,6 @@ void CZMPhysExplosion::Push()
             {
                 float force = ratio * GetMagnitude() * zm_sv_physexp_player_mult.GetFloat();
                 force *= phys_pushscale.GetFloat();
-
 
                 Vector push = dir * force;
 
@@ -2191,7 +2069,6 @@ void CZMPhysExplosion::Push()
                 pEnt->AddFlag( FL_BASEVELOCITY );
             }
 
-
             pPlayer->ForceDropOfCarriedPhysObjects( nullptr );
         }
         //
@@ -2202,7 +2079,6 @@ void CZMPhysExplosion::Push()
             float force = GetMagnitude() * ratio;
             if ( force < 1.0f )
                 force = 1.0f;
-
 
             CTakeDamageInfo info( this, this, force, DMG_BLAST );
             CalculateExplosiveDamageForce( &info, dir, src );
@@ -2236,12 +2112,9 @@ void CZMPhysExplosion::CreateEffects( float delay )
     snd.m_pOrigin = &GetAbsOrigin();
     EmitSound( filter, entindex(), snd );
 
-
-
     auto* pSpark = dynamic_cast<CEnvSpark*>( CreateEntityByName( "env_spark" ) );
 
     if ( !pSpark ) return;
-
 
     const int SF_SPARK_START_ON = 64;
     const int SF_SPARK_GLOW = 128;
@@ -2252,8 +2125,8 @@ void CZMPhysExplosion::CreateEffects( float delay )
     pSpark->AddSpawnFlags( SF_SPARK_SILENT );
 
     pSpark->CBaseEntity::KeyValue( "MaxDelay", 0.0f );
-    pSpark->CBaseEntity::KeyValue( "Magnitude" , 2 );
-    pSpark->CBaseEntity::KeyValue( "TrailLength" , 1.5 );
+    pSpark->CBaseEntity::KeyValue( "Magnitude", 2 );
+    pSpark->CBaseEntity::KeyValue( "TrailLength", 1.5 );
     //pSpark->CBaseEntity::KeyValue( "DeathTime" , (gpGlobals->curtime + delay) );
 
     if ( DispatchSpawn( pSpark ) != 0 )
@@ -2274,10 +2147,8 @@ void CZMPhysExplosion::DelayedExplode( float delay )
     if ( delay > 0.0f )
         CreateEffects( delay );
 
-
     SetThink( &CZMPhysExplosion::DelayThink );
     SetNextThink( gpGlobals->curtime + delay );
-
 
     if ( zm_sv_physexp_debug.GetBool() )
     {
@@ -2288,8 +2159,8 @@ void CZMPhysExplosion::DelayedExplode( float delay )
 /*
     Score Entity
 */
-#define SF_SCORE_NEGATIVE       0x0001
-#define SF_SCORE_TEAM           0x0002
+#define SF_SCORE_NEGATIVE 0x0001
+#define SF_SCORE_TEAM     0x0002
 
 class CZMEntTeamScore : public CServerOnlyPointEntity
 {
@@ -2301,11 +2172,9 @@ public:
 
     void Spawn() override;
 
-
     void InputApplyScore( inputdata_t& inputData );
     void InputApplyScoreZM( inputdata_t& inputData );
     void InputApplyScoreSurvivors( inputdata_t& inputData );
-
 
     inline bool AllowNegative() { return ( m_spawnflags & SF_SCORE_NEGATIVE ) ? true : false; };
     inline bool ApplyToTeam() { return ( m_spawnflags & SF_SCORE_TEAM ) ? true : false; };
@@ -2313,7 +2182,6 @@ public:
 private:
     void ApplyScore( CTeam* team );
     void ApplyScoreActivator( CBaseEntity* pEnt );
-
 
     int m_nPoints;
 };
@@ -2328,7 +2196,6 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( game_score_team, CZMEntTeamScore );
 
-
 CZMEntTeamScore::CZMEntTeamScore()
 {
     m_nPoints = 0;
@@ -2342,14 +2209,12 @@ void CZMEntTeamScore::ApplyScore( CTeam* team )
 {
     if ( !team ) return;
 
-
     CZMPlayer* pPlayer;
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
     {
         pPlayer = ToZMPlayer( UTIL_PlayerByIndex( i ) );
 
         if ( !pPlayer ) continue;
-
 
         if ( pPlayer->GetTeam() == team )
         {
@@ -2362,15 +2227,13 @@ void CZMEntTeamScore::ApplyScoreActivator( CBaseEntity* pEnt )
 {
     if ( !pEnt ) return;
 
-
     if ( !pEnt->IsPlayer() )
     {
         IPhysicsObject* pObj = pEnt->VPhysicsGetObject();
 
-        if ( !pObj || !(pObj->GetGameFlags() & FVPHYSICS_PLAYER_HELD) ) return;
+        if ( !pObj || !( pObj->GetGameFlags() & FVPHYSICS_PLAYER_HELD ) ) return;
 
         if ( !pEnt->GetOwnerEntity() ) return;
-
 
         pEnt = pEnt->GetOwnerEntity();
     }
@@ -2383,7 +2246,6 @@ void CZMEntTeamScore::ApplyScoreActivator( CBaseEntity* pEnt )
     {
         pEnt->AddPoints( m_nPoints, AllowNegative() );
     }
-    
 }
 
 void CZMEntTeamScore::InputApplyScore( inputdata_t& inputData )
@@ -2401,12 +2263,10 @@ void CZMEntTeamScore::InputApplyScoreSurvivors( inputdata_t& inputData )
     ApplyScore( GetGlobalTeam( ZMTEAM_HUMAN ) );
 }
 
-
 /*
     Spawn points
 */
-static const char* g_szSpawnpoints[] =
-{
+static const char* g_szSpawnpoints[] = {
     "info_player_deathmatch",
     "info_player_survivor",
     "info_player_zombiemaster",
@@ -2446,8 +2306,6 @@ LINK_ENTITY_TO_CLASS( info_player_deathmatch, CZMEntSpawnPoint );
 LINK_ENTITY_TO_CLASS( info_player_survivor, CZMEntSpawnPoint );
 LINK_ENTITY_TO_CLASS( info_player_zombiemaster, CZMEntSpawnPoint );
 
-
-
 /*
     ZM fog controller
 */
@@ -2463,7 +2321,6 @@ BEGIN_DATADESC( CZMEntFogController )
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( env_fog_controller_zm, CZMEntFogController );
-
 
 CZMEntFogController::CZMEntFogController()
 {
@@ -2481,12 +2338,13 @@ void CZMEntFogController::InitFog()
     if ( !m_bNeedsInit )
         return;
 
-
     color32 clr;
     int tempclr[3];
     sscanf( zm_sv_zmfog_color.GetString(), "%i %i %i", &tempclr[0], &tempclr[1], &tempclr[2] );
-    clr.r = tempclr[0]; clr.g = tempclr[1]; clr.b = tempclr[2]; clr.a = 255;
-
+    clr.r = tempclr[0];
+    clr.g = tempclr[1];
+    clr.b = tempclr[2];
+    clr.a = 255;
 
     m_fog.enable = true;
     m_fog.blend = false;
@@ -2519,7 +2377,6 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_zombiespawnvolume, CZMEntTriggerSpawnVolume );
 
-
 CZMEntTriggerSpawnVolume::CZMEntTriggerSpawnVolume()
 {
     m_bActive = false;
@@ -2527,7 +2384,6 @@ CZMEntTriggerSpawnVolume::CZMEntTriggerSpawnVolume()
 
 CZMEntTriggerSpawnVolume::~CZMEntTriggerSpawnVolume()
 {
-
 }
 
 void CZMEntTriggerSpawnVolume::Spawn()
@@ -2537,17 +2393,17 @@ void CZMEntTriggerSpawnVolume::Spawn()
     InitTrigger();
 }
 
-void CZMEntTriggerSpawnVolume::InputToggle( inputdata_t &inputData )
+void CZMEntTriggerSpawnVolume::InputToggle( inputdata_t& inputData )
 {
     m_bActive = !m_bActive;
 }
 
-void CZMEntTriggerSpawnVolume::InputEnable( inputdata_t &inputData )
+void CZMEntTriggerSpawnVolume::InputEnable( inputdata_t& inputData )
 {
     m_bActive = true;
 }
 
-void CZMEntTriggerSpawnVolume::InputDisable( inputdata_t &inputData )
+void CZMEntTriggerSpawnVolume::InputDisable( inputdata_t& inputData )
 {
     m_bActive = false;
 }
@@ -2563,18 +2419,15 @@ void CZMEntTriggerSpawnVolume::GetPositionWithin( const CBaseEntity* pEnt, Vecto
         return;
     }
 
-
     float size = modelinfo->GetModelRadius( pModel ) + 10.0f;
-
 
     Vector start, dir;
     QAngle ang;
     Ray_t ray;
     trace_t tr;
 
-    
     Vector origin = pEnt->GetAbsOrigin();
-    
+
     // Try a few times.
     for ( int i = 0; i < 3; i++ )
     {
@@ -2583,8 +2436,6 @@ void CZMEntTriggerSpawnVolume::GetPositionWithin( const CBaseEntity* pEnt, Vecto
         ang.z = 0.0f;
 
         AngleVectors( ang, &dir );
-
-
 
         start = origin + dir * size;
 
@@ -2597,16 +2448,13 @@ void CZMEntTriggerSpawnVolume::GetPositionWithin( const CBaseEntity* pEnt, Vecto
 
         Assert( tr.m_pEnt == pEnt );
 
-
         // Get a random position between the surface and the origin.
         // This assumes we're convex.
-        float dist = (tr.endpos - origin).Length();
+        float dist = ( tr.endpos - origin ).Length();
 
         float mult = random->RandomFloat( 0.1f, 0.95f );
 
         pos = origin + dir * dist * mult;
-
-
 
         // Trace to find a valid spot. In case the brush is enveloped by world brushes.
         const Vector mins( -16, -16, 0 );
@@ -2640,7 +2488,6 @@ public:
     CZMEntPrecipitation();
     ~CZMEntPrecipitation();
 
-
     virtual void Spawn() override;
     virtual int UpdateTransmitState() override;
 
@@ -2655,10 +2502,9 @@ BEGIN_DATADESC( CZMEntPrecipitation )
 END_DATADESC()
 
 // Just send the normal entity crap
-IMPLEMENT_SERVERCLASS_ST( CZMEntPrecipitation, DT_ZM_EntPrecipitation)
+IMPLEMENT_SERVERCLASS_ST( CZMEntPrecipitation, DT_ZM_EntPrecipitation )
     SendPropInt( SENDINFO( m_nPrecipType ), Q_log2( NUM_PRECIPITATION_TYPES ) + 1, SPROP_UNSIGNED ),
 END_SEND_TABLE()
-
 
 CZMEntPrecipitation::CZMEntPrecipitation()
 {
@@ -2680,14 +2526,12 @@ void CZMEntPrecipitation::Spawn()
     PrecacheMaterial( "effects/ember_swirling001" );
     Precache();
 
-
     // Default to rain.
     if ( m_nPrecipType < 0 || m_nPrecipType > NUM_PRECIPITATION_TYPES )
         m_nPrecipType = PRECIPITATION_TYPE_RAIN;
 
-
     SetMoveType( MOVETYPE_NONE );
-    SetModel( STRING( GetModelName() ) );		// Set size
+    SetModel( STRING( GetModelName() ) );  // Set size
     //if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLERAIN )
     {
         SetSolid( SOLID_VPHYSICS );

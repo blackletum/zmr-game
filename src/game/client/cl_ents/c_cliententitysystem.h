@@ -1,6 +1,5 @@
 #pragma once
 
-
 //
 enum EntNetworkStatus_t
 {
@@ -9,7 +8,7 @@ enum EntNetworkStatus_t
 };
 
 class C_BaseClientEnt;
-typedef C_BaseClientEnt* (*CLIENTENTCREATENEW)();
+typedef C_BaseClientEnt* ( *CLIENTENTCREATENEW )();
 
 struct ClientEntRegister_t
 {
@@ -18,8 +17,6 @@ struct ClientEntRegister_t
 };
 //
 
-
-
 //
 abstract_class C_BaseClientEnt
 {
@@ -27,48 +24,42 @@ public:
     C_BaseClientEnt();
     virtual ~C_BaseClientEnt();
 
+    virtual bool Initialize() = 0;
+    virtual void ParseMapData( CEntityMapData* mapData ) = 0;
+    virtual void Release() = 0;
 
-    virtual bool            Initialize() = 0;
-    virtual void            ParseMapData( CEntityMapData* mapData ) = 0;
-    virtual void            Release() = 0;
-
-    bool                    NeedsServer() const { return m_iNetworkStatus != ENS_CLIENTSIDE; }
-    void                    SetNeedsServer() { m_iNetworkStatus = ENS_SHARED; }
+    bool NeedsServer() const { return m_iNetworkStatus != ENS_CLIENTSIDE; }
+    void SetNeedsServer() { m_iNetworkStatus = ENS_SHARED; }
 
 private:
-    EntNetworkStatus_t      m_iNetworkStatus;
+    EntNetworkStatus_t m_iNetworkStatus;
 };
 //
-
-
 
 //
 class CClientEntitySystem : CAutoGameSystem
 {
 public:
-	CClientEntitySystem();
-	~CClientEntitySystem();
-
+    CClientEntitySystem();
+    ~CClientEntitySystem();
 
     // Recreate all clientside ents in map
-    void            RecreateAll();
+    void RecreateAll();
 
     // Clear all clientside created ents
-    void            DestroyAll();
+    void DestroyAll();
 
     // If creating new client-side only entities, use this.
-    void            AddClientSideEntityListener( const char* pszClassname, CLIENTENTCREATENEW fn );
+    void AddClientSideEntityListener( const char* pszClassname, CLIENTENTCREATENEW fn );
 
+    virtual void PostInit() override;
 
-	virtual void    PostInit() override;
+    void ParseAllEntities( const char* pMapData );
+    const char* ParseEntity( const char* pEntData );
 
-	void            ParseAllEntities( const char* pMapData );
-	const char*     ParseEntity( const char* pEntData );
 private:
-
     CUtlVector<ClientEntRegister_t> m_vClientEntRegister;
     CUtlVector<C_BaseClientEnt*> m_vClientEnts;
-
 
     friend class C_BaseClientEnt;
 };
@@ -76,9 +67,7 @@ private:
 extern CClientEntitySystem g_ClientEntitySystem;
 //
 
-
-
 //
 void RegisterClientEnts();
 
-#define REGISTER_CLIENTENT( classname, fn )    g_ClientEntitySystem.AddClientSideEntityListener( #classname, fn )
+#define REGISTER_CLIENTENT( classname, fn ) g_ClientEntitySystem.AddClientSideEntityListener( #classname, fn )

@@ -10,12 +10,10 @@
 #endif
 #include <discord/discord.h>
 
-
 #include "c_zmr_player_resource.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 static const discord::ClientId DISCORD_APP_ID = 551073398789505065;
 
@@ -24,7 +22,6 @@ class CZMDiscordSystem : public CAutoGameSystemPerFrame
 public:
     CZMDiscordSystem();
     ~CZMDiscordSystem();
-
 
     virtual void PostInit() override;
 
@@ -42,7 +39,6 @@ private:
     int GetPlayerCount() const;
 
     static bool IsInGame();
-
 
     float m_flNextDiscordUpdateTime;
     int m_nLastPlayerCount;
@@ -135,7 +131,6 @@ void CZMDiscordSystem::PresenceEmpty()
     if ( m_nLastPlayerCount == 0 )
         return;
 
-
     discord::Activity activity {};
     activity.SetState( "In Menu" );
     activity.GetAssets().SetLargeImage( "zmrmain" );
@@ -149,26 +144,21 @@ void CZMDiscordSystem::PresenceInGame()
 {
     int nPlayers = GetPlayerCount();
 
-
     // Don't bother updating if we have the same data.
     if ( nPlayers == m_nLastPlayerCount )
         return;
-
-
 
     if ( !nPlayers ) // This shouldn't be possible.
     {
         PresenceEmpty();
         return;
     }
-    
 
     int nMaxPlayers = gpGlobals->maxClients;
 
     char details[192];
     char mapname[128];
     Q_FileBase( engine->GetLevelName(), mapname, sizeof( mapname ) );
-
 
     Q_snprintf( details, sizeof( details ), "%s (%i/%i)",
         mapname,
@@ -196,7 +186,8 @@ void CZMDiscordSystem::UpdateGameStartTime()
 void CZMDiscordSystem::InitDiscord()
 {
     auto result = discord::Core::Create( DISCORD_APP_ID, DiscordCreateFlags_NoRequireDiscord, &m_pDiscordCore );
-    if ( result != discord::Result::Ok ) {
+    if ( result != discord::Result::Ok )
+    {
         Warning( "Failed to init Discord rich presence. Returned result %i.\n", result );
     }
 }

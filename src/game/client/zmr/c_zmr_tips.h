@@ -1,9 +1,7 @@
 #pragma once
 
-
-
-#define ZMTIPMANAGER_TOOLTIPS                   0
-#define ZMTIPMANAGER_LOADINGSCREEN              1
+#define ZMTIPMANAGER_TOOLTIPS      0
+#define ZMTIPMANAGER_LOADINGSCREEN 1
 
 enum TipParamType_t
 {
@@ -19,15 +17,13 @@ struct ZMTipQueue_T
     float m_flDisplay;
 };
 
-
 //
 class CZMTip
 {
 public:
     CZMTip( KeyValues* kv, int index );
     ~CZMTip();
-    
-    
+
     struct zmtip_param_t
     {
     public:
@@ -46,11 +42,9 @@ public:
         char* pszParam;
         TipParamType_t iParamType;
     };
-    
 
     void LoadUsed( KeyValues* kv );
     void WriteUsed( KeyValues* kv );
-
 
     bool ShouldShow() const;
 
@@ -64,7 +58,7 @@ public:
     void SetMessage( const char* msg );
     const char* GetIcon() const;
     void SetIcon( const char* icon );
-    
+
     float GetTime() const { return m_flTime; }
     bool GetPulse() const { return m_bPulse; }
     int GetPriority() const { return m_iPriority; }
@@ -76,20 +70,16 @@ public:
 
     int GetIndex() const { return m_iIndex; }
 
-
     void OnShownInGame();
     void OnShownInLoadingScreen();
 
-
     static TipParamType_t TipNameToType( const char* type );
-    
+
 private:
     void AddParam( const char* param );
 
-
     char* m_pszName;
     char* m_pszMessage;
-
 
     int m_iIndex;
     char* m_pszIcon;
@@ -107,11 +97,9 @@ private:
     int m_nShown;
     int m_nShownPerGame;
 
-
     CUtlVector<zmtip_param_t*> m_vParams;
 };
 //
-
 
 //
 class CZMTipManager;
@@ -120,44 +108,34 @@ typedef CUtlVector<CZMTip*> ZMTips_t;
 typedef CUtlVector<const CZMTip*> ZMConstTips_t;
 typedef CUtlVector<CZMTipManager*> ZMTipManagers_t;
 
-
 class CZMTipManager
 {
 public:
     CZMTipManager( const char* name );
     ~CZMTipManager();
 
-
     const char* GetName() const { return m_pszName; }
-
 
     CZMTip* FindTipByName( const char* name ) const;
     CZMTip* FindTipByIndex( int index ) const;
 
-
     void GetTips( ZMConstTips_t& vec ) const;
-
 
     void AddTip( KeyValues* kv );
     void SaveUsed() const;
-
 
 private:
     void LoadTips();
     void LoadUsed();
 
-
     void FormatFilePath( char* buffer, int len ) const;
     void FormatFilePathUsed( char* buffer, int len ) const;
 
-
     ZMTips_t m_vTips;
-
 
     const char* m_pszName;
 };
 //
-
 
 //
 class CZMTipSystem : public CAutoGameSystem
@@ -166,21 +144,17 @@ public:
     CZMTipSystem();
     ~CZMTipSystem();
 
-
     virtual void PostInit() override;
     virtual void LevelShutdownPostEntity() override;
 
-
     CZMTipManager* GetManagerByName( const char* name ) const;
     CZMTipManager* GetManagerByIndex( int index ) const;
-
 
     void SaveUsed() const;
 
 private:
     ZMTipManagers_t m_vManagers;
 };
-
 
 extern CZMTipSystem g_ZMTipSystem;
 //

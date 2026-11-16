@@ -2,8 +2,8 @@
 #include "filesystem.h"
 
 #ifdef CLIENT_DLL
-#include "voice_status.h"
 #include "c_playerresource.h"
+#include "voice_status.h"
 
 #include <engine/IEngineSound.h>
 #include <tier3/tier3.h>
@@ -20,8 +20,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
 #ifdef GAME_DLL
 ConVar zm_sv_voiceline_madness( "zm_sv_voiceline_madness", "0", 0, "Don't do it." );
 #else
@@ -32,7 +30,6 @@ ConVar zm_cl_voiceline_disableforzm( "zm_cl_voiceline_disableforzm", "1", FCVAR_
 #endif
 
 ConVar zm_sv_voiceline_disable( "zm_sv_voiceline_disable", "0", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED );
-
 
 CZMVoiceLines::CZMVoiceLines()
 {
@@ -57,7 +54,6 @@ void CZMVoiceLines::LevelInitPreEntity()
 {
     // Soundscripts should automatically be precached.
 
-
     //bool prev = C_BaseEntity::IsPrecacheAllowed();
     //C_BaseEntity::SetAllowPrecache( true );
 
@@ -67,8 +63,6 @@ void CZMVoiceLines::LevelInitPreEntity()
     //    if ( m_vLines[i]->m_szSoundBase[0] != '\0' )
     //    {
     //        char line[256];
-
-
 
     //        Q_snprintf( line, sizeof( line ), "%s.%s", m_vLines[i]->m_szSoundBase, "Male" );
     //        C_BaseEntity::PrecacheSound( line );
@@ -86,13 +80,11 @@ void CZMVoiceLines::LoadVoiceLines()
 {
     m_vLines.PurgeAndDeleteElements();
 
-
     KeyValuesAD kv( "VoiceLines" );
     if ( !kv->LoadFromFile( filesystem, "resource/zmvoicelines.txt" ) )
     {
         return;
     }
-
 
     KeyValues* data = kv->GetFirstSubKey();
     do
@@ -104,7 +96,7 @@ void CZMVoiceLines::LoadVoiceLines()
 #ifdef CLIENT_DLL
         const char* chatmsg = data->GetString( "chatmsg" );
         const char* snd = data->GetString( "snd" );
-        if ( !(*snd) && !(*chatmsg) )
+        if ( !( *snd ) && !( *chatmsg ) )
             continue;
 
         m_vLines.AddToTail( new ZMVoiceLine_t( index, chatmsg, snd ) );
@@ -113,8 +105,7 @@ void CZMVoiceLines::LoadVoiceLines()
 
         m_vLines.AddToTail( new ZMVoiceLine_t( index, delay ) );
 #endif
-    }
-    while ( (data = data->GetNextKey()) != nullptr );
+    } while ( ( data = data->GetNextKey() ) != nullptr );
 }
 
 #ifdef CLIENT_DLL
@@ -126,7 +117,6 @@ void CZMVoiceLines::FireGameEvent( IGameEvent* pEvent )
         if ( !pLocal )
             return;
 
-
         ZMVoiceLine_t* pLine = FindVoiceLineByIndex( pEvent->GetInt( "voiceline", -1 ) );
         if ( !pLine )
             return;
@@ -135,18 +125,13 @@ void CZMVoiceLines::FireGameEvent( IGameEvent* pEvent )
         if ( index <= 0 )
             return;
 
-
         // If the player is muted, don't do anything.
         bool bIsMuted = GetLocalPlayerIndex() != index && GetClientVoiceMgr()->IsPlayerBlocked( index );
 
         // Disable chat if we're the ZM as well.
-        bool bDisableChat = zm_cl_voiceline_disablechat.GetBool()
-                        ||  (pLocal->IsZM() && zm_cl_voiceline_disableforzm.GetBool());
-
+        bool bDisableChat = zm_cl_voiceline_disablechat.GetBool() || ( pLocal->IsZM() && zm_cl_voiceline_disableforzm.GetBool() );
 
         C_ZMPlayer* pPlayer = ToZMPlayer( UTIL_PlayerByIndex( index ) );
-            
-
 
         // Play the sound
         if ( pLine->m_szSoundBase[0] != '\0' && !zm_cl_voiceline_disablesound.GetBool() && !bIsMuted )
@@ -170,14 +155,11 @@ void CZMVoiceLines::FireGameEvent( IGameEvent* pEvent )
                 pos.z = pEvent->GetFloat( "pos_z" );
             }
 
-
             int seed = pEvent->GetInt( "seed" );
-
 
             PlayVoiceLine( pOrigin, &pos, line, seed );
         }
 
-        
         // Print chat message
         if ( pLine->m_szChatMsg[0] != '\0' && !bDisableChat )
         {
@@ -185,20 +167,15 @@ void CZMVoiceLines::FireGameEvent( IGameEvent* pEvent )
             wchar_t buf[512];
             wchar_t playerName[128];
 
-
             g_pVGuiLocalize->ConvertANSIToUnicode( g_PR->GetPlayerName( index ), playerName, sizeof( playerName ) );
-            
-
 
             g_pVGuiLocalize->ConstructString( buf, sizeof( buf ), g_pVGuiLocalize->Find( "ZM_Chat_Voice" ),
                 2,
                 playerName,
                 g_pVGuiLocalize->Find( pLine->m_szChatMsg ) );
 
-
             char ansi[512];
             g_pVGuiLocalize->ConvertUnicodeToANSI( buf, ansi, sizeof( ansi ) );
-
 
             ZMClientUtil::ChatPrint( index, false, ansi );
         }
@@ -214,18 +191,16 @@ void CZMVoiceLines::PlayVoiceLine( C_BasePlayer* pOrigin, const Vector* vecPos, 
     params.m_flVolume = zm_cl_voiceline_volume.GetFloat();
     params.m_nFlags = SND_CHANGE_VOL; // Tell soundhandle that we want to use our m_flVolume.
 
-
     if ( !pOrigin )
     {
         params.m_pOrigin = vecPos;
     }
 
-    
     if ( seed >= 0 )
     {
         RandomSeed( seed );
     }
-    
+
     C_BaseEntity::EmitSound( filter, pOrigin ? pOrigin->entindex() : 0, params );
 }
 
@@ -238,16 +213,13 @@ bool CZMVoiceLines::IsFemale( C_ZMPlayer* pPlayer ) const
     if ( modelIndex <= -1 )
         return false;
 
-
     const model_t* pModel = modelinfo->GetModel( modelIndex );
     if ( !pModel )
         return false;
 
-
     const char* modelname = modelinfo->GetModelName( pModel );
-    if ( !modelname || !(*modelname) )
+    if ( !modelname || !( *modelname ) )
         return false;
-
 
     return Q_strstr( modelname, "female" ) != nullptr;
 }
@@ -259,11 +231,9 @@ void CZMVoiceLines::OnVoiceLine( CZMPlayer* pPlayer, int index )
     if ( zm_sv_voiceline_disable.GetBool() )
         return;
 
-
     ZMVoiceLine_t* pLine = FindVoiceLineByIndex( index );
     if ( !pLine )
         return;
-
 
     if ( !zm_sv_voiceline_madness.GetBool() )
     {
@@ -271,12 +241,9 @@ void CZMVoiceLines::OnVoiceLine( CZMPlayer* pPlayer, int index )
             return;
     }
 
-
     pPlayer->SetNextVoiceLineTime( gpGlobals->curtime + pLine->m_flDelay );
 
-
     Vector origin = pPlayer->EyePosition();
-
 
     IGameEvent* pEvent = gameeventmanager->CreateEvent( "voicemenu_use", true );
     if ( pEvent )
@@ -296,11 +263,9 @@ void CZMVoiceLines::SendVoiceLine( int index )
     if ( zm_sv_voiceline_disable.GetBool() )
         return;
 
-
     engine->ClientCmd( VarArgs( "zm_cmd_voicemenu %i", index ) );
 }
 #endif
-
 
 ZMVoiceLine_t* CZMVoiceLines::FindVoiceLineByIndex( int index ) const
 {
@@ -313,7 +278,6 @@ ZMVoiceLine_t* CZMVoiceLines::FindVoiceLineByIndex( int index ) const
 
     return nullptr;
 }
-
 
 static CZMVoiceLines g_ZMVoiceLines;
 

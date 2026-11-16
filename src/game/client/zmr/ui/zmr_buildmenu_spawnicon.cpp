@@ -1,15 +1,11 @@
 #include "cbase.h"
 #include <vgui/ISurface.h>
 
-
 #include "npcs/c_zmr_zombiebase.h"
 #include "zmr_buildmenu_spawnicon.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
-
 
 using namespace vgui;
 
@@ -52,12 +48,10 @@ void CZMImageRowItemSpawn::Paint()
     if ( !pImage )
         return;
 
-
     int x, y;
     int w, h;
     pImage->GetPos( x, y );
     pImage->GetSize( w, h );
-
 
     // Draw outline
     if ( !IsOldMenu() )
@@ -67,25 +61,22 @@ void CZMImageRowItemSpawn::Paint()
         surface()->DrawOutlinedRect( x, y, x + w, y + h );
     }
 
-
     // Draw "time" rect
     if ( m_bIsPrimary )
     {
         UpdateSpawnTime();
 
-
         const Color clr = Color( 255, 0, 0, 32 );
         surface()->DrawSetColor( clr );
 
-
-        float frac = (gpGlobals->curtime - m_flStartTime) / m_flDelay;
+        float frac = ( gpGlobals->curtime - m_flStartTime ) / m_flDelay;
         frac = MIN( frac, 1.0f );
 
         if ( frac > 0.0f )
         {
             frac = MIN( frac, 1.0f );
 
-            surface()->DrawFilledRect( x, y + (1.0f-frac) * h, x + w, y + h );
+            surface()->DrawFilledRect( x, y + ( 1.0f - frac ) * h, x + w, y + h );
         }
     }
 
@@ -98,7 +89,6 @@ void CZMImageRowItemSpawn::PaintBackground()
     if ( !pImage )
         return;
 
-
     // Draw background
     if ( m_FillColor[3] != 0 )
     {
@@ -106,7 +96,6 @@ void CZMImageRowItemSpawn::PaintBackground()
         int w, h;
         pImage->GetPos( x, y );
         pImage->GetSize( w, h );
-
 
         surface()->DrawSetColor( m_FillColor );
         surface()->DrawFilledRect( x, y, x + w, y + h );
@@ -146,10 +135,9 @@ bool CZMImageRowItemSpawn::CanSpawn() const
 
     if ( !pPlayer->HasEnoughRes( m_iCost ) )
         return false;
-    
+
     if ( !C_ZMBaseZombie::HasEnoughPopToSpawn( m_iZombieClass ) )
         return false;
-    
 
     return true;
 }

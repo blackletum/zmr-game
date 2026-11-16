@@ -5,8 +5,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
 CSurvivorAttackLongRangeSchedule::CSurvivorAttackLongRangeSchedule()
 {
     m_pAttackCloseRangeSched = new CSurvivorAttackCloseRangeSchedule;
@@ -44,13 +42,11 @@ void CSurvivorAttackLongRangeSchedule::OnUpdate()
         return;
     }
 
-
     if ( !pOuter->WeaponHasAmmo( pOuter->GetActiveWeapon() ) )
     {
         End( "No ammo left!" );
         return;
     }
-
 
     if ( pEnemy->GetAbsOrigin().DistTo( pOuter->GetPosition() ) < 128.0f )
     {
@@ -59,9 +55,7 @@ void CSurvivorAttackLongRangeSchedule::OnUpdate()
         return;
     }
 
-
     Vector vecAimTarget;
-
 
     vecAimTarget = pEnemy->WorldSpaceCenter();
 

@@ -3,31 +3,26 @@
 #include <fmod/fmod.hpp>
 #include <fmod/fmod_errors.h>
 
-
 #include "filesystem.h"
 
-#include "c_zmr_music.h"
 #include "c_zmr_fmod.h"
+#include "c_zmr_music.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-
 ConVar zm_cl_music_fadein( "zm_cl_music_fadein", "2" );
 ConVar zm_cl_music_fadeout( "zm_cl_music_fadeout", "2" );
 
+#define ZMMUSIC_MAX_LOADINGSCREEN_TRACKS 3
+#define ZMMUSIC_MAX_MAINMENU_TRACKS      3
 
-#define ZMMUSIC_MAX_LOADINGSCREEN_TRACKS        3
-#define ZMMUSIC_MAX_MAINMENU_TRACKS             3
-
-
-#define ZMMUSIC_FILE            "resource/zmmusic.txt"
+#define ZMMUSIC_FILE "resource/zmmusic.txt"
 
 //
 //
 //
-ZMMusic::CMusic::CMusic( MusicState_t musicStateFlags, FMODSoundHandle_t hndl ) :
-    m_fMusicState( musicStateFlags ), m_SndHndl( hndl )
+ZMMusic::CMusic::CMusic( MusicState_t musicStateFlags, FMODSoundHandle_t hndl ) : m_fMusicState( musicStateFlags ), m_SndHndl( hndl )
 {
 }
 
@@ -37,7 +32,7 @@ ZMMusic::CMusic::~CMusic()
 
 bool ZMMusic::CMusic::IsPartOfMusicState( MusicState_t state ) const
 {
-    return state != MUSICSTATE_NONE && (m_fMusicState & state) == state;
+    return state != MUSICSTATE_NONE && ( m_fMusicState & state ) == state;
 }
 
 bool ZMMusic::CMusic::IsReady() const
@@ -63,21 +58,23 @@ const char* ZMMusic::CMusic::MusicStateToName( MusicState_t state )
 {
     switch ( state )
     {
-    case MUSICSTATE_INGAME :        return "In-Game";
-    case MUSICSTATE_LOADINGSCREEN : return "Loading Screen";
-    case MUSICSTATE_MAINMENU :      return "Main Menu";
-    case MUSICSTATE_NONE :          return "None";
+    case MUSICSTATE_INGAME:
+        return "In-Game";
+    case MUSICSTATE_LOADINGSCREEN:
+        return "Loading Screen";
+    case MUSICSTATE_MAINMENU:
+        return "Main Menu";
+    case MUSICSTATE_NONE:
+        return "None";
     default:
         return "Multi state track";
     }
 }
 
-
 //
 //
 //
-ZMMusic::CActiveChannel::CActiveChannel( MusicState_t musicState, CMusic* pMusic ) :
-    m_iMusicState( musicState )
+ZMMusic::CActiveChannel::CActiveChannel( MusicState_t musicState, CMusic* pMusic ) : m_iMusicState( musicState )
 {
     Assert( pMusic->IsReady() );
 
@@ -103,11 +100,9 @@ bool ZMMusic::CActiveChannel::IsDone() const
     return !g_FMODSystem.IsSoundPlaying( m_ChannelHndl );
 }
 
-
-
 //
 ZMMusic::CZMMusicManager::CZMMusicManager() : CAutoGameSystemPerFrame( "ZMMusicSystem" ),
-    m_iCurMusicState( MUSICSTATE_NONE ), m_flLastMusicVolume( -1.0f )
+                                              m_iCurMusicState( MUSICSTATE_NONE ), m_flLastMusicVolume( -1.0f )
 {
 }
 
@@ -126,7 +121,6 @@ void ZMMusic::CZMMusicManager::PostInit()
 {
     if ( !CFMODSystem::HasFMOD() ) return;
 
-
     RegisterMusic();
 }
 
@@ -140,23 +134,21 @@ void ZMMusic::CZMMusicManager::RegisterMusic()
         return;
     }
 
-
     // NOTE: The string should only last till kv is released.
     struct PotentialMusic_t
     {
-        const char*     pszRelPath;
-        MusicState_t    fMusicStates;
+        const char* pszRelPath;
+        MusicState_t fMusicStates;
     };
 
     CUtlVector<PotentialMusic_t> list;
-
 
     for ( auto* subkv = kv->GetFirstTrueSubKey(); subkv != nullptr; subkv = subkv->GetNextTrueSubKey() )
     {
         int state = (int)MUSICSTATE_NONE;
 
-        state |= (int)(subkv->GetInt( "mainmenu" ) ? MUSICSTATE_MAINMENU : MUSICSTATE_NONE);
-        state |= (int)(subkv->GetInt( "loadingscreen" ) ? MUSICSTATE_LOADINGSCREEN : MUSICSTATE_NONE);
+        state |= (int)( subkv->GetInt( "mainmenu" ) ? MUSICSTATE_MAINMENU : MUSICSTATE_NONE );
+        state |= (int)( subkv->GetInt( "loadingscreen" ) ? MUSICSTATE_LOADINGSCREEN : MUSICSTATE_NONE );
 
         list.AddToTail( { subkv->GetString( "file" ), (MusicState_t)state } );
     }
@@ -182,11 +174,10 @@ void ZMMusic::CZMMusicManager::RegisterMusic()
             return count;
         };
 
-
         int removed = 0;
 
         int count = 0;
-        while ( (count = getCountOfMusic( list, state )) > max )
+        while ( ( count = getCountOfMusic( list, state ) ) > max )
         {
             int iRemoveIndex = random->RandomInt( 1, count );
 
@@ -209,15 +200,11 @@ void ZMMusic::CZMMusicManager::RegisterMusic()
                 break;
         }
 
-
-
         return removed;
     };
 
-
     removeRandomMusic( list, MUSICSTATE_LOADINGSCREEN, ZMMUSIC_MAX_LOADINGSCREEN_TRACKS );
     removeRandomMusic( list, MUSICSTATE_MAINMENU, ZMMUSIC_MAX_MAINMENU_TRACKS );
-
 
     // Do the actual registering.
     FOR_EACH_VEC( list, i )
@@ -230,7 +217,6 @@ void ZMMusic::CZMMusicManager::RegisterMusic()
             continue;
         }
 
-
         auto* pMusic = new CMusic( list[i].fMusicStates, hndl );
 
         m_vpMusic.AddToTail( pMusic );
@@ -239,7 +225,6 @@ void ZMMusic::CZMMusicManager::RegisterMusic()
     }
 
     list.RemoveAll();
-
 
     DevMsg( "Registered %i music tracks.\n", m_vpMusic.Count() );
 }
@@ -261,7 +246,6 @@ void ZMMusic::CZMMusicManager::SetMusicState( MusicState_t musicState )
     if ( musicState == GetMusicState() )
         return;
 
-
     DevMsg( "Changing music state to %s!\n", CMusic::MusicStateToName( musicState ) );
 
     // Fade out all channels
@@ -275,7 +259,6 @@ void ZMMusic::CZMMusicManager::SetMusicState( MusicState_t musicState )
             m_vpChannels[i]->FadeOut( zm_cl_music_fadeout.GetFloat() );
         }
     }
-    
 
     //
     // Find a random music for this state and play it.
@@ -290,14 +273,12 @@ void ZMMusic::CZMMusicManager::SetMusicState( MusicState_t musicState )
         }
     }
 
-
     if ( available.Count() > 0 )
     {
         m_vpChannels.AddToTail( new CActiveChannel(
             musicState,
             available[random->RandomInt( 0, available.Count() - 1 )] ) );
     }
-
 
     m_iCurMusicState = musicState;
 }
@@ -310,11 +291,10 @@ void ZMMusic::CZMMusicManager::Update( float frametime )
         {
             delete m_vpChannels[i];
 
-             m_vpChannels.Remove( i );
+            m_vpChannels.Remove( i );
             --i;
         }
     }
-
 
     if ( m_flLastMusicVolume != GetVolume() )
     {

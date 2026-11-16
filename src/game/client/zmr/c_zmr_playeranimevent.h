@@ -4,7 +4,6 @@
 
 #include "c_zmr_player.h"
 
-
 class C_TEPlayerAnimEvent : public C_BaseTempEntity
 {
 public:
@@ -18,7 +17,7 @@ public:
         if ( pPlayer && !pPlayer->IsDormant() )
         {
             pPlayer->DoAnimationEvent( (PlayerAnimEvent_t)m_iEvent.Get(), m_nData );
-        }	
+        }
     }
 
 public:

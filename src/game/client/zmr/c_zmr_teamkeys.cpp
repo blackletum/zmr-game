@@ -6,10 +6,8 @@
 #include "c_zmr_player.h"
 #include "c_zmr_teamkeys.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 // All commands we consider ZM commands
 static const char* g_szZMCommands[] = {
@@ -51,7 +49,6 @@ static const char* g_szSpectatorCommands[] = {
     "zm_observezombie",
 };
 
-
 CZMTeamKeysConfig::CZMTeamKeysConfig()
 {
 }
@@ -67,7 +64,7 @@ bool CZMTeamKeysConfig::IsZMCommand( const char* cmd )
         if ( Q_stricmp( cmd, g_szZMCommands[i] ) == 0 )
             return true;
     }
-   
+
     return false;
 }
 
@@ -78,7 +75,7 @@ bool CZMTeamKeysConfig::IsSurvivorCommand( const char* cmd )
         if ( Q_stricmp( cmd, g_szSurvivorCommands[i] ) == 0 )
             return true;
     }
-   
+
     return false;
 }
 
@@ -89,7 +86,7 @@ bool CZMTeamKeysConfig::IsSpectatorCommand( const char* cmd )
         if ( Q_stricmp( cmd, g_szSpectatorCommands[i] ) == 0 )
             return true;
     }
-   
+
     return false;
 }
 
@@ -116,48 +113,47 @@ void CZMTeamKeysConfig::ExecuteTeamConfig( int iTeam )
     const char* cfg = TeamNumberToConfigName( iTeam, false );
     const char* defcfg = TeamNumberToConfigName( iTeam, true );
 
-
     // Execute the default config if we can't find the player's own config.
     char cfgpath[128];
     Q_snprintf( cfgpath, sizeof( cfgpath ), "cfg/%s.cfg", cfg );
 
     if ( filesystem->FileExists( cfgpath ) )
     {
-		Q_snprintf( cfgpath, sizeof( cfgpath ), "exec %s.cfg", cfg );
+        Q_snprintf( cfgpath, sizeof( cfgpath ), "exec %s.cfg", cfg );
         engine->ClientCmd_Unrestricted( cfgpath );
     }
     else
     {
-		Q_snprintf( cfgpath, sizeof( cfgpath ), "exec %s.cfg", defcfg );
+        Q_snprintf( cfgpath, sizeof( cfgpath ), "exec %s.cfg", defcfg );
         engine->ClientCmd_Unrestricted( cfgpath );
     }
 }
 
 const char* CZMTeamKeysConfig::TeamNumberToConfigPath( int iTeam, bool bDefault )
 {
-	switch ( iTeam )
-	{
-	case 3 : // ZM
-		return bDefault ? KEYCONFIG_ZM_DEF : KEYCONFIG_ZM;
-	case 1 : // Spectator
-	case 2 : // Survivor
-	default :
-		return bDefault ? KEYCONFIG_SURVIVOR_DEF : KEYCONFIG_SURVIVOR;
-	}
+    switch ( iTeam )
+    {
+    case 3: // ZM
+        return bDefault ? KEYCONFIG_ZM_DEF : KEYCONFIG_ZM;
+    case 1: // Spectator
+    case 2: // Survivor
+    default:
+        return bDefault ? KEYCONFIG_SURVIVOR_DEF : KEYCONFIG_SURVIVOR;
+    }
 }
 
 const char* CZMTeamKeysConfig::TeamNumberToConfigName( int iTeam, bool bDefault )
 {
-	switch ( iTeam )
-	{
-	case 3 : // ZM
-		return bDefault ? KEYCONFIG_NAME_ZM"_default" : KEYCONFIG_NAME_ZM;
-	case 1 : // Spectator
-        return bDefault ? KEYCONFIG_NAME_SPEC"_default" : KEYCONFIG_NAME_SPEC;
-	case 2 : // Survivor
-	default :
-		return bDefault ? KEYCONFIG_NAME_SURVIVOR"_default" : KEYCONFIG_NAME_SURVIVOR;
-	}
+    switch ( iTeam )
+    {
+    case 3: // ZM
+        return bDefault ? KEYCONFIG_NAME_ZM "_default" : KEYCONFIG_NAME_ZM;
+    case 1: // Spectator
+        return bDefault ? KEYCONFIG_NAME_SPEC "_default" : KEYCONFIG_NAME_SPEC;
+    case 2: // Survivor
+    default:
+        return bDefault ? KEYCONFIG_NAME_SURVIVOR "_default" : KEYCONFIG_NAME_SURVIVOR;
+    }
 }
 
 ZMKeyTeam_t CZMTeamKeysConfig::GetCommandType( const char* cmd )
@@ -170,10 +166,10 @@ ZMKeyTeam_t CZMTeamKeysConfig::GetCommandType( const char* cmd )
     {
         return KEYTEAM_SURVIVOR;
     }
-	if ( IsSpectatorCommand( cmd ) )
-	{
-		return KEYTEAM_SPEC;
-	}
+    if ( IsSpectatorCommand( cmd ) )
+    {
+        return KEYTEAM_SPEC;
+    }
 
     return KEYTEAM_NEUTRAL;
 }
@@ -183,7 +179,6 @@ bool CZMTeamKeysConfig::IsKeyConflicted( ZMKeyTeam_t team1, ZMKeyTeam_t team2 )
     // We're in the same team, we conflict!
     if ( team1 == team2 )
         return true;
-
 
     // We're different teams.
 
@@ -203,16 +198,16 @@ bool CZMTeamKeysConfig::LoadConfigByTeam( ZMKeyTeam_t team, zmkeydatalist_t& lis
 
     switch ( team )
     {
-    case KEYTEAM_ZM :
+    case KEYTEAM_ZM:
         cfg = KEYCONFIG_ZM;
         break;
-    case KEYTEAM_SURVIVOR :
+    case KEYTEAM_SURVIVOR:
         cfg = KEYCONFIG_SURVIVOR;
         break;
-    case KEYTEAM_SPEC :
+    case KEYTEAM_SPEC:
         cfg = KEYCONFIG_SPEC;
         break;
-    default :
+    default:
         Assert( 0 );
         break;
     }
@@ -233,16 +228,16 @@ bool CZMTeamKeysConfig::LoadDefaultConfigByTeam( ZMKeyTeam_t team, zmkeydatalist
 
     switch ( team )
     {
-    case KEYTEAM_ZM :
+    case KEYTEAM_ZM:
         defcfg = KEYCONFIG_ZM_DEF;
         break;
-    case KEYTEAM_SURVIVOR :
+    case KEYTEAM_SURVIVOR:
         defcfg = KEYCONFIG_SURVIVOR_DEF;
         break;
-    case KEYTEAM_SPEC :
+    case KEYTEAM_SPEC:
         defcfg = KEYCONFIG_SPEC_DEF;
         break;
-    default :
+    default:
         Assert( 0 );
         break;
     }
@@ -257,14 +252,12 @@ bool CZMTeamKeysConfig::ParseConfig( const char* cfg, zmkeydatalist_t& list )
         return false;
     }
 
-
     auto hndl = filesystem->Open( cfg, "rb", "MOD" );
     if ( !hndl )
     {
         Warning( "Failed to open key config file '%s' for read!\n", cfg );
         return false;
     }
-
 
     char buf[512];
     buf[511] = '\0';
@@ -280,18 +273,14 @@ bool CZMTeamKeysConfig::ParseConfig( const char* cfg, zmkeydatalist_t& list )
         if ( buf[0] == '/' )
             continue;
 
-
         keyname[0] = '\0';
         key.cmd[0] = '\0';
 
         const char* data = buf;
 
-
         data = engine->ParseFile( data, temp, sizeof( temp ) );
         if ( Q_stricmp( temp, "bind" ) != 0 )
             continue;
-
-
 
         data = engine->ParseFile( data, keyname, sizeof( keyname ) );
 
@@ -300,15 +289,12 @@ bool CZMTeamKeysConfig::ParseConfig( const char* cfg, zmkeydatalist_t& list )
         if ( key.key <= KEY_NONE )
             continue;
 
-
         data = engine->ParseFile( data, key.cmd, sizeof( key.cmd ) );
         if ( key.cmd[0] == '\0' )
             continue;
 
-
         list.AddToTail( new zmkeydata_t( key ) );
     }
-
 
     filesystem->Close( hndl );
 
@@ -324,15 +310,13 @@ bool CZMTeamKeysConfig::SaveConfig( const char* cfg, const zmkeydatalist_t& list
         return false;
     }
 
+    char head[] = "// These are the team specific keys.\n"
+                  "// Please don't edit this file by hand unless you know what you're doing...\n";
 
-    char head[] =   "// These are the team specific keys.\n"
-                    "// Please don't edit this file by hand unless you know what you're doing...\n";
-                    
     filesystem->Write( head, sizeof( head ) - 1, hndl );
 
     char buf[512];
-    
-    
+
     FOR_EACH_VEC( list, i )
     {
         Assert( list[i]->key > KEY_NONE );
@@ -342,7 +326,6 @@ bool CZMTeamKeysConfig::SaveConfig( const char* cfg, const zmkeydatalist_t& list
             list[i]->cmd );
         filesystem->Write( buf, Q_strlen( buf ), hndl );
     }
-    
 
     filesystem->Close( hndl );
 
@@ -353,7 +336,7 @@ zmkeydata_t* CZMTeamKeysConfig::FindKeyDataFromList( const char* cmd, zmkeydatal
 {
     FOR_EACH_VEC( list, i )
     {
-        if ( Q_stricmp( cmd , list[i]->cmd ) == 0 )
+        if ( Q_stricmp( cmd, list[i]->cmd ) == 0 )
         {
             return list[i];
         }

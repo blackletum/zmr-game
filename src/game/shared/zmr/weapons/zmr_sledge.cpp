@@ -1,24 +1,18 @@
 #include "cbase.h"
 
-#include "npcevent.h"
 #include "eventlist.h"
+#include "npcevent.h"
 
-
-#include "zmr_shareddefs.h"
 #include "zmr_player_shared.h"
+#include "zmr_shareddefs.h"
 
 #include "zmr_sledge.h"
 
-
 using namespace ZMWeaponConfig;
-
-
 
 REGISTER_WEAPON_CONFIG( ZMCONFIGSLOT_SLEDGE, CZMSledgeConfig );
 
-
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMWeaponSledge, DT_ZM_WeaponSledge )
-
 
 BEGIN_NETWORK_TABLE( CZMWeaponSledge, DT_ZM_WeaponSledge )
 END_NETWORK_TABLE()
@@ -30,7 +24,6 @@ END_PREDICTION_DATA()
 
 LINK_ENTITY_TO_CLASS( weapon_zm_sledge, CZMWeaponSledge );
 PRECACHE_WEAPON_REGISTER( weapon_zm_sledge );
-
 
 CZMWeaponSledge::CZMWeaponSledge()
 {
@@ -58,12 +51,10 @@ bool CZMWeaponSledge::UsesAnimEvent( bool bSecondary ) const
     return true;
 }
 
-
 float CZMWeaponSledge::GetDamageForActivity( Activity act ) const
 {
     // ZMRTODO: Stop using random values.
     float damage = BaseClass::GetDamageForActivity( act );
-
 
     auto* pConfig = GetSledgeConfig();
 
@@ -83,7 +74,6 @@ void CZMWeaponSledge::Hit( trace_t& traceHit, Activity iHitActivity )
 {
     BaseClass::Hit( traceHit, iHitActivity );
 
-
     AddViewKick();
 
 #ifndef CLIENT_DLL
@@ -96,9 +86,7 @@ void CZMWeaponSledge::PrimaryAttack()
     if ( !CanPrimaryAttack() )
         return;
 
-
     Swing( false );
-
 
     // Setup our next attack times
     m_flNextSecondaryAttack = m_flNextPrimaryAttack = gpGlobals->curtime + GetFireRate();
@@ -115,9 +103,7 @@ void CZMWeaponSledge::SecondaryAttack()
     if ( !CanSecondaryAttack() )
         return;
 
-        
     Swing( true );
-
 
     // Setup our next attack times
     m_flNextSecondaryAttack = m_flNextPrimaryAttack = gpGlobals->curtime + GetFireRate();

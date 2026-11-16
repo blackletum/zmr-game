@@ -1,29 +1,25 @@
 #include "cbase.h"
 
-
 #include "zmr_player_shared.h"
 #include "zmr_viewmodel.h"
 
 #ifdef CLIENT_DLL
-#include <materialsystem/imaterialvar.h>
-#include "proxyentity.h"
 #include "ivieweffects.h"
 #include "prediction.h"
+#include "proxyentity.h"
+#include <materialsystem/imaterialvar.h>
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 #ifdef CLIENT_DLL
 ConVar zm_cl_crosshair_draw_ironsights( "zm_cl_crosshair_draw_ironsights", "0", FCVAR_ARCHIVE, "Is the crosshair drawn when zoomed in into ironsights." );
 
-ConVar zm_cl_bob_useold( "zm_cl_bob_useold", "0", 0, "Is animation bobbing not used?");
+ConVar zm_cl_bob_useold( "zm_cl_bob_useold", "0", 0, "Is animation bobbing not used?" );
 #endif // CLIENT_DLL
 
-
 static float ApproachSmooth( float target, float value, float speed, float smoothness_start, float epsilon = 0.01f );
-
 
 LINK_ENTITY_TO_CLASS( zm_viewmodel, CZMViewModel );
 
@@ -38,7 +34,6 @@ BEGIN_NETWORK_TABLE( CZMViewModel, DT_ZM_ViewModel )
     SendPropFloat( SENDINFO_ARRAYELEM( m_flClr, 0 ), -1, 0, 0.0f, 1.0f ),
     SendPropFloat( SENDINFO_ARRAYELEM( m_flClr, 1 ), -1, 0, 0.0f, 1.0f ),
     SendPropFloat( SENDINFO_ARRAYELEM( m_flClr, 2 ), -1, 0, 0.0f, 1.0f ),
-
 
     SendPropExclude( "DT_BaseAnimating", "m_flPoseParameter" ),
     SendPropExclude( "DT_BaseViewModel", "m_flPoseParameter" ),
@@ -76,7 +71,6 @@ CZMViewModel::CZMViewModel()
     m_bInIronSight = false;
     m_flIronSightFrac = 0.0f;
 
-
     m_vLagAngles.Init();
     // Don't attach it to the entity
     // since resetting occurs way too often
@@ -111,7 +105,6 @@ CBaseCombatWeapon* CZMViewModel::GetOwningWeapon()
     auto* pOwner = CBaseViewModel::GetOwningWeapon();
     if ( pOwner )
         return pOwner;
-
 
     // Arm viewmodel does not have an owning. Ask our brother.
     if ( ViewModelIndex() == VMINDEX_ARMS )
@@ -180,7 +173,6 @@ void CZMViewModel::CalcViewModelView( CBasePlayer* pOwner, const Vector& eyePosi
                 FrameAdvance( gpGlobals->frametime );
             }
             flPrevCycle = GetCycle();
-            
 
             PerformAnimBobbing();
 
@@ -241,13 +233,10 @@ bool C_ZMViewModel::PerformIronSight( Vector& vecOut, QAngle& angOut, const QAng
 {
     if ( ViewModelIndex() != VMINDEX_WEP ) return false;
 
-
     if ( m_iAttachmentIronsight <= 0 ) return false;
-
 
     auto* pWeapon = C_ZMViewModel::GetWeapon();
     if ( !pWeapon ) return false;
-
 
     bool bPrevState = m_bInIronSight;
     bool bChanged = false;
@@ -260,7 +249,7 @@ bool C_ZMViewModel::PerformIronSight( Vector& vecOut, QAngle& angOut, const QAng
     {
         m_bInIronSight = !m_bInIronSight;
     }
-    
+
     if ( m_bInIronSight )
     {
         if ( m_flIronSightFrac != 1.0f )
@@ -278,15 +267,13 @@ bool C_ZMViewModel::PerformIronSight( Vector& vecOut, QAngle& angOut, const QAng
         }
     }
 
-
     Vector vecLocal;
     Vector vecIronsightPos;
     Vector vecEyePos = vec3_origin;
 
-
     // Get the iron sight position relative to the camera position.
     auto* pHdr = GetModelPtr();
-    auto& attachment = pHdr->pAttachment( m_iAttachmentIronsight-1 );
+    auto& attachment = pHdr->pAttachment( m_iAttachmentIronsight - 1 );
 
     // The attachment position is local to the bone.
     MatrixPosition( attachment.local, vecLocal );
@@ -296,18 +283,16 @@ bool C_ZMViewModel::PerformIronSight( Vector& vecOut, QAngle& angOut, const QAng
     {
         pBone = pHdr->pBone( attachment.localbone );
     }
-    
+
     if ( pBone )
     {
         vecLocal += pBone->pos;
     }
 
-    
     VectorRotate( vecLocal, origAng, vecIronsightPos );
 
-
     //auto smootherstep = []( float x ) { return x * x * x * (x * (x * 6 - 15) + 10); };
-    auto inversesquare = [ this ]( float x )
+    auto inversesquare = [this]( float x )
     {
         if ( m_bInIronSight )
         {
@@ -319,7 +304,6 @@ bool C_ZMViewModel::PerformIronSight( Vector& vecOut, QAngle& angOut, const QAng
     };
 
     Vector vecCur = Lerp( inversesquare( m_flIronSightFrac ), vecEyePos, vecIronsightPos );
-    
 
     vecOut -= vecCur;
 
@@ -335,7 +319,6 @@ void C_ZMViewModel::GetScopeEndPosition( Vector& pos, QAngle& ang )
 {
     if ( m_iAttachmentScopeEnd <= 0 )
         return;
-
 
     GetAttachment( m_iAttachmentScopeEnd, pos, ang );
 }
@@ -354,16 +337,14 @@ bool C_ZMViewModel::PerformLag( Vector& vecPos, QAngle& ang, const Vector& origP
 
     // Looking around moves the vm
     PerformAngleLag( vecPos, ang, origAng, right, up );
-    
+
     // Moving around moves the vm
     PerformMovementLag( vecPos, ang, fwd, right );
 
     // Jumping/crouching/landing moves the vm
     PerformImpactLag( vecPos, ang, origPos );
 
-
     NormalizeAngles( ang );
-
 
     return true;
 }
@@ -372,14 +353,12 @@ bool C_ZMViewModel::PerformAngleLag( Vector& vecPos, QAngle& ang, const QAngle& 
 {
     const float flInterp = zm_cl_bob_lag_interp.GetFloat();
 
-
     // Add an entry to the history.
     m_vLagAngles = origAng;
     m_LagAnglesHistory.NoteChanged( gpGlobals->curtime, flInterp, false );
-    
+
     // Interpolate back 100ms.
     m_LagAnglesHistory.Interpolate( gpGlobals->curtime, flInterp );
-
 
     QAngle angleDiff = origAng - m_vLagAngles;
 
@@ -399,13 +378,11 @@ bool C_ZMViewModel::PerformMovementLag( Vector& vecPos, QAngle& ang, const Vecto
     if ( !pOwner )
         return false;
 
-
     if ( IsInIronsights() )
         return false;
 
     float flMaxGroundSpeed = pOwner->GetPlayerMaxSpeed();
     flMaxGroundSpeed = MAX( flMaxGroundSpeed, 1.0f ); // Please don't divide by 0
-
 
     Vector vel = pOwner->GetLocalVelocity();
 
@@ -426,7 +403,6 @@ bool C_ZMViewModel::PerformMovementLag( Vector& vecPos, QAngle& ang, const Vecto
     //float dotFwd = fwd.Dot( vecVelDir );
     float dotRight = right.Dot( vecVelDir );
 
-
     //ang.x += dotFwd * zm_cl_bob_lag_movement_fwd_pitch_mult.GetFloat();
     ang.y -= dotRight * zm_cl_bob_lag_movement_side_yaw_mult.GetFloat();
     ang.z -= dotRight * zm_cl_bob_lag_movement_side_roll_mult.GetFloat();
@@ -435,7 +411,6 @@ bool C_ZMViewModel::PerformMovementLag( Vector& vecPos, QAngle& ang, const Vecto
 
     return true;
 }
-
 
 ConVar zm_cl_bob_lag_impact_approachspeed( "zm_cl_bob_lag_impact_approachspeed", "120" );
 ConVar zm_cl_bob_lag_impact_approachsmooth( "zm_cl_bob_lag_impact_approachsmooth", "24" );
@@ -456,10 +431,7 @@ bool C_ZMViewModel::PerformImpactLag( Vector& vecPos, QAngle& ang, const Vector&
     if ( !pOwner )
         return false;
 
-
-
-    bool bOnGround = (pOwner->GetFlags() & FL_ONGROUND) != 0;
-
+    bool bOnGround = ( pOwner->GetFlags() & FL_ONGROUND ) != 0;
 
     float flBaseValue = pOwner->GetViewOffset().z;
 
@@ -492,14 +464,12 @@ bool C_ZMViewModel::PerformImpactLag( Vector& vecPos, QAngle& ang, const Vector&
         }
     }
 
-
     // Approach the value smoothly
     float flNewValue = ApproachSmooth(
         flCurValue,
         m_flLastImpactValue,
         gpGlobals->frametime * zm_cl_bob_lag_impact_approachspeed.GetFloat(),
         zm_cl_bob_lag_impact_approachsmooth.GetFloat() );
-
 
     float delta = flBaseValue - flNewValue;
 
@@ -510,7 +480,6 @@ bool C_ZMViewModel::PerformImpactLag( Vector& vecPos, QAngle& ang, const Vector&
     float flMoveMax;
 
     float flRate = zm_cl_bob_lag_impact_rate.GetFloat();
-    
 
     if ( bOnGround )
     {
@@ -523,16 +492,14 @@ bool C_ZMViewModel::PerformImpactLag( Vector& vecPos, QAngle& ang, const Vector&
         flMoveMax = fabsf( zm_cl_bob_lag_impact_air_move.GetFloat() );
     }
 
-
     flAngleValue *= flRate;
     flMoveValue *= flRate;
 
     flAngleValue = clamp( flAngleValue, -flAngleMax, flAngleMax );
     flMoveValue = clamp( flMoveValue, -flMoveMax, flMoveMax );
-    
+
     ang.x += flAngleValue;
     vecPos.z -= flMoveValue;
-
 
     m_flLastImpactValue = flNewValue;
     m_bWasOnGround = bOnGround;
@@ -546,12 +513,11 @@ bool C_ZMViewModel::CanAnimBob() const
 }
 
 // Version of cl_bob* cvars that are actually useful...
-ConVar cl_bobcycle( "cl_bobcycle", "0.6", 0 , "How fast the bob cycles", true, 0.01f, false, 0.0f );
-ConVar cl_bobup( "cl_bobup", "0.5", 0 , "Don't change...", true, 0.01f, true, 0.99f );
+ConVar cl_bobcycle( "cl_bobcycle", "0.6", 0, "How fast the bob cycles", true, 0.01f, false, 0.0f );
+ConVar cl_bobup( "cl_bobup", "0.5", 0, "Don't change...", true, 0.01f, true, 0.99f );
 ConVar cl_bobvertscale( "cl_bobvertscale", "0.6", 0, "Vertical scale" ); // Def. is 0.1
 ConVar cl_boblatscale( "cl_boblatscale", "0.8", 0, "Lateral scale" );
 ConVar cl_bobenable( "cl_bobenable", "1" );
-
 
 bool C_ZMViewModel::PerformOldBobbing( Vector& vecPos, QAngle& ang )
 {
@@ -562,26 +528,21 @@ bool C_ZMViewModel::PerformOldBobbing( Vector& vecPos, QAngle& ang )
         return false;
     }
 
-
     if ( IsInIronsights() )
         return false;
 
     if ( !cl_bobenable.GetBool() )
         return false;
 
-
     float bobup = cl_bobup.GetFloat();
     float bobcycle = cl_bobcycle.GetFloat();
-    
 
     auto* pOwner = GetOwner();
-
 
     if ( !pOwner || bobcycle <= 0.0f || bobup <= 0.0f || bobup >= 1.0f )
     {
         return false;
     }
-
 
     static float bobtime = 0.0f;
     static float lastbobtime = 0.0f;
@@ -590,19 +551,17 @@ bool C_ZMViewModel::PerformOldBobbing( Vector& vecPos, QAngle& ang )
     float verticalBob;
     float lateralBob;
 
-
     const float flMaxGroundSpeed = pOwner->GetPlayerMaxSpeed();
 
-
     float speed = pOwner->GetLocalVelocity().Length2D();
-    speed = clamp( speed, 0.0f, flMaxGroundSpeed*2.0f ); // Clamp the speed a bit so it doesn't look terrible.
+    speed = clamp( speed, 0.0f, flMaxGroundSpeed * 2.0f ); // Clamp the speed a bit so it doesn't look terrible.
     float bob_offset = RemapValClamped( speed, 0.0f, flMaxGroundSpeed, 0.0f, 1.0f );
-    
+
     bobtime += ( gpGlobals->curtime - lastbobtime ) * bob_offset;
     lastbobtime = gpGlobals->curtime;
 
     // Calculate the vertical bob
-    cycle = bobtime - (int)(gpGlobals->curtime/bobcycle)*bobcycle;
+    cycle = bobtime - (int)( gpGlobals->curtime / bobcycle ) * bobcycle;
     cycle /= bobcycle;
 
     if ( cycle < bobup )
@@ -611,17 +570,17 @@ bool C_ZMViewModel::PerformOldBobbing( Vector& vecPos, QAngle& ang )
     }
     else
     {
-        cycle = M_PI_F + M_PI_F*(cycle-bobup)/(1.0f - bobup);
+        cycle = M_PI_F + M_PI_F * ( cycle - bobup ) / ( 1.0f - bobup );
     }
-    
-    verticalBob = speed*0.005f;
-    verticalBob = verticalBob*0.3f + verticalBob*0.7f*sinf(cycle);
+
+    verticalBob = speed * 0.005f;
+    verticalBob = verticalBob * 0.3f + verticalBob * 0.7f * sinf( cycle );
 
     verticalBob = clamp( verticalBob, -7.0f, 4.0f );
 
     // Calculate the lateral bob
-    cycle = bobtime - (int)(bobtime/bobcycle*2)*bobcycle*2;
-    cycle /= bobcycle*2;
+    cycle = bobtime - (int)( bobtime / bobcycle * 2 ) * bobcycle * 2;
+    cycle /= bobcycle * 2;
 
     if ( cycle < bobup )
     {
@@ -629,31 +588,27 @@ bool C_ZMViewModel::PerformOldBobbing( Vector& vecPos, QAngle& ang )
     }
     else
     {
-        cycle = M_PI_F + M_PI_F*(cycle-bobup)/(1.0f - bobup);
+        cycle = M_PI_F + M_PI_F * ( cycle - bobup ) / ( 1.0f - bobup );
     }
 
-    
-    lateralBob = speed*0.005f;
-    lateralBob = lateralBob*0.3f + lateralBob*0.7f*sinf(cycle);
+    lateralBob = speed * 0.005f;
+    lateralBob = lateralBob * 0.3f + lateralBob * 0.7f * sinf( cycle );
     lateralBob = clamp( lateralBob, -7.0f, 4.0f );
 
-
-
-    Vector	fwd, right;
+    Vector fwd, right;
     AngleVectors( ang, &fwd, &right, nullptr );
 
     // Apply bob, but scaled down to 40%
     VectorMA( vecPos, verticalBob * cl_bobvertscale.GetFloat(), fwd, vecPos );
-    
+
     // Z bob a bit more
     vecPos.z += verticalBob * 0.1f;
-    
+
     // bob the angles
     ang.z += verticalBob * 0.5f; // Roll
     ang.x -= verticalBob * 0.4f; // Pitch
 
     ang.y -= lateralBob * 0.3f; // Yaw
-
 
     VectorMA( vecPos, lateralBob * cl_boblatscale.GetFloat(), right, vecPos );
 
@@ -669,8 +624,6 @@ void C_ZMViewModel::PerformAnimBobbing()
     auto* pOwner = GetOwner();
     if ( !pOwner ) return;
 
-
-
     //
     // Bobbing
     //
@@ -682,10 +635,8 @@ void C_ZMViewModel::PerformAnimBobbing()
             return;
         }
 
-
         float flMaxGroundSpeed = pOwner->GetPlayerMaxSpeed();
         flMaxGroundSpeed = MAX( flMaxGroundSpeed, 1.0f ); // Please don't divide by 0
-
 
         float spd = pOwner->GetLocalVelocity().Length2D();
         float target = spd > 0.1f ? spd / flMaxGroundSpeed : 0.0f;
@@ -707,7 +658,7 @@ void C_ZMViewModel::PerformAnimBobbing()
         //  0.0 .. 0.5 .. 1
         //
         // When setting the pose parameter, we need to use former scale.
-        // 
+        //
 
         //float cur = GetPoseParameter( m_iPoseParamMoveX );
         //cur = clamp( cur, 0.5f, 1.0f );
@@ -719,7 +670,6 @@ void C_ZMViewModel::PerformAnimBobbing()
 
         float cur = m_flLastMoveX;
 
-
         float add = 0.0f;
         if ( target > cur )
         {
@@ -729,7 +679,6 @@ void C_ZMViewModel::PerformAnimBobbing()
         {
             add = -zm_cl_bob_anim_decel.GetFloat();
         }
-
 
         float newratio = cur + gpGlobals->frametime * add;
         newratio = clamp( newratio, 0.0f, 1.0f );
@@ -765,7 +714,6 @@ int C_ZMViewModel::CalcOverrideModelIndex()
         }
     }
 
-
     return m_iOverrideModelIndex;
 }
 
@@ -778,7 +726,6 @@ CStudioHdr* C_ZMViewModel::OnNewModel()
 
     m_iAttachmentIronsight = LookupAttachment( "ironsight" );
     m_iAttachmentScopeEnd = LookupAttachment( "scope_end" );
-
 
     m_LagAnglesHistory.ClearHistory();
 
@@ -831,7 +778,7 @@ bool C_ZMViewModel::ShouldPredict()
 {
     if ( GetOwner() && GetOwner() == C_ZMPlayer::GetLocalPlayer() )
         return true;
-    
+
     return BaseClass::ShouldPredict();
 }
 
@@ -847,11 +794,10 @@ public:
 private:
     virtual void OnBind( C_BaseEntity* pEntity ) override;
 
-
-    IMaterialVar*   m_defaultVar;
-    float           m_defR;
-    float           m_defG;
-    float           m_defB;
+    IMaterialVar* m_defaultVar;
+    float m_defR;
+    float m_defG;
+    float m_defB;
 };
 
 CViewModelColorMaterialProxy::CViewModelColorMaterialProxy()
@@ -871,7 +817,6 @@ bool CViewModelColorMaterialProxy::Init( IMaterial* pMaterial, KeyValues* pKeyVa
     bool foundVar;
     m_defaultVar = pMaterial->FindVar( pKeyValues->GetString( "resultVar", "" ), &foundVar, false );
 
-
     float clr[3];
     UTIL_ParseFloatColorFromString( pKeyValues->GetString( "default", "" ), clr, ARRAYSIZE( clr ) );
 
@@ -887,19 +832,16 @@ void CViewModelColorMaterialProxy::OnBind( C_BaseEntity* pEnt )
     if ( !m_defaultVar )
         return;
 
-
     float r, g, b;
     r = m_defR;
     g = m_defG;
     b = m_defB;
-
 
     C_ZMViewModel* pVM = static_cast<C_ZMViewModel*>( pEnt );
     if ( pVM )
     {
         pVM->GetModelColor2( r, g, b );
     }
-
 
     m_defaultVar->SetVecValue( r, g, b );
 }
@@ -928,13 +870,12 @@ static float ApproachSmooth( float target, float value, float speed, float smoot
         if ( dif < epsilon )
             return target;
 
-
         f = dif / smoothness_start;
 
         if ( f < 1.0f )
         {
             f = 1 - f;
-            speed *= 1 - f*f;
+            speed *= 1 - f * f;
         }
 
         float newvalue = value - speed;
@@ -947,13 +888,12 @@ static float ApproachSmooth( float target, float value, float speed, float smoot
         if ( dif < epsilon )
             return target;
 
-
         f = dif / smoothness_start;
 
         if ( f < 1.0f )
         {
             f = 1 - f;
-            speed *= 1 - f*f;
+            speed *= 1 - f * f;
         }
 
         float newvalue = value + speed;

@@ -1,11 +1,10 @@
 #include "cbase.h"
+#include "debugoverlay_shared.h"
 #include "precipitation_shared.h"
 #include "timedevent.h"
-#include "debugoverlay_shared.h"
 
 #include <raytrace.h>
 #include <tier3/tier3.h>
-
 
 #include "c_zmr_entities.h"
 #include "c_zmr_player.h"
@@ -14,17 +13,15 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_cl_precipitationcenterdist( "zm_cl_precipitationcenterdist", "150" );
 ConVar zm_cl_precipitationheight( "zm_cl_precipitationheight", "180" );
 
 ConVar zm_cl_debug_precipitation_trace( "zm_cl_debug_precipitation_trace", "0", FCVAR_CHEAT );
 
+#define NEAR_OFFSET   zm_cl_precipitationcenterdist.GetFloat()
+#define HEIGHT_OFFSET zm_cl_precipitationheight.GetFloat()
 
-#define NEAR_OFFSET         zm_cl_precipitationcenterdist.GetFloat()
-#define HEIGHT_OFFSET       zm_cl_precipitationheight.GetFloat()
-
-#define UPDATE_RATE         8.0f
+#define UPDATE_RATE 8.0f
 
 CUtlVector<RayTracingEnvironment*> g_RayTraceEnvironments;
 
@@ -40,29 +37,24 @@ C_ZMPrecipitationSystem* ZMGetPrecipitationSystem()
     return &s;
 }
 
-
-
 C_ZMPrecipitationSystem::C_ZMPrecipitationSystem() : CAutoGameSystemPerFrame( "ZMPrecipitationSystem" )
 {
     m_pszParticleInner = "";
     m_pszParticleOuter = "";
     m_pszParticleMist = "";
 
-
     m_tParticlePrecipTraceTimer.Init( UPDATE_RATE );
-
 
     m_pParticlePrecipInner = nullptr;
     m_pParticlePrecipOuter = nullptr;
     m_pParticlePrecipMist = nullptr;
-
 
     m_bInitialized = false;
     m_iLastQuality = PRECIPQ_NONE;
 }
 
 C_ZMPrecipitationSystem::~C_ZMPrecipitationSystem()
-{   
+{
 }
 
 void C_ZMPrecipitationSystem::PostInit()
@@ -77,7 +69,6 @@ void C_ZMPrecipitationSystem::Update( float frametime )
         InitializeParticles();
 
         m_iLastQuality = GetQuality();
-
 
         DestroyAllParticles();
     }
@@ -95,9 +86,7 @@ bool C_ZMPrecipitationSystem::AddPrecipitation( C_ZMEntPrecipitation* pEnt )
     if ( m_vPrecipitations.Find( pEnt ) != m_vPrecipitations.InvalidIndex() )
         return false;
 
-
     m_vPrecipitations.AddToTail( pEnt );
-
 
     BuildRayTracingEnv();
 
@@ -176,7 +165,7 @@ CParticleProperty* C_ZMPrecipitationSystem::ParticleProp()
 
     if ( !pEnt )
         return nullptr;
-    
+
     return pEnt->ParticleProp();
 }
 
@@ -188,13 +177,10 @@ void C_ZMPrecipitationSystem::BuildRayTracingEnv()
     //
     int nTriCount;
 
-
     // We'll want to change this if/when we add more raytrace environments.
     g_RayTraceEnvironments.PurgeAndDeleteElements();
 
-
     const int fRtFlags = RTE_FLAGS_DONT_STORE_TRIANGLE_COLORS | RTE_FLAGS_DONT_STORE_TRIANGLE_MATERIALS;
-    
 
     // Rain
     auto* rtEnvRainEmission = new RayTracingEnvironment();
@@ -230,7 +216,6 @@ void C_ZMPrecipitationSystem::BuildRayTracingEnv()
     }
 
     rtEnvRainEmission->SetupAccelerationStructure();
-
 
     // Blockers
     //auto* rtEnvRainBlocker = new RayTracingEnvironment();
@@ -269,35 +254,35 @@ void C_ZMPrecipitationSystem::InitializeParticles()
 {
     auto precipType = GetPrecipitationType();
 
-//    //Set up which type of precipitation particle we'll use
-//    if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLEASH )
-//    {
-//        m_pszParticleInner = "ash";
-//        m_pszParticleOuter = "ash";
-//        m_pszParticleOuter = "ash_outer";
-//        m_flParticleInnerDist = 280.0;
-//    }
-//    else if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLESNOW )
-//    {
-//#ifdef INFESTED_DLL
-//        m_pParticleInnerNearDef = "asw_snow";
-//        m_pParticleInnerFarDef = "asw_snow";
-//        m_pParticleOuterDef = "asw_snow_outer";
-//        m_flParticleInnerDist = 240.0;
-//#else
-//        m_pszParticleInner = "snow";
-//        m_pszParticleOuter = "snow";
-//        m_pszParticleOuter = "snow_outer";
-//        m_flParticleInnerDist = 280.0;
-//#endif
-//    }
-//    else if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLERAINSTORM )
-//    {
-//        m_pszParticleInner = "rain_storm";
-//        m_pszParticleOuter = "rain_storm_screen";
-//        m_pszParticleOuter = "rain_storm_outer";
-//        m_flParticleInnerDist = 0.0;
-//    }
+    //    //Set up which type of precipitation particle we'll use
+    //    if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLEASH )
+    //    {
+    //        m_pszParticleInner = "ash";
+    //        m_pszParticleOuter = "ash";
+    //        m_pszParticleOuter = "ash_outer";
+    //        m_flParticleInnerDist = 280.0;
+    //    }
+    //    else if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLESNOW )
+    //    {
+    //#ifdef INFESTED_DLL
+    //        m_pParticleInnerNearDef = "asw_snow";
+    //        m_pParticleInnerFarDef = "asw_snow";
+    //        m_pParticleOuterDef = "asw_snow_outer";
+    //        m_flParticleInnerDist = 240.0;
+    //#else
+    //        m_pszParticleInner = "snow";
+    //        m_pszParticleOuter = "snow";
+    //        m_pszParticleOuter = "snow_outer";
+    //        m_flParticleInnerDist = 280.0;
+    //#endif
+    //    }
+    //    else if ( m_nPrecipType == PRECIPITATION_TYPE_PARTICLERAINSTORM )
+    //    {
+    //        m_pszParticleInner = "rain_storm";
+    //        m_pszParticleOuter = "rain_storm_screen";
+    //        m_pszParticleOuter = "rain_storm_outer";
+    //        m_flParticleInnerDist = 0.0;
+    //    }
     if ( precipType == PRECIPITATION_TYPE_SNOW || precipType == PRECIPITATION_TYPE_SNOWFALL )
     {
         m_pszParticleInner = "snow";
@@ -315,7 +300,6 @@ void C_ZMPrecipitationSystem::InitializeParticles()
         m_pszParticleOuter = "rain_outer";
         m_pszParticleMist = "rain_mist";
     }
-
 
     Assert( m_pszParticleInner && m_pszParticleOuter && m_pszParticleMist );
 
@@ -335,15 +319,12 @@ void C_ZMPrecipitationSystem::UpdateParticles()
 {
     auto* pPlayer = C_ZMPlayer::GetLocalPlayer();
 
-    if (!pPlayer
-    ||  m_iLastQuality == PRECIPQ_NONE // We don't want rain
-    ||  g_RayTraceEnvironments.Count() < 1
-    ||  !ParticleProp() )
+    if ( !pPlayer || m_iLastQuality == PRECIPQ_NONE // We don't want rain
+         || g_RayTraceEnvironments.Count() < 1 || !ParticleProp() )
     {
         DestroyAllParticles();
         return;
     }
-
 
     float flCurTime = gpGlobals->frametime;
 
@@ -354,7 +335,7 @@ void C_ZMPrecipitationSystem::UpdateParticles()
         Vector vRight;
         Vector vUp;
 
-        // Get the rain volume Ray Tracing Environment.  Currently hard coded to 0, should have this lookup 
+        // Get the rain volume Ray Tracing Environment.  Currently hard coded to 0, should have this lookup
         RayTracingEnvironment* rtEnv = g_RayTraceEnvironments.Element( 0 );
 
         //float flDensity = GetCurrentDensity();
@@ -380,33 +361,30 @@ void C_ZMPrecipitationSystem::UpdateParticles()
         fltx4 TMax = ReplicateX4( 600.0f );
         SubFloat( TMax, 3 ) = 2048.0f;
 
-
         Vector vPlayerPos = pPlayer->EyePosition();
-        Vector vOffsetPos = vPlayerPos + Vector ( 0, 0, HEIGHT_OFFSET );
+        Vector vOffsetPos = vPlayerPos + Vector( 0, 0, HEIGHT_OFFSET );
         Vector vOffsetPosNear = vOffsetPos + ( vForward * NEAR_OFFSET );
 
         //Vector vDensity = Vector( r_RainParticleDensity.GetFloat(), 0, 0 ) * flDensity;
 
-
         // Our 4 Rays are forward, off to the left and right, and directly up.
         // Use the first three to determine if there's generally visible rain where we're looking.
-        // The forth, straight up, tells us if we're standing inside a rain volume 
+        // The forth, straight up, tells us if we're standing inside a rain volume
         // (based on the normal that we hit or if we miss entirely)
         FourRays frRays;
         FourVectors fvDirection;
         fvDirection = FourVectors( vTraceForward, vForwardLeft, vForwardRight, Vector( 0, 0, 1 ) );
-        frRays.direction = fvDirection; 
+        frRays.direction = fvDirection;
         frRays.origin.DuplicateVector( vPlayerPos );
         RayTracingResult Result;
 
         rtEnv->Trace4Rays( frRays, Four_Zeros, TMax, &Result );
 
         i32x4 in4HitIds = LoadAlignedIntSIMD( Result.HitIds );
-        fltx4 fl4HitIds = SignedIntConvertToFltSIMD ( in4HitIds );
+        fltx4 fl4HitIds = SignedIntConvertToFltSIMD( in4HitIds );
 
         bool bInside = ( Result.HitIds[3] != -1 );
         bool bNearby = ( IsAnyNegative( CmpGeSIMD( fl4HitIds, Four_Zeros ) ) && IsAnyNegative( CmpLtSIMD( Result.HitDistance, TMax ) ) );
-
 
         // Debug
         if ( zm_cl_debug_precipitation_trace.GetBool() )
@@ -421,8 +399,8 @@ void C_ZMPrecipitationSystem::UpdateParticles()
                 Vector dir( SubFloat( frRays.direction[0], i ), SubFloat( frRays.direction[1], i ), SubFloat( frRays.direction[2], i ) );
                 NDebugOverlay::Line(
                     vPlayerPos,
-                    vPlayerPos + dir *  SubFloat( Result.HitDistance, i ),
-                    (!bHit) ? 255: 0, bHit ? 255 : 0, 0,
+                    vPlayerPos + dir * SubFloat( Result.HitDistance, i ),
+                    ( !bHit ) ? 255 : 0, bHit ? 255 : 0, 0,
                     true, 1.0f / UPDATE_RATE );
             }
 
@@ -434,7 +412,7 @@ void C_ZMPrecipitationSystem::UpdateParticles()
             bLastInside = bInside;
             bLastNearby = bNearby;
         }
-        
+
         if ( bInside || bNearby )
         {
             //
@@ -524,10 +502,9 @@ void C_ZMPrecipitationSystem::DestroyAllParticles()
     DestroyMistParticlePrecip();
 }
 
-void C_ZMPrecipitationSystem::DispatchOuterParticlePrecip( C_BasePlayer *pPlayer, const Vector& vForward )
+void C_ZMPrecipitationSystem::DispatchOuterParticlePrecip( C_BasePlayer* pPlayer, const Vector& vForward )
 {
     DestroyOuterParticlePrecip();
-
 
     // Low quality gets no outer particles.
     if ( m_iLastQuality < PRECIPQ_MEDIUM )
@@ -535,11 +512,9 @@ void C_ZMPrecipitationSystem::DispatchOuterParticlePrecip( C_BasePlayer *pPlayer
         return;
     }
 
-
     Vector vPlayerPos = pPlayer->EyePosition();
-    Vector vOffsetPos = vPlayerPos + Vector ( 0, 0, HEIGHT_OFFSET );
+    Vector vOffsetPos = vPlayerPos + Vector( 0, 0, HEIGHT_OFFSET );
     Vector vOffsetPosNear = vOffsetPos + ( vForward * NEAR_OFFSET );
-
 
     auto* pParticles = ParticleProp();
     Assert( pParticles );
@@ -547,7 +522,6 @@ void C_ZMPrecipitationSystem::DispatchOuterParticlePrecip( C_BasePlayer *pPlayer
     m_pParticlePrecipOuter = pParticles->Create( m_pszParticleOuter, PATTACH_ABSORIGIN_FOLLOW );
     Assert( m_pParticlePrecipOuter );
 
-
     m_pParticlePrecipOuter->SetControlPointObject( 4, pPlayer );
     m_pParticlePrecipOuter->SetControlPoint( 1, vOffsetPos );
     m_pParticlePrecipOuter->SetControlPointEntity( 2, pPlayer );
@@ -555,10 +529,9 @@ void C_ZMPrecipitationSystem::DispatchOuterParticlePrecip( C_BasePlayer *pPlayer
     //m_pParticlePrecipOuter->SetDrawOnlyForSplitScreenUser( nSlot );
 }
 
-void C_ZMPrecipitationSystem::DispatchMistParticlePrecip( C_BasePlayer *pPlayer, const Vector& vForward )
+void C_ZMPrecipitationSystem::DispatchMistParticlePrecip( C_BasePlayer* pPlayer, const Vector& vForward )
 {
     DestroyOuterParticlePrecip();
-
 
     // Medium quality gets no outer mist particles.
     if ( m_iLastQuality <= PRECIPQ_MEDIUM )
@@ -566,18 +539,15 @@ void C_ZMPrecipitationSystem::DispatchMistParticlePrecip( C_BasePlayer *pPlayer,
         return;
     }
 
-
     Vector vPlayerPos = pPlayer->EyePosition();
-    Vector vOffsetPos = vPlayerPos + Vector ( 0, 0, HEIGHT_OFFSET );
+    Vector vOffsetPos = vPlayerPos + Vector( 0, 0, HEIGHT_OFFSET );
     Vector vOffsetPosNear = vOffsetPos + ( vForward * NEAR_OFFSET );
-
 
     auto* pParticles = ParticleProp();
     Assert( pParticles );
 
     m_pParticlePrecipOuter = pParticles->Create( m_pszParticleMist, PATTACH_ABSORIGIN_FOLLOW );
     Assert( m_pParticlePrecipOuter );
-
 
     m_pParticlePrecipOuter->SetControlPointObject( 4, pPlayer );
     m_pParticlePrecipOuter->SetControlPoint( 1, vOffsetPos );
@@ -586,22 +556,19 @@ void C_ZMPrecipitationSystem::DispatchMistParticlePrecip( C_BasePlayer *pPlayer,
     //m_pParticlePrecipOuter->SetDrawOnlyForSplitScreenUser( nSlot );
 }
 
-void C_ZMPrecipitationSystem::DispatchInnerParticlePrecip( C_BasePlayer *pPlayer, const Vector& vForward )
+void C_ZMPrecipitationSystem::DispatchInnerParticlePrecip( C_BasePlayer* pPlayer, const Vector& vForward )
 {
     DestroyInnerParticlePrecip();
 
-
     Vector vPlayerPos = pPlayer->EyePosition();
-    Vector vOffsetPos = vPlayerPos + Vector ( 0, 0, HEIGHT_OFFSET );
+    Vector vOffsetPos = vPlayerPos + Vector( 0, 0, HEIGHT_OFFSET );
     Vector vOffsetPosNear = vOffsetPos + ( vForward * NEAR_OFFSET );
-
 
     auto* pParticles = ParticleProp();
     Assert( pParticles );
 
     m_pParticlePrecipInner = pParticles->Create( m_pszParticleInner, PATTACH_ABSORIGIN_FOLLOW );
     Assert( m_pParticlePrecipInner );
-
 
     m_pParticlePrecipInner->SetControlPoint( 1, vOffsetPos );
     m_pParticlePrecipInner->SetControlPointEntity( 2, pPlayer );

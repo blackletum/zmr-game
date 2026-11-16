@@ -2,7 +2,6 @@
 
 #include "npcr_component.h"
 
-
 class CBaseCombatCharacter;
 
 namespace NPCR
@@ -15,15 +14,13 @@ namespace NPCR
     abstract_class CNPCInterface
     {
     public:
-        CNPCInterface( CBaseCombatCharacter* pChar )
+        CNPCInterface( CBaseCombatCharacter * pChar )
         {
             m_pCurrentPath = nullptr;
             m_pCombatCharacter = pChar;
         }
 
-
         CBaseCombatCharacter* GetCharacter() const { return m_pCombatCharacter; }
-
 
         const Vector& GetPosition() { return GetCharacter()->GetLocalOrigin(); }
         void SetPosition( const Vector& vecPos ) { GetCharacter()->SetLocalOrigin( vecPos ); }
@@ -34,13 +31,12 @@ namespace NPCR
         const Vector& GetVel() { return GetCharacter()->GetLocalVelocity(); }
         void SetVel( const Vector& vecVel ) { GetCharacter()->SetLocalVelocity( vecVel ); }
 
+        virtual bool IsEnemy( CBaseEntity * pEnt ) const { return false; }
+        virtual bool IsTargetedEnemy( CBaseEntity * pEnt ) const { return false; }
 
-        virtual bool IsEnemy( CBaseEntity* pEnt ) const { return false; }
-        virtual bool IsTargetedEnemy( CBaseEntity* pEnt ) const { return false; }
+        NPCR::CFollowNavPath* GetCurrentPath() const { return m_pCurrentPath; }
+        void SetCurrentPath( NPCR::CFollowNavPath * path ) { m_pCurrentPath = path; }
 
-
-        NPCR::CFollowNavPath*   GetCurrentPath() const { return m_pCurrentPath; }
-        void                    SetCurrentPath( NPCR::CFollowNavPath* path ) { m_pCurrentPath = path; }
     private:
         NPCR::CFollowNavPath* m_pCurrentPath;
 
@@ -59,17 +55,16 @@ namespace NPCR
 
         virtual ~CBaseComponents();
 
-        
         CScheduleInterface* GetScheduleInterface() const;
-        CBaseMotor*         GetMotor() const;
-        CBaseSenses*        GetSenses() const;
-        
+        CBaseMotor* GetMotor() const;
+        CBaseSenses* GetSenses() const;
+
     protected:
-        virtual bool                CreateComponents();
+        virtual bool CreateComponents();
         virtual CScheduleInterface* CreateScheduleInterface() { return nullptr; }
-        virtual CBaseMotor*         CreateMotor() { return nullptr; }
-        virtual CBaseSenses*        CreateSenses() { return nullptr; }
-        virtual void                OnCreatedComponents() = 0;
+        virtual CBaseMotor* CreateMotor() { return nullptr; }
+        virtual CBaseSenses* CreateSenses() { return nullptr; }
+        virtual void OnCreatedComponents() = 0;
 
     private:
         CScheduleInterface* m_pSchedInterface;
@@ -96,10 +91,10 @@ namespace NPCR
 
         virtual bool ShouldUpdate() const;
 
-
         virtual void PreUpdate() {}
         virtual void Update() override;
         virtual void PostUpdate() {}
+
     private:
         void UpdateInterval();
         void FinishUpdate();
@@ -110,7 +105,6 @@ namespace NPCR
         int m_iUpdateSlot;
 
         bool m_bFlaggedForUpdate;
-
 
         friend class NPCManager;
     };

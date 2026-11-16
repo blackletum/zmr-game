@@ -1,19 +1,17 @@
-#include "cbase.h"
 #include "basecombatcharacter.h"
+#include "cbase.h"
 #include "vprof.h"
 
-#include "npcr_schedule.h"
-#include "npcr_motor.h"
 #include "npcr_basenpc.h"
-#include "npcr_senses.h"
 #include "npcr_manager.h"
-
+#include "npcr_motor.h"
+#include "npcr_schedule.h"
+#include "npcr_senses.h"
 
 ConVar npcr_debug_componentcreation( "npcr_debug_componentcreation", "0" );
 ConVar npcr_removeonfailure( "npcr_removeonfailure", "1" );
 
 extern ConVar npcr_updaterate;
-
 
 NPCR::CBaseNPC::CBaseNPC( CBaseCombatCharacter* pChar ) : NPCR::CNPCInterface( pChar ), NPCR::CEventDispatcher( nullptr, this )
 {
@@ -22,7 +20,6 @@ NPCR::CBaseNPC::CBaseNPC( CBaseCombatCharacter* pChar ) : NPCR::CNPCInterface( p
     m_bFlaggedForUpdate = false;
     m_iLastUpdateTick = 0;
     m_iUpdateSlot = 0;
-
 
     g_NPCManager.RegisterNPC( this );
 }
@@ -150,9 +147,8 @@ void NPCR::CBaseNPC::UpdateInterval()
     if ( m_flLastUpdate == 0.0f )
     {
         // Just assume the update rate.
-        m_flLastUpdate = gpGlobals->curtime - (1.0f / npcr_updaterate.GetFloat());
+        m_flLastUpdate = gpGlobals->curtime - ( 1.0f / npcr_updaterate.GetFloat() );
     }
-
 
     m_flUpdateTime = gpGlobals->curtime - m_flLastUpdate;
 }

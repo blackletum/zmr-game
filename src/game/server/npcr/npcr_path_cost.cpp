@@ -2,27 +2,25 @@
 
 #include "npcr_path_cost.h"
 
-
 ConVar npcr_path_simplepathvischeck( "npcr_path_simplepathvischeck", "0" );
 
 bool NPCR::CBasePathCost::ComputePortalPoints( const CNavArea* from, const CNavArea* to, Vector& fromPos, Vector& toPos )
 {
-	// Find which side it is connected on
-	int dir = 0;
-	for( ; dir < NUM_DIRECTIONS; ++dir )
-	{
-		if ( from->IsConnected( to, (NavDirType)dir ) )
-			break;
-	}
+    // Find which side it is connected on
+    int dir = 0;
+    for ( ; dir < NUM_DIRECTIONS; ++dir )
+    {
+        if ( from->IsConnected( to, (NavDirType)dir ) )
+            break;
+    }
 
-	if ( dir == NUM_DIRECTIONS )
+    if ( dir == NUM_DIRECTIONS )
         return false;
 
+    float halfWidth;
+    from->ComputePortal( to, (NavDirType)dir, &fromPos, &halfWidth );
 
-	float halfWidth;
-	from->ComputePortal( to, (NavDirType)dir, &fromPos, &halfWidth );
-
-	to->ComputePortal( from, OppositeDirection( (NavDirType)dir ), &toPos, &halfWidth );
+    to->ComputePortal( from, OppositeDirection( (NavDirType)dir ), &toPos, &halfWidth );
 
     return true;
 }
@@ -37,7 +35,6 @@ bool NPCR::CBasePathCost::CanBuildSimpleRoute( const Vector& vecStart, const Vec
     //if ( delta_z > 72.0f )
     //    return false;
 
-
     // Lift off the ground.
     Vector add( 0.0f, 0.0f, 1.0f );
 
@@ -50,7 +47,6 @@ bool NPCR::CBasePathCost::CanBuildSimpleRoute( const Vector& vecStart, const Vec
 
     return tr.fraction > 0.95f;
 }
-
 
 // NAV path cost
 float NPCR::CPathCostGroundOnly::operator()( CNavArea* area, CNavArea* fromArea, const CNavLadder* ladder, const CFuncElevator* elevator, float length ) const
@@ -65,18 +61,16 @@ float NPCR::CPathCostGroundOnly::operator()( CNavArea* area, CNavArea* fromArea,
     if ( ladder || elevator )
         return PATHCOST_INVALID;
 
-
     // ZMRTODO: The updates are very slow. Have to try updating the block status here?
     if ( area->IsBlocked( TEAM_ANY ) )
     {
         //area->UpdateBlocked( true, TEAM_ANY );
 
         //if ( area->IsBlocked( TEAM_ANY ) )
-            //return -1.0f;
+        //return -1.0f;
         return PATHCOST_INVALID;
     }
-            
-    
+
     // Get the points that are closest to each other.
     Vector fromClosest, toClosest;
     ComputePortalPoints( fromArea, area, fromClosest, toClosest );
@@ -88,13 +82,12 @@ float NPCR::CPathCostGroundOnly::operator()( CNavArea* area, CNavArea* fromArea,
         return PATHCOST_INVALID;
     }
 
-
     // We don't want the z-axis anymore.
     toClosest.z = fromClosest.z = 0.0f;
 
     // Check the gap between these areas.
     float distsqr = fromClosest.DistToSqr( toClosest );
-    if ( distsqr > (GetAbsMaxGap()*GetAbsMaxGap()) )
+    if ( distsqr > ( GetAbsMaxGap() * GetAbsMaxGap() ) )
     {
         return PATHCOST_INVALID;
     }
@@ -117,7 +110,6 @@ float NPCR::CPathCostGroundOnly::operator()( CNavArea* area, CNavArea* fromArea,
             return -1.0f;
         }
     }*/
-
 
     // By default the length is calculated from the center.
     // This takes into account where we start and end.
@@ -154,14 +146,9 @@ float NPCR::CPathCostGroundOnly::operator()( const Vector& vecNodePos, const Vec
     if ( !fCapBitMask )
         return PATHCOST_INVALID;
 
-
     Vector dir = vecTestPos - vecNodePos;
 
-
-
-
-    float dist = (vecNodePos - vecTestPos).Length();
-
+    float dist = ( vecNodePos - vecTestPos ).Length();
 
     if ( fCapBitMask & bits_CAP_MOVE_JUMP )
     {
@@ -177,7 +164,6 @@ float NPCR::CPathCostGroundOnly::operator()( const Vector& vecNodePos, const Vec
 
         dist *= GetJumpCostMultiplier();
     }
-
 
     return dist;
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifdef CLIENT_DLL
 #define CZMViewModel C_ZMViewModel
 #endif
@@ -9,10 +8,8 @@
 
 #include "weapons/zmr_base.h"
 
-
 class CZMPlayer;
 class CZMBaseWeapon;
-
 
 class CZMViewModel : public CBaseViewModel
 {
@@ -27,18 +24,17 @@ public:
     ~CZMViewModel();
 
 #ifdef CLIENT_DLL
-    virtual int                 CalcOverrideModelIndex() override;
-    virtual CStudioHdr*         OnNewModel() override;
-    virtual int                 DrawModel( int flags ) override;
-    virtual bool                ShouldReceiveProjectedTextures( int flags ) override;
-    virtual C_BaseAnimating*    FindFollowedEntity() override;
+    virtual int CalcOverrideModelIndex() override;
+    virtual CStudioHdr* OnNewModel() override;
+    virtual int DrawModel( int flags ) override;
+    virtual bool ShouldReceiveProjectedTextures( int flags ) override;
+    virtual C_BaseAnimating* FindFollowedEntity() override;
 
-	virtual bool                ShouldPredict() override;
+    virtual bool ShouldPredict() override;
 
-    void                        OnTeleported();
+    void OnTeleported();
 
     CZMBaseWeapon* GetWeapon() const;
-
 
     bool CanAnimBob() const;
     bool PerformOldBobbing( Vector& vecPos, QAngle& ang );
@@ -52,7 +48,6 @@ public:
     void GetScopeEndPosition( Vector& pos, QAngle& ang );
     float GetIronSightFraction() const { return m_flIronSightFrac; }
 
-
     bool PerformLag( Vector& vecPos, QAngle& ang, const Vector& origPos, const QAngle& origAng );
     bool PerformAngleLag( Vector& vecPos, QAngle& ang, const QAngle& origAng, const Vector& right, const Vector& up );
     bool PerformMovementLag( Vector& vecPos, QAngle& ang, const Vector& fwd, const Vector& right );
@@ -63,15 +58,24 @@ public:
 
     virtual void CalcViewModelView( CBasePlayer* pOwner, const Vector& eyePosition, const QAngle& eyeAngles ) override;
 
-
     void SetWeaponModelEx( const char* pszModel, CBaseCombatWeapon* pWep, bool bOverriden );
 
     virtual CBaseCombatWeapon* GetOwningWeapon() override;
 
 #ifdef GAME_DLL
-    void SetModelColor2( float r, float g, float b ) { m_flClr.Set( 0, r ); m_flClr.Set( 1, g ); m_flClr.Set( 2, b ); };
+    void SetModelColor2( float r, float g, float b )
+    {
+        m_flClr.Set( 0, r );
+        m_flClr.Set( 1, g );
+        m_flClr.Set( 2, b );
+    };
 #else
-    void GetModelColor2( float& r, float& g, float& b ) { r = m_flClr[0]; g = m_flClr[1]; b = m_flClr[2]; };
+    void GetModelColor2( float& r, float& g, float& b )
+    {
+        r = m_flClr[0];
+        g = m_flClr[1];
+        b = m_flClr[2];
+    };
 
     void SetDrawVM( bool state ) { m_bDrawVM = state; };
 #endif
@@ -88,7 +92,6 @@ private:
     float m_flLastImpactGroundOffsetZ;
     bool m_bWasOnGround;
 
-
     bool m_bDrawVM; // We have to override this so the client can decide whether to draw it.
 
     int m_iOverrideModelIndex;
@@ -104,7 +107,6 @@ private:
     int m_iAttachmentScopeEnd;
 
     float m_flLastMoveX;
-    
 
     Vector m_vecLastVel;
 #endif

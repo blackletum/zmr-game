@@ -2,11 +2,9 @@
 
 #include "npcs/zmr_playerbot.h"
 
-#include "npcr_schedule.h"
 #include "npcr_path_cost.h"
 #include "npcr_path_follow.h"
-
-
+#include "npcr_schedule.h"
 
 typedef NPCR::CSchedule<CZMPlayerBot> CBasePlayerBotSchedule;
 
@@ -26,7 +24,6 @@ public:
     virtual void OnStart() override;
 
     virtual void OnUpdate() override;
-    
 
 private:
     void ComputePath();

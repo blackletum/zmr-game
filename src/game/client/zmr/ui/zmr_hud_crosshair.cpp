@@ -1,35 +1,30 @@
 #include "cbase.h"
 #include "hud.h"
 #include "hud_macros.h"
-#include "view.h"
 #include "hudelement.h"
 #include "iclientmode.h"
+#include "view.h"
 
 #include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
 
-
-#include "c_zmr_player.h"
 #include "c_zmr_crosshair.h"
+#include "c_zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern ConVar zm_cl_zmcrosshair;
-
 
 class CZMHudCrosshair : public CHudElement, public vgui::Panel
 {
 public:
-	DECLARE_CLASS_SIMPLE( CZMHudCrosshair, vgui::Panel );
+    DECLARE_CLASS_SIMPLE( CZMHudCrosshair, vgui::Panel );
 
     CZMHudCrosshair( const char* pElementName );
     ~CZMHudCrosshair();
 
-
     virtual void ApplySchemeSettings( vgui::IScheme* scheme ) override;
-
 
     virtual bool ShouldDraw() override;
     virtual void Paint() override;
@@ -63,11 +58,9 @@ bool CZMHudCrosshair::ShouldDraw()
     if ( !CHudElement::ShouldDraw() )
         return false;
 
-
     C_ZMPlayer* pPlayer = C_ZMPlayer::GetLocalPlayer();
     if ( !pPlayer )
         return false;
-
 
     C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
     if ( pWeapon && !pWeapon->ShouldDrawCrosshair() )
@@ -82,13 +75,7 @@ bool CZMHudCrosshair::ShouldDraw()
         return false;
     }
 
-
-    return  !engine->IsPaused()
-        &&  !(pPlayer->GetFlags() & FL_FROZEN)
-        &&  g_pClientMode->ShouldDrawCrosshair()
-        &&  pPlayer->entindex() == render->GetViewEntity()
-        &&  !pPlayer->IsInVGuiInputMode()
-        &&  ( pPlayer->IsAlive() ||	(pPlayer->GetObserverTarget() != nullptr && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE) );
+    return !engine->IsPaused() && !( pPlayer->GetFlags() & FL_FROZEN ) && g_pClientMode->ShouldDrawCrosshair() && pPlayer->entindex() == render->GetViewEntity() && !pPlayer->IsInVGuiInputMode() && ( pPlayer->IsAlive() || ( pPlayer->GetObserverTarget() != nullptr && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE ) );
 }
 
 void CZMHudCrosshair::Paint()
@@ -134,7 +121,6 @@ void CZMHudCrosshair::Paint()
 
     if ( !pWep )
         return;
-
 
     CZMBaseCrosshair* pCross = pWep->GetWeaponCrosshair();
     if ( pCross )

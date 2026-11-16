@@ -1,20 +1,16 @@
 #pragma once
 
-
-#include "triggers.h"
 #include "physobj.h"
+#include "triggers.h"
 
 //#include "zmr_player.h"
 #//include "npcs/zmr_zombiebase.h"
 #include "zmr_shareddefs.h"
 
-
-
 class CZMPlayer;
 class CZMBaseZombie;
 class CZMEntSpawnNode;
 class CZMEntRallyPoint;
-
 
 /*
     func_win
@@ -22,17 +18,15 @@ class CZMEntRallyPoint;
 class CZMEntWin : public CServerOnlyPointEntity
 {
 public:
-	DECLARE_CLASS( CZMEntWin, CServerOnlyPointEntity )
+    DECLARE_CLASS( CZMEntWin, CServerOnlyPointEntity )
     DECLARE_DATADESC()
-
 
     static void OnRoundEnd( ZMRoundEndReason_t reason );
 
     void Spawn() override;
 
-    void InputHumanWin( inputdata_t &inputdata );
-    void InputHumanLose( inputdata_t &inputdata );
-
+    void InputHumanWin( inputdata_t& inputdata );
+    void InputHumanLose( inputdata_t& inputdata );
 
     COutputEvent m_OnWin;
     COutputEvent m_OnLose;
@@ -47,13 +41,12 @@ public:
 abstract_class CZMEntBaseSimple : public CBaseAnimating
 {
 public:
-	DECLARE_CLASS( CZMEntBaseSimple, CBaseAnimating )
+    DECLARE_CLASS( CZMEntBaseSimple, CBaseAnimating )
     DECLARE_SERVERCLASS()
 
     virtual int ShouldTransmit( const CCheckTransmitInfo* pInfo ) override;
     virtual int UpdateTransmitState() override;
 };
-
 
 /*
     BaseUsable
@@ -61,7 +54,7 @@ public:
 abstract_class CZMEntBaseUsable : public CZMEntBaseSimple
 {
 public:
-	DECLARE_CLASS( CZMEntBaseUsable, CZMEntBaseSimple )
+    DECLARE_CLASS( CZMEntBaseUsable, CZMEntBaseSimple )
     DECLARE_SERVERCLASS()
     DECLARE_DATADESC()
 
@@ -69,13 +62,11 @@ public:
 
     void Spawn() override;
 
-
     void UpdateUsable();
 
-    void InputToggle( inputdata_t &inputdata );
-    void InputHide( inputdata_t &inputdata );
-    void InputUnhide( inputdata_t &inputdata );
-
+    void InputToggle( inputdata_t& inputdata );
+    void InputHide( inputdata_t& inputdata );
+    void InputUnhide( inputdata_t& inputdata );
 
     bool IsActive() const { return m_bActive; }
 
@@ -84,7 +75,6 @@ public:
 private:
     bool m_bActive;
 };
-
 
 /*
     Zombie spawn
@@ -102,43 +92,40 @@ class CZMEntRallyPoint;
 class CZMEntZombieSpawn : public CZMEntBaseUsable
 {
 public:
-	DECLARE_CLASS( CZMEntZombieSpawn, CZMEntBaseUsable )
+    DECLARE_CLASS( CZMEntZombieSpawn, CZMEntBaseUsable )
     DECLARE_SERVERCLASS()
     DECLARE_DATADESC()
 
     CZMEntZombieSpawn();
 
-
     void Spawn() override;
     void Precache() override;
 
-    bool AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID ) override;
+    bool AcceptInput( const char* szInputName, CBaseEntity* pActivator, CBaseEntity* pCaller, variant_t Value, int outputID ) override;
 
-    void InputToggle( inputdata_t &inputdata );
-    void InputHide( inputdata_t &inputdata );
-    void InputUnhide( inputdata_t &inputdata );
-    void InputSetZombieFlags( inputdata_t &inputdata ) { m_fZombieFlags = inputdata.value.Int(); }
-    void InputAddZombieFlags( inputdata_t &inputdata ) { m_fZombieFlags |= inputdata.value.Int(); }
-    void InputRemoveZombieFlags( inputdata_t &inputdata ) { m_fZombieFlags &= ~inputdata.value.Int(); }
+    void InputToggle( inputdata_t& inputdata );
+    void InputHide( inputdata_t& inputdata );
+    void InputUnhide( inputdata_t& inputdata );
+    void InputSetZombieFlags( inputdata_t& inputdata ) { m_fZombieFlags = inputdata.value.Int(); }
+    void InputAddZombieFlags( inputdata_t& inputdata ) { m_fZombieFlags |= inputdata.value.Int(); }
+    void InputRemoveZombieFlags( inputdata_t& inputdata ) { m_fZombieFlags &= ~inputdata.value.Int(); }
     void InputEnableZombie0( inputdata_t& inputdata ) { m_fZombieFlags |= 1 << 0; }
     void InputEnableZombie1( inputdata_t& inputdata ) { m_fZombieFlags |= 1 << 1; }
     void InputEnableZombie2( inputdata_t& inputdata ) { m_fZombieFlags |= 1 << 2; }
     void InputEnableZombie3( inputdata_t& inputdata ) { m_fZombieFlags |= 1 << 3; }
     void InputEnableZombie4( inputdata_t& inputdata ) { m_fZombieFlags |= 1 << 4; }
-    void InputDisableZombie0( inputdata_t& inputdata ) { m_fZombieFlags &= ~(1 << 0); }
-    void InputDisableZombie1( inputdata_t& inputdata ) { m_fZombieFlags &= ~(1 << 1); }
-    void InputDisableZombie2( inputdata_t& inputdata ) { m_fZombieFlags &= ~(1 << 2); }
-    void InputDisableZombie3( inputdata_t& inputdata ) { m_fZombieFlags &= ~(1 << 3); }
-    void InputDisableZombie4( inputdata_t& inputdata ) { m_fZombieFlags &= ~(1 << 4); }
-    void InputSetZombieCost0( inputdata_t &inputdata ) { m_iZombieCosts.Set( 0, inputdata.value.Int() ); }
-    void InputSetZombieCost1( inputdata_t &inputdata ) { m_iZombieCosts.Set( 1, inputdata.value.Int() ); }
-    void InputSetZombieCost2( inputdata_t &inputdata ) { m_iZombieCosts.Set( 2, inputdata.value.Int() ); }
-    void InputSetZombieCost3( inputdata_t &inputdata ) { m_iZombieCosts.Set( 3, inputdata.value.Int() ); }
-    void InputSetZombieCost4( inputdata_t &inputdata ) { m_iZombieCosts.Set( 4, inputdata.value.Int() ); }
-
+    void InputDisableZombie0( inputdata_t& inputdata ) { m_fZombieFlags &= ~( 1 << 0 ); }
+    void InputDisableZombie1( inputdata_t& inputdata ) { m_fZombieFlags &= ~( 1 << 1 ); }
+    void InputDisableZombie2( inputdata_t& inputdata ) { m_fZombieFlags &= ~( 1 << 2 ); }
+    void InputDisableZombie3( inputdata_t& inputdata ) { m_fZombieFlags &= ~( 1 << 3 ); }
+    void InputDisableZombie4( inputdata_t& inputdata ) { m_fZombieFlags &= ~( 1 << 4 ); }
+    void InputSetZombieCost0( inputdata_t& inputdata ) { m_iZombieCosts.Set( 0, inputdata.value.Int() ); }
+    void InputSetZombieCost1( inputdata_t& inputdata ) { m_iZombieCosts.Set( 1, inputdata.value.Int() ); }
+    void InputSetZombieCost2( inputdata_t& inputdata ) { m_iZombieCosts.Set( 2, inputdata.value.Int() ); }
+    void InputSetZombieCost3( inputdata_t& inputdata ) { m_iZombieCosts.Set( 3, inputdata.value.Int() ); }
+    void InputSetZombieCost4( inputdata_t& inputdata ) { m_iZombieCosts.Set( 4, inputdata.value.Int() ); }
 
     void SpawnThink();
-
 
     CZMBaseZombie* CreateZombie( ZombieClass_t zclass, CZMPlayer* pSpawner );
 
@@ -149,7 +136,6 @@ public:
     void SendMenuUpdate() override;
 
     void SetRallyPoint( const Vector& pos );
-
 
     inline int GetZombieFlags() const { return m_fZombieFlags; }
     const char* GetZombieModelGroup() const { return STRING( m_sZombieModelGroup ); }
@@ -169,7 +155,6 @@ private:
     CUtlVector<CHandle<CZMEntSpawnNode>> m_vSpawnNodes;
     CHandle<CZMEntRallyPoint> m_hRallyPoint;
 
-
     //int m_nSpawnQueueCapacity;
     string_t m_sZombieModelGroup;
     string_t m_sRallyName;
@@ -186,14 +171,13 @@ private:
     int m_iZombieNodeCounter;
 };
 
-
 /*
     Spawnnode
 */
 class CZMEntSpawnNode : public CZMEntBaseSimple
 {
 public:
-	DECLARE_CLASS( CZMEntSpawnNode, CZMEntBaseSimple )
+    DECLARE_CLASS( CZMEntSpawnNode, CZMEntBaseSimple )
     DECLARE_DATADESC()
 
     CZMEntSpawnNode();
@@ -207,20 +191,18 @@ public:
     COutputEvent m_OnSpawnNPC;
 };
 
-
 /*
     Rallypoint
 */
 class CZMEntRallyPoint : public CZMEntBaseSimple
 {
 public:
-	DECLARE_CLASS( CZMEntRallyPoint, CZMEntBaseSimple )
+    DECLARE_CLASS( CZMEntRallyPoint, CZMEntBaseSimple )
     DECLARE_DATADESC()
 
     void Spawn() override;
     void Precache() override;
 };
-
 
 /*
     Trap trigger
@@ -228,21 +210,18 @@ public:
 class CZMEntManipulateTrigger : public CZMEntBaseSimple
 {
 public:
-	DECLARE_CLASS( CZMEntManipulateTrigger, CZMEntBaseSimple )
+    DECLARE_CLASS( CZMEntManipulateTrigger, CZMEntBaseSimple )
     //DECLARE_SERVERCLASS()
     DECLARE_DATADESC()
 
     CZMEntManipulateTrigger();
     ~CZMEntManipulateTrigger();
 
-
     void Spawn() override;
     void Precache() override;
 
-
     void ScanThink();
 };
-
 
 /*
     Ambush trigger
@@ -250,17 +229,15 @@ public:
 class CZMEntAmbushTrigger : public CZMEntBaseSimple
 {
 public:
-	DECLARE_CLASS( CZMEntAmbushTrigger, CZMEntBaseSimple )
+    DECLARE_CLASS( CZMEntAmbushTrigger, CZMEntBaseSimple )
     //DECLARE_SERVERCLASS()
     DECLARE_DATADESC()
 
     CZMEntAmbushTrigger();
     ~CZMEntAmbushTrigger();
 
-
     void Spawn() override;
     void Precache() override;
-
 
     void SetAmbushZombies( int count );
     void RemoveZombieFromAmbush();
@@ -273,7 +250,6 @@ private:
     int m_nAmbushZombies;
 };
 
-
 /*
     ZMRTODO: Use string tables.
 
@@ -284,27 +260,25 @@ class CZMEntManipulateTrigger;
 class CZMEntManipulate : public CZMEntBaseUsable
 {
 public:
-	DECLARE_CLASS( CZMEntManipulate, CZMEntBaseUsable )
+    DECLARE_CLASS( CZMEntManipulate, CZMEntBaseUsable )
     DECLARE_SERVERCLASS()
     DECLARE_DATADESC()
 
     CZMEntManipulate();
     ~CZMEntManipulate();
 
-
     void Spawn() override;
     void Precache() override;
 
-    bool AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID ) override;
+    bool AcceptInput( const char* szInputName, CBaseEntity* pActivator, CBaseEntity* pCaller, variant_t Value, int outputID ) override;
 
-    void InputToggle( inputdata_t &inputdata );
-    void InputHide( inputdata_t &inputdata );
-    void InputUnhide( inputdata_t &inputdata );
-    void InputPress( inputdata_t &inputdata );
-	void InputSetDescription( inputdata_t &inputdata ) { m_sDescription = inputdata.value.StringID(); }
-	void InputSetTrapCost( inputdata_t &inputdata );
-	void InputSetCost( inputdata_t &inputdata );
-
+    void InputToggle( inputdata_t& inputdata );
+    void InputHide( inputdata_t& inputdata );
+    void InputUnhide( inputdata_t& inputdata );
+    void InputPress( inputdata_t& inputdata );
+    void InputSetDescription( inputdata_t& inputdata ) { m_sDescription = inputdata.value.StringID(); }
+    void InputSetTrapCost( inputdata_t& inputdata );
+    void InputSetCost( inputdata_t& inputdata );
 
     void Trigger( CBaseEntity* pActivator );
 
@@ -315,8 +289,7 @@ public:
 
     COutputEvent m_OnPressed;
 
-	void SendMenuUpdate() override;
-
+    void SendMenuUpdate() override;
 
     inline const char* GetDescription() const { return m_sDescription.Get().ToCStr(); }
     inline int GetTrapCost() const { return m_nTrapCost; }
@@ -328,12 +301,10 @@ private:
     CNetworkVar( int, m_nCost );
     CNetworkVar( int, m_nTrapCost );
 
-
     bool m_bRemoveOnTrigger;
 
     CUtlVector<CHandle<CZMEntManipulateTrigger>> m_vTriggers;
 };
-
 
 /*
     Loadout ent
@@ -379,26 +350,21 @@ public:
         LOADOUTLOCATION_MAX
     };
 
-	DECLARE_CLASS( CZMEntLoadout, CPointEntity )
+    DECLARE_CLASS( CZMEntLoadout, CPointEntity )
     DECLARE_DATADESC()
 
     CZMEntLoadout();
     ~CZMEntLoadout();
 
-
     void Spawn() override;
-
-
 
     void Reset();
     void DistributeToPlayer( CZMPlayer* pPlayer );
-    
 
     inline LoadoutMethod_t GetMethod() const;
 
 private:
     void GiveWeapon( CZMPlayer* pPlayer, LoadoutWeapon_t loadout_wep );
-
 
     LoadoutMethod_t m_iMethod;
 
@@ -417,19 +383,16 @@ public:
     DECLARE_CLASS( CZMEntTriggerBlockHidden, CBaseTrigger );
     DECLARE_DATADESC();
 
-
     CZMEntTriggerBlockHidden();
     ~CZMEntTriggerBlockHidden();
 
     void Spawn() override;
 
-
     inline bool IsActive() const { return m_bActive; }
 
-
-    void InputToggle( inputdata_t &inputdata );
-    void InputEnable( inputdata_t &inputdata );
-    void InputDisable( inputdata_t &inputdata );
+    void InputToggle( inputdata_t& inputdata );
+    void InputEnable( inputdata_t& inputdata );
+    void InputDisable( inputdata_t& inputdata );
 
 private:
     bool m_bActive;
@@ -444,19 +407,16 @@ public:
     DECLARE_CLASS( CZMEntTriggerBlockPhysExp, CBaseTrigger );
     DECLARE_DATADESC();
 
-
     CZMEntTriggerBlockPhysExp();
     ~CZMEntTriggerBlockPhysExp();
 
     void Spawn() override;
 
-
     inline bool IsActive() const { return m_bActive; }
 
-
-    void InputToggle( inputdata_t &inputdata );
-    void InputEnable( inputdata_t &inputdata );
-    void InputDisable( inputdata_t &inputdata );
+    void InputToggle( inputdata_t& inputdata );
+    void InputEnable( inputdata_t& inputdata );
+    void InputDisable( inputdata_t& inputdata );
 
 private:
     bool m_bActive;
@@ -473,16 +433,13 @@ public:
     DECLARE_CLASS( CZMPhysExplosion, CServerOnlyPointEntity );
     DECLARE_DATADESC();
 
-
     CZMPhysExplosion();
     ~CZMPhysExplosion();
-
 
     static CZMPhysExplosion* CreatePhysExplosion( const Vector& pos, float delay, float magnitude, float radius );
 
     void Spawn() override;
     void Precache() override;
-
 
     float GetMagnitude() const { return m_flMagnitude; }
     float GetRadius() const { return m_flRadius; }
@@ -495,11 +452,9 @@ private:
     void CreateEffects( float delay );
     void Push();
 
-
     void DelayedExplode( float delay );
 
     CHandle<CEnvSpark> m_hSpark;
-
 
     float m_flMagnitude;
     float m_flRadius;
@@ -514,9 +469,7 @@ public:
     DECLARE_CLASS( CZMEntSpawnPoint, CServerOnlyPointEntity );
     DECLARE_DATADESC();
 
-
     CZMEntSpawnPoint();
-
 
     void InputEnable( inputdata_t& inputData );
     void InputDisable( inputdata_t& inputData );
@@ -544,7 +497,6 @@ public:
 
     void InitFog();
 
-
     float m_flSkyboxFarZ;
 
     // If we're game created, we can't use the cvars.
@@ -564,23 +516,19 @@ public:
     DECLARE_CLASS( CZMEntTriggerSpawnVolume, CBaseTrigger );
     DECLARE_DATADESC();
 
-
     CZMEntTriggerSpawnVolume();
     ~CZMEntTriggerSpawnVolume();
 
     void Spawn() override;
 
-
     static void GetPositionWithin( const CBaseEntity* pEnt, Vector& pos );
     void GetPositionWithin( Vector& pos ) const;
 
-
     inline bool IsActive() const { return m_bActive; }
 
-
-    void InputToggle( inputdata_t &inputdata );
-    void InputEnable( inputdata_t &inputdata );
-    void InputDisable( inputdata_t &inputdata );
+    void InputToggle( inputdata_t& inputdata );
+    void InputEnable( inputdata_t& inputdata );
+    void InputDisable( inputdata_t& inputdata );
 
 private:
     bool m_bActive;

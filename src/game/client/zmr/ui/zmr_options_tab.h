@@ -2,7 +2,6 @@
 
 #include <vgui_controls/PropertyPage.h>
 
-
 class CZMOptionsSub : public vgui::PropertyPage
 {
 public:
@@ -13,9 +12,8 @@ public:
 
     inline bool FailedLoad() { return m_bFailedLoad; };
 
-
 protected:
-    template <class SubItemType>
+    template<class SubItemType>
     void LoadItem( SubItemType** dest, const char* name )
     {
         *dest = dynamic_cast<SubItemType*>( FindChildByName( name ) );

@@ -5,7 +5,6 @@
 #endif
 #include "npcs/zmr_zombiebase_shared.h"
 
-
 enum ZMZombieAnimEvent_t
 {
     ZOMBIEANIMEVENT_IDLE = 0,
@@ -21,10 +20,8 @@ enum ZMZombieAnimEvent_t
 
     ZOMBIEANIMEVENT_GESTURE,
 
-
     ZOMBIEANIMEVENT_MAX
 };
-
 
 enum ZMAnimLayerSlot_t
 {
@@ -33,7 +30,6 @@ enum ZMAnimLayerSlot_t
 
     ANIMOVERLAY_SLOT_MAX
 };
-
 
 // Acts as a wrapper between the actual animation layer and the anim state.
 class CZMAnimOverlay
@@ -107,16 +103,16 @@ public:
     CZMBaseZombie* GetOuter() const { return m_pOuter; }
 #endif
 
-    Activity    GetOuterActivity() const;
-    bool        SetOuterActivity( Activity act ) const;
-    void        SetOuterCycle( float cycle ) const;
+    Activity GetOuterActivity() const;
+    bool SetOuterActivity( Activity act ) const;
+    void SetOuterCycle( float cycle ) const;
 
-    Vector      GetOuterVelocity() const;
-    int         GetOuterRandomSequence( Activity act ) const;
+    Vector GetOuterVelocity() const;
+    int GetOuterRandomSequence( Activity act ) const;
 
-    int         AnimEventToActivity( ZMZombieAnimEvent_t iEvent, int nData = 0 );
+    int AnimEventToActivity( ZMZombieAnimEvent_t iEvent, int nData = 0 );
 
-    static ZMZombieAnimEvent_t  ActivityToAnimEvent( int iActivity, int& nData );
+    static ZMZombieAnimEvent_t ActivityToAnimEvent( int iActivity, int& nData );
 
     virtual bool HandleAnimEvent( ZMZombieAnimEvent_t iEvent, int nData );
 
@@ -125,50 +121,44 @@ public:
     void UpdateLayers();
     void UpdateOuterAnims();
 
-
-
     virtual void Update();
 
     virtual void UpdateMovement();
 
     //virtual void OnNewActivity();
 
-    Activity    GetMoveActivity() const { return m_actMove; }
-    void        SetMoveActivity( Activity act );
+    Activity GetMoveActivity() const { return m_actMove; }
+    void SetMoveActivity( Activity act );
 
-    Activity    GetIdleActivity() const { return m_actIdle; }
-    void        SetIdleActivity( Activity act );
+    Activity GetIdleActivity() const { return m_actIdle; }
+    void SetIdleActivity( Activity act );
 
-    int         GetCurrentMoveSequence() const { return m_iMoveSeq; }
+    int GetCurrentMoveSequence() const { return m_iMoveSeq; }
 
-    void        UpdateMoveActivity();
+    void UpdateMoveActivity();
 
+    float CalcMovementPlaybackRate() const;
+    float GetMaxGroundSpeed() const;
 
-    float       CalcMovementPlaybackRate() const;
-    float       GetMaxGroundSpeed() const;
-
-    void        OnNewModel();
+    void OnNewModel();
 
 protected:
     virtual bool InitParams();
     virtual bool ShouldUpdate() const;
 
+    virtual void ShowDebugInfo();
+    void DrawAnimStateInfo();
 
-    virtual void    ShowDebugInfo();
-    void            DrawAnimStateInfo();
-
-
-
-    void    AddLayeredSequence( int iSeq, ZMAnimLayerSlot_t index );
-    void    RemoveLayer( ZMAnimLayerSlot_t index, float rate = 0.2f, float delay = 0.0f );
-    void    FastRemoveLayer( ZMAnimLayerSlot_t index );
-    bool    HasLayeredSequence( ZMAnimLayerSlot_t index ) const;
-    bool    IsLayerDying( ZMAnimLayerSlot_t index ) const;
-    bool    IsLayerLooping( ZMAnimLayerSlot_t index ) const;
-    float   GetLayerCycle( ZMAnimLayerSlot_t index );
-    void    SetLayerCycle( ZMAnimLayerSlot_t index, float cycle );
-    void    SetLayerLooping( ZMAnimLayerSlot_t index, bool bLoop );
-    void    SetLayerWeight( ZMAnimLayerSlot_t index, float flWeight );
+    void AddLayeredSequence( int iSeq, ZMAnimLayerSlot_t index );
+    void RemoveLayer( ZMAnimLayerSlot_t index, float rate = 0.2f, float delay = 0.0f );
+    void FastRemoveLayer( ZMAnimLayerSlot_t index );
+    bool HasLayeredSequence( ZMAnimLayerSlot_t index ) const;
+    bool IsLayerDying( ZMAnimLayerSlot_t index ) const;
+    bool IsLayerLooping( ZMAnimLayerSlot_t index ) const;
+    float GetLayerCycle( ZMAnimLayerSlot_t index );
+    void SetLayerCycle( ZMAnimLayerSlot_t index, float cycle );
+    void SetLayerLooping( ZMAnimLayerSlot_t index, bool bLoop );
+    void SetLayerWeight( ZMAnimLayerSlot_t index, float flWeight );
     ZMAnimLayerSlot_t FindSlotByLayerIndex( int index );
 
     void UpdateOldAnims();
@@ -194,9 +184,7 @@ private:
     int m_iPoseParamMoveX;
     int m_iPoseParamMoveY;
 
-
     CZMAnimOverlay m_AnimOverlay[ANIMOVERLAY_SLOT_MAX];
-
 
 #ifdef CLIENT_DLL
     CZMBaseZombie* m_pOuter;

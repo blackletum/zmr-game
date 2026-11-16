@@ -1,22 +1,21 @@
 #include "cbase.h"
 #include "hud.h"
-#include "hudelement.h"
 #include "hud_macros.h"
 #include "hud_numericdisplay.h"
+#include "hudelement.h"
 #include "iclientmode.h"
 #include "iclientvehicle.h"
-#include <vgui_controls/AnimationController.h>
+#include "ihudlcd.h"
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
-#include "ihudlcd.h"
+#include <vgui_controls/AnimationController.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-
-#define SIDE_LEFT 0
+#define SIDE_LEFT  0
 #define SIDE_RIGHT 1
 
 //-----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ class CZMHudAmmo : public CHudElement, public Panel
     DECLARE_CLASS_SIMPLE( CZMHudAmmo, Panel );
 
 public:
-    CZMHudAmmo( const char *pElementName );
+    CZMHudAmmo( const char* pElementName );
     void Init( void );
     void VidInit( void );
     void Reset();
@@ -39,11 +38,10 @@ protected:
     virtual void OnThink();
 
     void UpdatePlayerAmmo();
-    
 
     void PaintGlowString( const HFont& font, const HFont& glowfont, const HFont& shadowfont, const Color& clr, float blur, int xpos, int ypos, const wchar_t* str, int side );
     void PaintString( const HFont& font, const Color& clr, int xpos, int ypos, const wchar_t* str );
-	void PaintBg();
+    void PaintBg();
 
 private:
     CHandle<C_BaseCombatWeapon> m_hCurrentActiveWeapon;
@@ -51,16 +49,15 @@ private:
     int m_iAmmo2;
     //CHudTexture* m_iconPrimaryAmmo;
 
-	int m_nTexPanelBgId;
-
+    int m_nTexPanelBgId;
 
     CPanelAnimationVar( float, m_flClipBlur, "ClipBlur", "0" );
     CPanelAnimationVar( float, m_flResBlur, "ResBlur", "0" );
 
     CPanelAnimationVar( Color, m_ClipColor, "ClipColor", "ZMFgColor" );
     CPanelAnimationVar( Color, m_ResColor, "ResColor", "ZMFgColor" );
-	CPanelAnimationVar( Color, m_BgColor, "BgColor", "ZMHudBgColor" );
-    
+    CPanelAnimationVar( Color, m_BgColor, "BgColor", "ZMHudBgColor" );
+
     CPanelAnimationVar( HFont, m_hFont, "AmmoBarFont", "HudNumbers" );
     CPanelAnimationVar( HFont, m_hGlowFont, "AmmoBarGlowFont", "HudNumbersGlow" );
     CPanelAnimationVar( HFont, m_hShadowFont, "AmmoBarShadowFont", "HudNumbersShadow" );
@@ -87,7 +84,7 @@ DECLARE_HUDELEMENT( CZMHudAmmo );
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CZMHudAmmo::CZMHudAmmo( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudAmmo" )
+CZMHudAmmo::CZMHudAmmo( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudAmmo" )
 {
     m_bDisplaySecondary = false;
     m_iAmmo = 0;
@@ -117,9 +114,9 @@ CZMHudAmmo::CZMHudAmmo( const char *pElementName ) : CHudElement( pElementName )
 
 void CZMHudAmmo::Init( void )
 {
-    m_iAmmo		= -1;
-    m_iAmmo2	= -1;
-    
+    m_iAmmo = -1;
+    m_iAmmo2 = -1;
+
     SetPaintBackgroundEnabled( false );
 }
 
@@ -143,10 +140,8 @@ void CZMHudAmmo::UpdatePlayerAmmo()
     C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
     if ( !pPlayer ) return;
 
-
     C_BaseCombatWeapon* pWeapon = GetActiveWeapon();
 
-    
     if ( !pWeapon || !pWeapon->UsesPrimaryAmmo() || pWeapon->GetMaxClip1() <= 1 )
     {
         SetPaintEnabled( false );
@@ -154,7 +149,7 @@ void CZMHudAmmo::UpdatePlayerAmmo()
     }
 
     SetPaintEnabled( true );
-    
+
     // get the ammo in our clip
     int ammo1 = pWeapon->Clip1();
     int ammo2;
@@ -210,7 +205,6 @@ void CZMHudAmmo::SetAmmo( C_BaseCombatWeapon* pWeapon, int ammo, int ammo2 )
             criticalclip = pWeapon->GetMaxClip1() * 0.25f;
         }
 
-
         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMClipChanged" );
 
         if ( ammo <= criticalclip )
@@ -244,10 +238,10 @@ void CZMHudAmmo::SetAmmo( C_BaseCombatWeapon* pWeapon, int ammo, int ammo2 )
 
 void CZMHudAmmo::PaintString( const HFont& font, const Color& clr, int xpos, int ypos, const wchar_t* str )
 {
-	surface()->DrawSetTextFont( font );
+    surface()->DrawSetTextFont( font );
     surface()->DrawSetTextColor( clr );
-	surface()->DrawSetTextPos( xpos, ypos );
-	surface()->DrawUnicodeString( str );
+    surface()->DrawSetTextPos( xpos, ypos );
+    surface()->DrawUnicodeString( str );
 }
 
 void CZMHudAmmo::PaintGlowString( const HFont& font, const HFont& glowfont, const HFont& shadowfont, const Color& clr, float blur, int xpos, int ypos, const wchar_t* str, int side )
@@ -261,17 +255,15 @@ void CZMHudAmmo::PaintGlowString( const HFont& font, const HFont& glowfont, cons
             xpos -= w;
     }
 
-
     PaintString( shadowfont, Color( 0, 0, 0, 255 ), xpos, ypos, str );
 
-
-	for ( float fl = min( 1.0f, blur ); fl > 0.0f; fl -= 0.1f )
-	{
+    for ( float fl = min( 1.0f, blur ); fl > 0.0f; fl -= 0.1f )
+    {
         Color col = clr;
         col[3] = 150 * fl;
 
-		PaintString( glowfont, col, xpos, ypos, str );
-	}
+        PaintString( glowfont, col, xpos, ypos, str );
+    }
 
     PaintString( font, clr, xpos, ypos, str );
 }
@@ -284,7 +276,6 @@ void CZMHudAmmo::PaintBg()
     int offset_x = m_flBgX;
     int offset_y = m_flBgY;
 
-
     surface()->DrawSetColor( m_BgColor );
     surface()->DrawSetTexture( m_nTexPanelBgId );
     surface()->DrawTexturedRect( offset_x, offset_y, offset_x + size_x, offset_y + size_y );
@@ -292,22 +283,20 @@ void CZMHudAmmo::PaintBg()
 
 void CZMHudAmmo::Paint()
 {
-	PaintBg();
-
+    PaintBg();
 
     wchar_t szAmmo[8];
     V_snwprintf( szAmmo, ARRAYSIZE( szAmmo ), L"%i", m_iAmmo );
 
     PaintGlowString( m_hFont, m_hGlowFont, m_hShadowFont, m_ClipColor, m_flClipBlur, m_ClipX, m_ClipY, szAmmo, SIDE_RIGHT );
 
-
     if ( m_bDisplaySecondary )
     {
         int w, h, hsmall;
         surface()->GetTextSize( m_hFont, szAmmo, w, h );
-		surface()->GetTextSize( m_hResFont, szAmmo, w, hsmall );
+        surface()->GetTextSize( m_hResFont, szAmmo, w, hsmall );
 
-		int pos_y = m_ClipY + ( h - hsmall );
+        int pos_y = m_ClipY + ( h - hsmall );
 
         V_snwprintf( szAmmo, ARRAYSIZE( szAmmo ), L"%i", m_iAmmo2 );
 

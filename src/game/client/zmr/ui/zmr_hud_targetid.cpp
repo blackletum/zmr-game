@@ -1,29 +1,23 @@
+#include "c_playerresource.h"
 #include "cbase.h"
 #include "hud.h"
 #include "hudelement.h"
-#include "c_playerresource.h"
-#include "vgui_entitypanel.h"
 #include "iclientmode.h"
 #include "vgui/ILocalize.h"
+#include "vgui_entitypanel.h"
 
-
-#include "c_zmr_util.h"
 #include "c_zmr_player.h"
+#include "c_zmr_util.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
 ConVar zm_cl_showtargetid( "zm_cl_showtargetid", "1", FCVAR_ARCHIVE );
-
-
 
 class CZMHudTargetID : public CHudElement, public vgui::Panel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMHudTargetID, vgui::Panel );
-
 
     CZMHudTargetID( const char* name );
     ~CZMHudTargetID();
@@ -31,19 +25,17 @@ public:
     virtual void VidInit() override;
     virtual void ApplySchemeSettings( vgui::IScheme* scheme ) override;
     virtual void Paint() override;
-    
 
     bool ShouldRebuildTargetId( C_BasePlayer* pPlayer );
     void BuildTargetIdString( C_BasePlayer* pPlayer );
     void PaintTargetId( C_BasePlayer* pPlayer );
 
 private:
-    int         m_iLastEntIndex;
-    int         m_nLastHealth;
-    float       m_flLastChangeTime;
+    int m_iLastEntIndex;
+    int m_nLastHealth;
+    float m_flLastChangeTime;
 
-    wchar_t     m_wszTargetIdStr[128];
-
+    wchar_t m_wszTargetIdStr[128];
 
     CPanelAnimationVar( vgui::HFont, m_hFont, "TargetIDFont", "TargetID" );
 };
@@ -52,13 +44,10 @@ DECLARE_HUDELEMENT( CZMHudTargetID );
 
 using namespace vgui;
 
-
-CZMHudTargetID::CZMHudTargetID( const char* name ) :
-    CHudElement( name ), BaseClass( g_pClientMode->GetViewport(), "ZMHudTargetID" )
+CZMHudTargetID::CZMHudTargetID( const char* name ) : CHudElement( name ), BaseClass( g_pClientMode->GetViewport(), "ZMHudTargetID" )
 {
     SetPaintBackgroundEnabled( false );
     SetHiddenBits( HIDEHUD_MISCSTATUS );
-
 
     m_flLastChangeTime = 0;
     m_iLastEntIndex = 0;
@@ -75,7 +64,6 @@ void CZMHudTargetID::ApplySchemeSettings( vgui::IScheme* pScheme )
 {
     BaseClass::ApplySchemeSettings( pScheme );
 
-
     SetBounds( 0, 0, ScreenWidth(), ScreenHeight() );
 }
 
@@ -91,7 +79,6 @@ void CZMHudTargetID::VidInit()
 void CZMHudTargetID::Paint()
 {
     if ( !zm_cl_showtargetid.GetBool() ) return;
-
 
     C_ZMPlayer* pLocalPlayer = C_ZMPlayer::GetLocalPlayer();
 
@@ -110,13 +97,11 @@ void CZMHudTargetID::Paint()
         // Ignore our chase target.
         int mode = pLocalPlayer->GetObserverMode();
 
-        if ((mode == OBS_MODE_IN_EYE || mode == OBS_MODE_CHASE)
-        &&  pLocalPlayer->GetObserverTarget())
+        if ( ( mode == OBS_MODE_IN_EYE || mode == OBS_MODE_CHASE ) && pLocalPlayer->GetObserverTarget() )
         {
             iIgnore = pLocalPlayer->GetObserverTarget()->entindex();
         }
     }
-
 
     // Get our target's ent index
     int iEntIndex = pLocalPlayer->GetIDTarget();
@@ -124,7 +109,7 @@ void CZMHudTargetID::Paint()
     if ( !iEntIndex )
     {
         // Check to see if we should clear our ID
-        if ( m_flLastChangeTime && (gpGlobals->curtime > (m_flLastChangeTime + 0.15f)) )
+        if ( m_flLastChangeTime && ( gpGlobals->curtime > ( m_flLastChangeTime + 0.15f ) ) )
         {
             m_flLastChangeTime = 0;
             m_iLastEntIndex = 0;
@@ -140,12 +125,9 @@ void CZMHudTargetID::Paint()
         m_flLastChangeTime = gpGlobals->curtime;
     }
 
-
     if ( !iEntIndex ) return;
 
     if ( iEntIndex == iIgnore ) return;
-
-
 
     C_BasePlayer* pPlayer = ToBasePlayer( cl_entitylist->GetEnt( iEntIndex ) );
 
@@ -155,7 +137,6 @@ void CZMHudTargetID::Paint()
     }
 
     PaintTargetId( pPlayer );
-
 
     m_iLastEntIndex = iEntIndex;
 }
@@ -171,7 +152,6 @@ bool CZMHudTargetID::ShouldRebuildTargetId( C_BasePlayer* pPlayer )
     if ( pPlayer->GetHealth() != m_nLastHealth )
         return true;
 
-
     return false;
 }
 
@@ -182,21 +162,14 @@ void CZMHudTargetID::BuildTargetIdString( C_BasePlayer* pPlayer )
         m_wszTargetIdStr[0] = L'\0';
         return;
     }
-    
-
 
     wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
     wszPlayerName[0] = L'\0';
 
-
-
     const char* formHealth = nullptr;
     const char* formatString = "#ZMTargetId_Format";
 
-    
-
     g_pVGuiLocalize->ConvertANSIToUnicode( pPlayer->GetPlayerName(), wszPlayerName, sizeof( wszPlayerName ) );
-    
 
     int hp = pPlayer->GetHealth();
 
@@ -236,7 +209,6 @@ void CZMHudTargetID::PaintTargetId( C_BasePlayer* pPlayer )
     if ( m_wszTargetIdStr[0] == L'\0' )
         return;
 
-
     Vector screen;
     int xpos, ypos;
     ZMClientUtil::WorldToScreen( pPlayer->GetAbsOrigin(), screen, xpos, ypos );
@@ -244,21 +216,18 @@ void CZMHudTargetID::PaintTargetId( C_BasePlayer* pPlayer )
     int tw, th;
     surface()->GetTextSize( m_hFont, m_wszTargetIdStr, tw, th );
 
-
     // Center
     xpos -= tw / 2;
-
 
     // Clamp to screen
     if ( ypos < 0 )
     {
         ypos = 0;
     }
-    else if ( (ypos + th) > ScreenHeight() )
+    else if ( ( ypos + th ) > ScreenHeight() )
     {
         ypos = ScreenHeight() - th;
     }
-    
 
     surface()->DrawSetTextFont( m_hFont );
     surface()->DrawSetTextPos( xpos, ypos );

@@ -11,7 +11,6 @@ enum class FireGlowType_t
     GLOW_ENTITY_FLAME, // An entity (prop/character) is on fire.
 };
 
-
 struct FireGlow_t
 {
     FireGlow_t( FireGlowEnt_t* pEnt, FireGlowType_t glowType );
@@ -48,7 +47,6 @@ public:
     virtual void LevelInitPostEntity() override;
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
     virtual void Update( float frametime ) override;
-    
 
     int AddFireEntity( FireGlowEnt_t* pEnt, FireGlowType_t glowType );
     bool RemoveFireEntity( FireGlowEnt_t* pEnt );
@@ -63,7 +61,6 @@ protected:
     int FindFireEntity( FireGlowEnt_t* pEnt ) const;
     int FindDying() const;
     int FindSuitableReplacement() const;
-
 
 private:
     CUtlVectorAutoPurge<FireGlow_t*> m_vFireEntities;

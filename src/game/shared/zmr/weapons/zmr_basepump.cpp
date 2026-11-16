@@ -1,6 +1,6 @@
 #include "cbase.h"
-#include "in_buttons.h"
 #include "eventlist.h"
+#include "in_buttons.h"
 
 #ifndef CLIENT_DLL
 #include "items.h"
@@ -10,7 +10,6 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 CZMBasePumpConfig::CZMBasePumpConfig( const char* wepname, const char* configpath ) : CZMBaseWeaponConfig( wepname, configpath )
 {
@@ -42,7 +41,6 @@ KeyValues* CZMBasePumpConfig::ToKeyValues() const
     return kv;
 }
 
-
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMBasePumpWeapon, DT_ZM_BasePumpWeapon )
 
 BEGIN_NETWORK_TABLE( CZMBasePumpWeapon, DT_ZM_BasePumpWeapon )
@@ -66,7 +64,6 @@ END_PREDICTION_DATA()
 #endif
 
 LINK_ENTITY_TO_CLASS( weapon_zm_basepump, CZMBasePumpWeapon );
-
 
 CZMBasePumpWeapon::CZMBasePumpWeapon()
 {
@@ -127,24 +124,21 @@ void CZMBasePumpWeapon::ItemPostFrame()
     {
         // Check if player wants to cancel the reload.
         CZMPlayer* pOwner = GetPlayerOwner();
-        if ( pOwner && pOwner->m_nButtons & (IN_ATTACK | IN_ATTACK2) )
+        if ( pOwner && pOwner->m_nButtons & ( IN_ATTACK | IN_ATTACK2 ) )
         {
             m_bCancelReload = true;
         }
     }
-
 
     if ( m_iReloadState == RELOADSTATE_START && m_flNextPrimaryAttack <= gpGlobals->curtime )
     {
         Reload();
     }
 
-
     if ( !IsInReload() && NeedsPump() && m_flNextPrimaryAttack <= gpGlobals->curtime )
     {
         Pump();
     }
-
 
     BaseClass::ItemPostFrame();
 }
@@ -154,13 +148,10 @@ void CZMBasePumpWeapon::Pump()
     CZMPlayer* pOwner = GetPlayerOwner();
     if ( !pOwner ) return;
 
-    
-    
     WeaponSound( SPECIAL1 );
 
     // Finish reload animation
     SendWeaponAnim( m_iPumpState == PUMPSTATE_PUMP_EJECT ? GetPumpAct() : GetEmptyPumpAct() );
-    
 
     float flSeqTime = SequenceDuration();
 
@@ -177,8 +168,6 @@ void CZMBasePumpWeapon::Pump()
         }
     }
 
-
-    
     pOwner->m_flNextAttack = gpGlobals->curtime + flReadyTime;
     m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + flReadyTime;
 
@@ -222,7 +211,7 @@ void CZMBasePumpWeapon::StartReload()
             //
             // Play empty sound
             //
-            if ( pPlayer->m_nButtons & (IN_ATTACK|IN_ATTACK2) && m_flNextEmptySoundTime <= gpGlobals->curtime )
+            if ( pPlayer->m_nButtons & ( IN_ATTACK | IN_ATTACK2 ) && m_flNextEmptySoundTime <= gpGlobals->curtime )
             {
                 WeaponSound( EMPTY );
                 m_flNextEmptySoundTime = gpGlobals->curtime + 1.0f;
@@ -267,7 +256,6 @@ void CZMBasePumpWeapon::StopReload()
     // We no longer want to cancel the reload.
     m_bCancelReload = false;
 
-
     SendWeaponAnim( GetReloadEndAct() );
 
     float nextattack = gpGlobals->curtime + SequenceDuration();
@@ -280,9 +268,7 @@ void CZMBasePumpWeapon::StopReload()
 
     m_flNextPrimaryAttack = nextattack;
 
-    
     m_iReloadState = RELOADSTATE_NONE;
-
 
     BaseClass::StopReload();
 }
@@ -290,7 +276,6 @@ void CZMBasePumpWeapon::StopReload()
 void CZMBasePumpWeapon::FinishReload()
 {
     BaseClass::FinishReload();
-
 
     StopReload();
 }
@@ -346,13 +331,12 @@ bool CZMBasePumpWeapon::ShouldCancelReload() const
     // on pump weapons looks bad.
     //if ( pOwner->GetAmmoCount( m_iPrimaryAmmoType ) <= 0 )
     //    return true;
-    
+
     // Player wants to cancel reload.
     if ( m_bCancelReload )
     {
         // Starting or we just ended reloading.
-        return  m_iReloadState == RELOADSTATE_START
-            ||  (m_flNextPrimaryAttack <= gpGlobals->curtime && m_iClip1 < GetMaxClip1());
+        return m_iReloadState == RELOADSTATE_START || ( m_flNextPrimaryAttack <= gpGlobals->curtime && m_iClip1 < GetMaxClip1() );
     }
 
     return false;

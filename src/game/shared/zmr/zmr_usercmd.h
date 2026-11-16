@@ -1,20 +1,17 @@
 #pragma once
 
-
 //#include "cbase.h"
-#include <tier1/utlvector.h>
-#include <mathlib/vector.h>
 #include "igamesystem.h"
-
+#include <mathlib/vector.h>
+#include <tier1/utlvector.h>
 
 // This is the absolute maximum bullets the player can shoot.
-#define ZM_USERCMD_MAX_BULLETS_PER_SHOT     14
-#define ZM_USERCMD_MAX_HITS                  12
-#define ZM_USERCMD_MAX_HITS_BITS             ( Q_log2( ZM_USERCMD_MAX_HITS ) + 1 )
-#define ZM_NUMHITS_BITS                     ( Q_log2( ZM_USERCMD_MAX_BULLETS_PER_SHOT ) + 1 )
+#define ZM_USERCMD_MAX_BULLETS_PER_SHOT 14
+#define ZM_USERCMD_MAX_HITS             12
+#define ZM_USERCMD_MAX_HITS_BITS        ( Q_log2( ZM_USERCMD_MAX_HITS ) + 1 )
+#define ZM_NUMHITS_BITS                 ( Q_log2( ZM_USERCMD_MAX_BULLETS_PER_SHOT ) + 1 )
 // Number of bits we're going to reserve for the hitgroup in the network message.
-#define ZM_HITGROUP_BITS                    ( Q_log2( HITGROUP_GEAR ) + 1 )
-
+#define ZM_HITGROUP_BITS ( Q_log2( HITGROUP_GEAR ) + 1 )
 
 struct ZMUserCmdHitData_t
 {
@@ -22,7 +19,6 @@ struct ZMUserCmdHitData_t
 
     void WriteTo( bf_write* buf ) const;
     void ReadFrom( bf_read* buf );
-
 
     int entindex;
     int nHits;
@@ -42,11 +38,8 @@ public:
     CZMUserCmdSystem();
     ~CZMUserCmdSystem();
 
-
-
 #ifdef CLIENT_DLL
     void ClearDamage();
-
 
     void WriteToCmd( CUserCmd& cmd );
     void AddDamage( ZMUserCmdHitData_t hit );
@@ -76,4 +69,3 @@ private:
 };
 
 extern CZMUserCmdSystem g_ZMUserCmdSystem;
-

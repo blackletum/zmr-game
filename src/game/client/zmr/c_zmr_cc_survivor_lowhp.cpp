@@ -8,12 +8,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZMCC_SURVIVOR_LOWHP         "materials/colorcorrection/game_survivor_lowhp.raw"
-
+#define ZMCC_SURVIVOR_LOWHP "materials/colorcorrection/game_survivor_lowhp.raw"
 
 ConVar zm_cl_colorcorrection_survivor_lowhp_start( "zm_cl_colorcorrection_survivor_lowhp_start", "20", FCVAR_ARCHIVE );
-
 
 class CZMSurvivorLowHpEffect : public CZMBaseCCEffect
 {
@@ -23,12 +20,10 @@ public:
         m_bAlive = false;
     }
 
-
     static float GetHealthCap()
     {
         return zm_cl_colorcorrection_survivor_lowhp_start.GetFloat();
     }
-
 
     virtual bool OnTeamChange( int iTeam ) override
     {
@@ -38,7 +33,6 @@ public:
 
             return true;
         }
-
 
         m_bAlive = false;
 
@@ -58,16 +52,14 @@ public:
         if ( !pPlayer )
             return 0.0f;
 
-
         int health = pPlayer->GetHealth();
 
         if ( health >= GetHealthCap() )
             return 0.0f;
 
-
         health = MAX( 0, health );
 
-        float weight = (1.0f - health / GetHealthCap());
+        float weight = ( 1.0f - health / GetHealthCap() );
 
         return weight;
     }

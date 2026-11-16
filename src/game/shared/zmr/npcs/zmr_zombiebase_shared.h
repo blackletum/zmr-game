@@ -1,24 +1,20 @@
 #pragma once
 
-
 #ifdef CLIENT_DLL
 #include "npcs/c_zmr_zombiebase.h"
 #else
 #include "npcs/zmr_zombiebase.h"
 #endif
 
-
 #ifdef CLIENT_DLL
 #define CZMBaseZombie C_ZMBaseZombie
 #endif
-
 
 class CZMZombieManager
 {
 public:
     int GetNumZombies() const { return m_vZombies.Count(); }
     CZMBaseZombie* GetZombieByIndex( int index ) const { return m_vZombies[index]; }
-
 
     template<typename EachFunc>
     inline void ForEachZombieRet( EachFunc func )
@@ -86,7 +82,6 @@ public:
 private:
     void AddZombie( CZMBaseZombie* pZombie ) { m_vZombies.AddToTail( pZombie ); }
     bool RemoveZombie( CZMBaseZombie* pZombie ) { return m_vZombies.FindAndRemove( pZombie ); }
-
 
     CUtlVector<CZMBaseZombie*> m_vZombies;
 

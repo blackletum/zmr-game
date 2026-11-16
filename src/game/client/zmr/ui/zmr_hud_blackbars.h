@@ -1,15 +1,14 @@
 #pragma once
 
-#include <vgui_controls/AnimationController.h>
 #include "hudelement.h"
-
+#include <vgui_controls/AnimationController.h>
 
 class CZMHudBars : public CHudElement, public vgui::Panel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMHudBars, vgui::Panel );
 
-    CZMHudBars( const char *pElementName );
+    CZMHudBars( const char* pElementName );
 
     virtual void Init() override;
     virtual void VidInit() override;
@@ -22,14 +21,13 @@ public:
 
     virtual void Paint() override;
 
-
     static void Show( float displaytime = 0.0f );
     static void Hide();
 
     void ShowBars( float displaytime = 0.0f );
     void HideBars();
-private:
 
+private:
     void PaintBorder( int border_y, int border_height, bool bFlip );
 
     float m_flNextHide;

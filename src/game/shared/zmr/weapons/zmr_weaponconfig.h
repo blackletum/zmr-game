@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include "weapon_parse.h"
 
 namespace ZMWeaponConfig
@@ -12,7 +10,6 @@ namespace ZMWeaponConfig
     enum WeaponConfigSlot_t
     {
         ZMCONFIGSLOT_INVALID = -1,
-
 
         ZMCONFIGSLOT_FISTSCARRY,
 
@@ -38,15 +35,11 @@ namespace ZMWeaponConfig
         ZMCONFIGSLOT_MOLOTOV,
         ZMCONFIGSLOT_PIPEBOMB,
 
-
         ZMCONFIGSLOT_REGISTERED_END,
         ZMCONFIGSLOT_CUSTOM_START = ZMCONFIGSLOT_REGISTERED_END,
 
-
-
         ZMCONFIGSLOT_MAX = 64
     };
-
 
     //
     struct ZMAttackConfig_t
@@ -71,16 +64,16 @@ namespace ZMWeaponConfig
         bool bFireSingly;
     };
     //
-    
+
     //
     enum WeaponFlags_t
     {
-        WEPFLAG_NONE                = 0,
+        WEPFLAG_NONE = 0,
 
-        WEPFLAG_ATTACK_ONLADDER     = ( 1 << 0 ),
-        WEPFLAG_ATTACK_INWATER      = ( 1 << 1 ),
+        WEPFLAG_ATTACK_ONLADDER = ( 1 << 0 ),
+        WEPFLAG_ATTACK_INWATER = ( 1 << 1 ),
 
-        WEPFLAG_RELOAD_ONLADDER     = ( 1 << 2 ),
+        WEPFLAG_RELOAD_ONLADDER = ( 1 << 2 ),
     };
     //
 
@@ -93,8 +86,10 @@ namespace ZMWeaponConfig
     //
 
     //
-#define OVERRIDE_FROM_WEPCONFIG(kv, name, value) if ( kv->GetInt( #name, -1337 ) != -1337 ) { value = kv->GetInt( #name, -1337 ); }
-#define OVERRIDE_FROM_WEPCONFIG_F(kv, name, value) if ( kv->GetFloat( #name, -1337.0f ) != -1337.0f ) { value = kv->GetFloat( #name, -1337.0f ); }
+#define OVERRIDE_FROM_WEPCONFIG( kv, name, value ) \
+    if ( kv->GetInt( #name, -1337 ) != -1337 ) { value = kv->GetInt( #name, -1337 ); }
+#define OVERRIDE_FROM_WEPCONFIG_F( kv, name, value ) \
+    if ( kv->GetFloat( #name, -1337.0f ) != -1337.0f ) { value = kv->GetFloat( #name, -1337.0f ); }
     //
 
     //
@@ -104,12 +99,10 @@ namespace ZMWeaponConfig
         CZMBaseWeaponConfig( const char* wepname, const char* configpath );
         virtual ~CZMBaseWeaponConfig();
 
-
         virtual void LoadFromConfig( KeyValues* kv );
         virtual KeyValues* ToKeyValues() const;
 
         virtual void OnCustomConfigLoaded();
-
 
         static bool IsValidFirerate( float rate ) { return rate >= 0.0f; }
 
@@ -119,15 +112,12 @@ namespace ZMWeaponConfig
 
         virtual acttable_t* GetActivityList( int& nActivityCount ) const;
 
-
         virtual bool OverrideFromConfig( KeyValues* kv );
         void OverrideAttack( KeyValues* kv, ZMAttackConfig_t& attack );
-
 
         char* pszWeaponName;
         char* pszConfigFilePath;
         char* pszPrintName;
-
 
         //
         int iSlot;
@@ -135,7 +125,6 @@ namespace ZMWeaponConfig
 
         int nWeight; // Weight, as in "importance".
         //
-
 
         //
         char* pszPlayerAnimsName;
@@ -146,14 +135,12 @@ namespace ZMWeaponConfig
         bool bOverriddenWorldmodel;
         //
 
-
         //
         int fFlags; // WeaponFlags_t
 
         float flReloadTime;
         //
 
-    
         //
         // Attacks
         //
@@ -161,14 +148,12 @@ namespace ZMWeaponConfig
         ZMAttackConfig_t secondary;
         //
 
-
         //
         char* pszAmmoName;
 
         int nClipSize;
         int nDefaultClip;
         //
-
 
         //
         float flAccuracyIncrease;
@@ -179,11 +164,9 @@ namespace ZMWeaponConfig
         int flMaxPenetrationDist;
         //
 
-
         //
         char* pszSounds[WeaponSound_t::NUM_SHOOT_SOUND_TYPES];
         //
-
 
         //
 #ifdef CLIENT_DLL
@@ -195,12 +178,10 @@ namespace ZMWeaponConfig
 #endif
         //
 
-
         //
         bool bUseArms;
         int iArmVersion;
         //
-
 
         static void ComputeSpread( const char* data, Vector& spread );
         static void CopyAllocString( const char* str, char** out );
@@ -209,9 +190,7 @@ namespace ZMWeaponConfig
         static void CopyVector( const char* str, Vector& vec );
         static void VectorToKv( KeyValues* kv, const char* name, const Vector& vec );
 
-
     protected:
-
 #ifdef CLIENT_DLL
         static void CopyIcon( KeyValues* kv, CHudTexture** icon );
         static void IconToKv( KeyValues* kv, CHudTexture* icon );
@@ -219,15 +198,14 @@ namespace ZMWeaponConfig
     };
     //
 
-
+    //
+#define REGISTER_WEAPON_CONFIG( slot, configclass ) static ZMWeaponConfig::CZMWepConfigReg reg_##classname( slot, []( const char* wepname, const char* configpath ) { \
+    return (ZMWeaponConfig::CZMBaseWeaponConfig*)( new configclass( wepname, configpath ) );                                                                          \
+} );
+    //
 
     //
-#define REGISTER_WEAPON_CONFIG(slot, configclass) static ZMWeaponConfig::CZMWepConfigReg reg_##classname( slot, []( const char* wepname, const char* configpath ) { return (ZMWeaponConfig::CZMBaseWeaponConfig*)(new configclass( wepname, configpath )); } );
-    //
-
-
-    //
-    typedef CZMBaseWeaponConfig* (CreateWeaponConfigFn)( const char* wepname, const char* configpath );
+    typedef CZMBaseWeaponConfig*(CreateWeaponConfigFn)( const char* wepname, const char* configpath );
     //
 
     //
@@ -244,8 +222,6 @@ namespace ZMWeaponConfig
     };
     //
 
-
-
     //
     class CZMWepConfigReg
     {
@@ -253,7 +229,6 @@ namespace ZMWeaponConfig
         CZMWepConfigReg( WeaponConfigSlot_t slot, CreateWeaponConfigFn fn );
     };
     //
-
 
     //
     class CZMWeaponConfigSystem : public CAutoGameSystem
@@ -265,9 +240,7 @@ namespace ZMWeaponConfig
         CZMWeaponConfigSystem();
         ~CZMWeaponConfigSystem();
 
-
         static bool IsDebugging();
-
 
         virtual void PostInit() override;
         virtual void LevelInitPreEntity() override;
@@ -280,7 +253,6 @@ namespace ZMWeaponConfig
 
         void ReloadConfigs();
 
-    
         WeaponConfigSlot_t RegisterBareBonesWeapon( const char* classname );
 
         WeaponConfigSlot_t RegisterCustomWeapon( WeaponConfigSlot_t baseslot, const char* filename );
@@ -293,7 +265,7 @@ namespace ZMWeaponConfig
 
     protected:
         void RegisterBaseConfig( WeaponConfigSlot_t slot, CreateWeaponConfigFn fn );
-        
+
         WeaponConfigSlot_t FindCustomConfigByConfigPath( const char* configpath ) const;
         WeaponConfigSlot_t FindEmptyCustomConfigSlot() const;
 
@@ -309,12 +281,9 @@ namespace ZMWeaponConfig
         CZMBaseWeaponConfig* LoadConfigFromFile( const char* szWeaponName, CreateWeaponConfigFn fn );
         CZMBaseWeaponConfig* LoadCustomConfigFromFile( WeaponConfigSlot_t baseslot, const char* filepath );
 
-
         CZMBaseWeaponConfig* m_pConfigs[ZMCONFIGSLOT_MAX];
 
-
         CreateWeaponConfig_t m_ConfigRegisters[ZMCONFIGSLOT_REGISTERED_END];
-
 
         struct ZMAnimMapData_t
         {
@@ -327,7 +296,6 @@ namespace ZMWeaponConfig
         friend class CZMWepConfigReg;
     };
     //
-
 
     extern CZMWeaponConfigSystem* GetWeaponConfigSystem();
 }

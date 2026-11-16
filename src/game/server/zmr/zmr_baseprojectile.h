@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "basegrenade_shared.h"
 
 class CZMBaseProjectile : public CBaseGrenade

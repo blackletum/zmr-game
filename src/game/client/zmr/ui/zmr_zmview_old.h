@@ -1,12 +1,11 @@
 #pragma once
 
-
 class CZMLineTool;
 
 #include "zmr_boxselect.h"
-#include "zmr_cntrlpanel.h"
 #include "zmr_buildmenu.h"
 #include "zmr_buildmenu_new.h"
+#include "zmr_cntrlpanel.h"
 #include "zmr_manimenu.h"
 #include "zmr_manimenu_new.h"
 
@@ -18,10 +17,8 @@ class CZMViewOld : public CZMViewBase
 public:
     DECLARE_CLASS_SIMPLE( CZMViewOld, CZMViewBase );
 
-
     CZMViewOld( const char* pElementName );
     ~CZMViewOld();
-
 
     virtual CZMBuildMenuBase* GetBuildMenu() override;
     virtual CZMManiMenuBase* GetManiMenu() override;

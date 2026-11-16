@@ -1,6 +1,5 @@
 #include "team.h"
 
-
 class CZMTeam : public CTeam
 {
 public:

@@ -1,9 +1,7 @@
 #pragma once
 
-
 #include "cbase.h"
 #include "colorcorrectionmgr.h"
-
 
 //
 class CZMBaseCCEffect
@@ -12,22 +10,19 @@ public:
     CZMBaseCCEffect( const char* name, const char* filename );
     virtual ~CZMBaseCCEffect();
 
+    const char* GetName() const;
+    const char* GetFilename() const;
+    ClientCCHandle_t GetHandle() const;
 
-    const char*         GetName() const;
-    const char*         GetFilename() const;
-    ClientCCHandle_t    GetHandle() const;
+    void SetHandle( ClientCCHandle_t hndl );
 
-    void                SetHandle( ClientCCHandle_t hndl );
+    bool HasHandle() const;
 
-    bool                HasHandle() const;
+    virtual float GetWeight() const = 0;
+    virtual bool IsDone() const = 0;
 
-
-    virtual float       GetWeight() const = 0;
-    virtual bool        IsDone() const = 0;
-
-    virtual bool        OnTeamChange( int iTeam ) { return false; }
-    virtual bool        OnDeath() { return false; }
-
+    virtual bool OnTeamChange( int iTeam ) { return false; }
+    virtual bool OnDeath() { return false; }
 
 private:
     ClientCCHandle_t m_Hndl;
@@ -37,8 +32,7 @@ private:
 };
 //
 
-
-// Unfortunately, we have to create a client entity to control 
+// Unfortunately, we have to create a client entity to control
 class C_ZMEntColorCorrection : public C_BaseEntity
 {
 public:
@@ -47,19 +41,14 @@ public:
     C_ZMEntColorCorrection();
     ~C_ZMEntColorCorrection();
 
-
     virtual void ClientThink() override;
-
 
     void AddCC( CZMBaseCCEffect* cc );
     void ClearEffects();
 
-
     CUtlVector<CZMBaseCCEffect*> m_vCCs;
 };
 //
-
-
 
 //
 class CZMColorCorrectionSystem : public CAutoGameSystem, public CGameEventListener
@@ -70,18 +59,14 @@ public:
     CZMColorCorrectionSystem();
     virtual ~CZMColorCorrectionSystem();
 
-
     virtual bool Init() override;
     virtual void FireGameEvent( IGameEvent* event ) override;
-
 
     void AddEffect( CZMBaseCCEffect* pEffect );
     bool RemoveEffect( CZMBaseCCEffect* pEffect );
 
     void OnDeath();
     void OnTeamChange( int iTeam );
-
-
 
     void ReleaseCCEnt();
 
@@ -90,17 +75,12 @@ private:
     void InitEnt();
     void InitEffects();
 
-    
-
     CUtlVector<CZMBaseCCEffect*> m_vEffects;
 
-
     C_ZMEntColorCorrection* m_pCCEnt;
-
 
     friend class C_ZMEntColorCorrection;
 };
 //
-
 
 extern CZMColorCorrectionSystem* ZMGetCCSystem();

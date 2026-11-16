@@ -1,41 +1,35 @@
+#include "IGameUIFuncs.h"
 #include "cbase.h"
 #include "filesystem.h"
-#include "IGameUIFuncs.h"
 
-#include <vgui/ISurface.h>
 #include <vgui/IInput.h>
+#include <vgui/ISurface.h>
 
 #include <engine/IEngineSound.h>
 
-#include "zmr_mainmenu_contactbuttons.h"
-#include "zmr_mainmenu_btn.h"
 #include "zmr_mainmenu.h"
+#include "zmr_mainmenu_btn.h"
+#include "zmr_mainmenu_contactbuttons.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-
 static CDllDemandLoader g_GameUI( "GameUI" );
-
 
 extern IGameUIFuncs* gameuifuncs;
 
-
 using namespace vgui;
-
-
 
 CON_COMMAND( zm_cl_debug_mainmenu, "" )
 {
     auto* pMainMenu = static_cast<CZMMainMenu*>( g_pZMMainMenu->GetPanel() );
     if ( pMainMenu )
     {
-        for ( int i = 0 ; i < pMainMenu->GetChildCount(); i++ )
+        for ( int i = 0; i < pMainMenu->GetChildCount(); i++ )
         {
             auto* pChild = pMainMenu->GetChild( i );
             Msg( "Child %i: %s\n", i, pChild->GetName() );
         }
-        
     }
 }
 
@@ -65,9 +59,7 @@ private:
 static CZMMainMenuInterface g_ZMMainMenuInt;
 IZMUi* g_pZMMainMenu = static_cast<IZMUi*>( &g_ZMMainMenuInt );
 
-
 bool CZMMainMenu::s_bWasInGame = false;
-
 
 CZMMainMenu::CZMMainMenu( VPANEL parent ) : BaseClass( nullptr, "ZMMainMenu" )
 {
@@ -80,10 +72,8 @@ CZMMainMenu::CZMMainMenu( VPANEL parent ) : BaseClass( nullptr, "ZMMainMenu" )
     m_nVideoWidth = m_nVideoHeight = 0;
     m_flVideoU = m_flVideoV = 0;
 
-
     // Has to be set to load fonts correctly.
     SetScheme( vgui::scheme()->LoadSchemeFromFile( "resource/ClientScheme.res", "ClientScheme" ) );
-
 
     SetParent( parent );
 
@@ -93,20 +83,14 @@ CZMMainMenu::CZMMainMenu( VPANEL parent ) : BaseClass( nullptr, "ZMMainMenu" )
         Warning( "Failed to load GameUI!!\n" );
     }
 
-
-
     SetProportional( true );
 
     SetVisible( true );
     SetMouseInputEnabled( true );
     SetKeyBoardInputEnabled( true );
-    
-
 
     //MakePopup( false );
     GetFocusNavGroup().SetFocusTopLevel( true );
-
-    
 
     m_nTexBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBgId, "zmr_mainmenu/bg_mainmenu", true, false );
@@ -114,10 +98,7 @@ CZMMainMenu::CZMMainMenu( VPANEL parent ) : BaseClass( nullptr, "ZMMainMenu" )
     m_nTexSectionBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexSectionBgId, "zmr_mainmenu/bg_section", true, false );
 
-
     InitVideoBackground();
-    
-
 
     RequestFocus();
 }
@@ -136,13 +117,11 @@ bool CZMMainMenu::LoadGameUI()
 {
     if ( m_pGameUI ) return true;
 
-
     CreateInterfaceFn gameUIFactory = g_GameUI.GetFactory();
 
     if ( gameUIFactory )
     {
         m_pGameUI = static_cast<IGameUI*>( gameUIFactory( GAMEUI_INTERFACE_VERSION, nullptr ) );
-
 
         return m_pGameUI != nullptr;
     }
@@ -184,7 +163,6 @@ void CZMMainMenu::ReleaseVideoBackground()
 {
     if ( !m_pVideoMaterial )
         return;
-
 
     g_pVideo->DestroyVideoMaterial( m_pVideoMaterial );
     m_pVideoMaterial = nullptr;
@@ -229,7 +207,6 @@ bool CZMMainMenu::IsVisible()
     if ( m_bInLoadingScreen )
         return false;
 
-
     return BaseClass::IsVisible();
 }
 
@@ -250,7 +227,6 @@ void CZMMainMenu::PaintVideoBackground()
         return;
     }
 
-
     // Draw the polys to draw this out
     CMatRenderContextPtr pRenderContext( materials );
 
@@ -270,8 +246,6 @@ void CZMMainMenu::PaintVideoBackground()
     CMeshBuilder meshBuilder;
     auto* pMesh = pRenderContext->GetDynamicMesh( true );
     meshBuilder.Begin( pMesh, MATERIAL_QUADS, 1 );
-
-
 
     // Map our UVs to cut out just the portion of the video we're interested in
     float flLeftU = 0.0f;
@@ -294,7 +268,7 @@ void CZMMainMenu::PaintVideoBackground()
     // Map from screen pixel coords to -1..1
     flRightX = FLerp( -1, 1, 0, vw, flRightX );
     flLeftX = FLerp( -1, 1, 0, vw, flLeftX );
-    flTopY = FLerp( 1, -1, 0, vh , flTopY );
+    flTopY = FLerp( 1, -1, 0, vh, flTopY );
     flBottomY = FLerp( 1, -1, 0, vh, flBottomY );
 
     float alpha = 1.0f;//( (float)GetFgColor()[3] / 255.0f );
@@ -345,16 +319,13 @@ void CZMMainMenu::PaintBackground()
     {
         auto* pButton = m_vBtns[i];
 
-
         if ( !pButton->GetSubButtonCount() )
             continue;
 
-
         float unarmedtime = pButton->GetUnarmedTime();
-        float unarmeddelta = (gpGlobals->realtime - pButton->GetUnarmedTime());
+        float unarmeddelta = ( gpGlobals->realtime - pButton->GetUnarmedTime() );
 
         bool bFadeOut = unarmedtime != 0.0f && unarmeddelta < fadeOutTime;
-
 
         if ( pButton->IsSubButtonsVisible() || bFadeOut )
         {
@@ -367,31 +338,26 @@ void CZMMainMenu::PaintBackground()
 
             const int subTextWidth = pButton->GetMaxSubTextWidth();
 
-            int start_x = px - paddingSides + (pButton->GetWide() - subTextWidth) / 2;
+            int start_x = px - paddingSides + ( pButton->GetWide() - subTextWidth ) / 2;
             int start_y = py - totalheight - paddingTop;
 
-            int end_x = start_x + (subTextWidth + paddingSides*2);
+            int end_x = start_x + ( subTextWidth + paddingSides * 2 );
             int end_y = py + paddingBottom;
-
-
 
             int size_x = end_x - start_x;
             int size_y = end_y - start_y;
             Assert( size_x > 0 );
 
-
             int wantedsize = size_x * 2;
-            
 
             // Don't stretch y-axis
             float tex = size_y / (float)wantedsize;
-
 
             // Get our alpha
             float armeddelta = gpGlobals->realtime - pButton->GetArmedTime();
             if ( bFadeOut )
             {
-                int a = (1.0f - (unarmeddelta / fadeOutTime)) * 255;
+                int a = ( 1.0f - ( unarmeddelta / fadeOutTime ) ) * 255;
                 if ( a > 255 ) a = 255;
 
                 clr[3] = a;
@@ -406,13 +372,11 @@ void CZMMainMenu::PaintBackground()
                 Repaint();
             }
 
-
             surface()->DrawSetColor( clr );
             surface()->DrawSetTexture( m_nTexSectionBgId );
             surface()->DrawTexturedSubRect( start_x, start_y, end_x, end_y, 0.0f, 0.0f, 1.0f, tex );
         }
     }
-
 
     //
     // Draw the "line" strip
@@ -423,25 +387,20 @@ void CZMMainMenu::PaintBackground()
         const int nTexWidth = 1024;
         const int w = GetWide();
 
-
         auto* pPanel = GetChild( m_iBottomStripChildIndex );
-
 
         surface()->DrawSetColor( m_BgColor );
 
-        
-        int h = pPanel ? (pPanel->GetTall()+10) : 100;
+        int h = pPanel ? ( pPanel->GetTall() + 10 ) : 100;
 
-        int offset_y = pPanel ? ((pPanel->GetYPos()+pPanel->GetTall()/2)-h/2) : 0;
+        int offset_y = pPanel ? ( ( pPanel->GetYPos() + pPanel->GetTall() / 2 ) - h / 2 ) : 0;
 
-        if ( (offset_y + h) > GetTall() )
+        if ( ( offset_y + h ) > GetTall() )
         {
             h = GetTall() - offset_y;
         }
 
-
-        float repeats = w / (nTexWidth * (h / (float)nTexHeight));
-
+        float repeats = w / ( nTexWidth * ( h / (float)nTexHeight ) );
 
         surface()->DrawSetTexture( m_nTexBgId );
         surface()->DrawTexturedSubRect( 0, offset_y, w, offset_y + h, 0.0f, 0.0f, repeats, 1.0f );
@@ -454,9 +413,9 @@ void CZMMainMenu::CheckInGameButtons( bool bInGame )
     for ( int i = 0; i < len; i++ )
     {
         auto* pButton = m_vBtns[i];
-        if ( pButton && (pButton->DrawOnlyInGame() || pButton->DrawOnlyNotInGame()) )
+        if ( pButton && ( pButton->DrawOnlyInGame() || pButton->DrawOnlyNotInGame() ) )
         {
-            pButton->SetVisible( pButton->DrawOnlyInGame() ? bInGame : (!bInGame) );
+            pButton->SetVisible( pButton->DrawOnlyInGame() ? bInGame : ( !bInGame ) );
         }
     }
 }
@@ -469,7 +428,6 @@ void CZMMainMenu::Repaint()
 void CZMMainMenu::PerformLayout()
 {
     BaseClass::PerformLayout();
-
 
     int len;
 
@@ -487,7 +445,7 @@ void CZMMainMenu::PerformLayout()
         auto bCurOnlyNotInGame = pCur->DrawOnlyNotInGame();
 
         // Only layout others if drawn together.
-        auto IsDrawnTogether = [ bCurOnlyInGame, bCurOnlyNotInGame ] ( CZMMainMenuButton* pBtn )
+        auto IsDrawnTogether = [bCurOnlyInGame, bCurOnlyNotInGame]( CZMMainMenuButton* pBtn )
         {
             // Always drawn
             if ( !bCurOnlyInGame && !bCurOnlyNotInGame )
@@ -501,7 +459,6 @@ void CZMMainMenu::PerformLayout()
 
             return false;
         };
-
 
         int w, h;
         pCur->GetContentSize( w, h );
@@ -541,7 +498,6 @@ void CZMMainMenu::ApplySettings( KeyValues* kv )
 {
     Q_strncpy( m_szBottomStrip, kv->GetString( "bottom_strip_start" ), sizeof( m_szBottomStrip ) );
 
-
     BaseClass::ApplySettings( kv );
 }
 
@@ -552,9 +508,7 @@ void CZMMainMenu::ApplySchemeSettings( IScheme* pScheme )
     // By default all elements assume we're not in game.
     s_bWasInGame = false;
 
-
     LoadControlSettings( "resource/ui/zmmainmenu.res" );
-
 
     m_vBtns.RemoveAll();
     for ( int i = 0; i < GetChildCount(); i++ )
@@ -563,18 +517,15 @@ void CZMMainMenu::ApplySchemeSettings( IScheme* pScheme )
         if ( pButton )
             m_vBtns.AddToTail( pButton );
     }
-    
 
     if ( m_szBottomStrip[0] != '\0' )
     {
         m_iBottomStripChildIndex = FindChildIndexByName( m_szBottomStrip );
     }
 
-
     int w, h;
     surface()->GetScreenSize( w, h );
     SetBounds( 0, 0, w, h );
-
 
     BaseClass::ApplySchemeSettings( pScheme );
 }
@@ -609,7 +560,6 @@ void CZMMainMenu::OnKeyCodePressed( KeyCode code )
 void CZMMainMenu::OnMousePressed( KeyCode code )
 {
     HideSubButtons();
-    
 
     BaseClass::OnMousePressed( code );
 }
@@ -646,14 +596,12 @@ void CZMMainMenu::SetLoadingScreenState( bool state )
     SetVisible( draw );
 }
 
-
 void ZMOverrideGameUI()
 {
     if ( !g_pZMMainMenu ) return;
 
-
     CZMMainMenu* pMenu = static_cast<CZMMainMenu*>( g_pZMMainMenu->GetPanel() );
-    
+
     if ( pMenu->GetGameUI() )
     {
         pMenu->GetGameUI()->SetMainMenuOverride( pMenu->GetVPanel() );

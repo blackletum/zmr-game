@@ -1,11 +1,11 @@
 #include "cbase.h"
 
-#include "view_scene.h"
-#include "text_message.h"
-#include <engine/IEngineSound.h>
+#include "IGameUIFuncs.h"
 #include "c_user_message_register.h"
 #include "cdll_client_int.h"
-#include "IGameUIFuncs.h"
+#include "text_message.h"
+#include "view_scene.h"
+#include <engine/IEngineSound.h>
 
 #include "npcs/zmr_zombiebase_shared.h"
 #include "ui/zmr_hud_chat.h"
@@ -17,11 +17,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_hudchat_color( "zm_hudchat_color", "c13c3c", FCVAR_ARCHIVE );
 ConVar zm_hudchat_color_zm( "zm_hudchat_color_zm", "49ff59", FCVAR_ARCHIVE );
-
-
 
 int UTIL_CreateClientModel( const char* pszModel )
 {
@@ -33,14 +30,13 @@ int UTIL_CreateClientModel( const char* pszModel )
         // No model found, register our own.
         index = modelinfo->RegisterDynamicModel( pszModel, true );
     }
-    
+
     return index;
 }
 
 bool UTIL_PassKeyToEngine( ButtonCode_t code, bool bDoRelease = true, bool bOnlyRelease = false )
 {
     Assert( bDoRelease || !bOnlyRelease );
-
 
     const char* binding = gameuifuncs->GetBindingForButtonCode( code );
     if ( binding && *binding )
@@ -100,8 +96,6 @@ void UTIL_ParseFloatColorFromString( const char* str, float clr[], int nColors )
     }
 }
 
-
-
 void ZMClientUtil::PrintNotify( const char* msg, ZMChatNotifyType_t type )
 {
     char buf[7];
@@ -115,7 +109,6 @@ void ZMClientUtil::PrintNotify( const char* msg, ZMChatNotifyType_t type )
     {
         ZMClientUtil::ChatPrint( GetLocalPlayerIndex(), true, "\x07%s%s", buf, msg );
     }
-    
 }
 
 void ZMClientUtil::GetNotifyTypeColor( ZMChatNotifyType_t type, char* buffer, size_t len )
@@ -124,8 +117,12 @@ void ZMClientUtil::GetNotifyTypeColor( ZMChatNotifyType_t type, char* buffer, si
 
     switch ( type )
     {
-    case ZMCHATNOTIFY_ZM : pColor = zm_hudchat_color_zm.GetString(); break;
-    default : pColor = zm_hudchat_color.GetString(); break;
+    case ZMCHATNOTIFY_ZM:
+        pColor = zm_hudchat_color_zm.GetString();
+        break;
+    default:
+        pColor = zm_hudchat_color.GetString();
+        break;
     }
 
     if ( pColor )
@@ -137,8 +134,6 @@ void ZMClientUtil::ChatPrint( int iPlayerIndex, bool bPlaySound, const char* for
     CHudChat* pChat = GET_HUDELEMENT( CHudChat );
 
     if ( !pChat ) return;
-
-
 
     if ( format[0] == '#' )
     {
@@ -227,7 +222,7 @@ bool ZMClientUtil::WorldToScreen( const Vector& pos, Vector& screen, int& x, int
     {
         int w = ScreenWidth();
         int h = ScreenHeight();
-        x =  0.5f * screen[0] * w;
+        x = 0.5f * screen[0] * w;
         y = -0.5f * screen[1] * h;
         x += 0.5f * w;
         y += 0.5f * h;
@@ -242,13 +237,12 @@ int ZMClientUtil::GetSelectedZombieCount()
 
     if ( !myindex ) return 0;
 
-
     int num = 0;
 
-    g_ZombieManager.ForEachSelectedZombie( myindex, [ &num ]( C_ZMBaseZombie* pZombie )
-    {
-        ++num;
-    } );
+    g_ZombieManager.ForEachSelectedZombie( myindex, [&num]( C_ZMBaseZombie* pZombie )
+        {
+            ++num;
+        } );
 
     return num;
 }
@@ -258,13 +252,10 @@ void ZMClientUtil::SelectAllZombies( bool bSendCommand )
     int index = GetLocalPlayerIndex();
     if ( !index ) return;
 
-
-
-    g_ZombieManager.ForEachZombie( [ index ]( C_ZMBaseZombie* pZombie )
-    {
-        pZombie->SetSelector( index );
-    } );
-
+    g_ZombieManager.ForEachZombie( [index]( C_ZMBaseZombie* pZombie )
+        {
+            pZombie->SetSelector( index );
+        } );
 
     if ( bSendCommand )
     {
@@ -278,13 +269,10 @@ void ZMClientUtil::DeselectAllZombies( bool bSendCommand )
     int index = GetLocalPlayerIndex();
     if ( !index ) return;
 
-
-
     g_ZombieManager.ForEachSelectedZombie( index, []( C_ZMBaseZombie* pZombie )
-    {
-        pZombie->SetSelector( 0 );
-    } );
-
+        {
+            pZombie->SetSelector( 0 );
+        } );
 
     if ( bSendCommand )
     {
@@ -314,14 +302,13 @@ void ZMClientUtil::SelectZombiesInRadius( const Vector& vecPos, float radius, bo
     float flRadiusSqr = radius * radius;
     CUtlVector<CZMBaseZombie*> vZombies;
 
-
-    g_ZombieManager.ForEachZombie( [ &vecPos, flRadiusSqr, &vZombies ]( C_ZMBaseZombie* pZombie )
-    {
-        if ( pZombie->GetAbsOrigin().DistToSqr( vecPos ) < flRadiusSqr )
+    g_ZombieManager.ForEachZombie( [&vecPos, flRadiusSqr, &vZombies]( C_ZMBaseZombie* pZombie )
         {
-            vZombies.AddToTail( pZombie );
-        }
-    } );
+            if ( pZombie->GetAbsOrigin().DistToSqr( vecPos ) < flRadiusSqr )
+            {
+                vZombies.AddToTail( pZombie );
+            }
+        } );
 
     SelectZombies( vZombies, bSticky );
 }
@@ -331,7 +318,6 @@ void ZMClientUtil::SelectZombies( const CUtlVector<C_ZMBaseZombie*>& vZombies, b
     C_ZMBaseZombie* pZombie;
     int index = GetLocalPlayerIndex();
 
-
     if ( !index ) return;
 
     if ( !bSticky )
@@ -340,13 +326,11 @@ void ZMClientUtil::SelectZombies( const CUtlVector<C_ZMBaseZombie*>& vZombies, b
         DeselectAllZombies( !vZombies.Count() );
     }
 
-
     // We didn't select anything.
     if ( !vZombies.Count() )
     {
         return;
     }
-
 
     // We need to send selection commands in batches.
     // It's very easy to go over the argument / command size limit.
@@ -354,23 +338,21 @@ void ZMClientUtil::SelectZombies( const CUtlVector<C_ZMBaseZombie*>& vZombies, b
 
     const int nTotalCount = vZombies.Count();
 
-
     char cmdbuffer[512];
     int i = 0;
-    
+
     int count = MIN( nBatchLimit, nTotalCount );
 
     do
     {
         cmdbuffer[0] = '\0';
 
-
         for ( ; i < count; i++ )
         {
             pZombie = vZombies.Element( i );
 
             pZombie->SetSelector( index );
-            
+
             char add[16]; // "XXXXX "
             int len = Q_snprintf( add, sizeof( add ), "%i ", pZombie->entindex() );
 
@@ -379,11 +361,10 @@ void ZMClientUtil::SelectZombies( const CUtlVector<C_ZMBaseZombie*>& vZombies, b
 
         if ( cmdbuffer[0] )
         {
-            const char* cmd = VarArgs( "zm_cmd_selectmult %s %s",  bSticky ? "1": "0", cmdbuffer );
+            const char* cmd = VarArgs( "zm_cmd_selectmult %s %s", bSticky ? "1" : "0", cmdbuffer );
             //DevMsg( "Sending select multiple command: \"%s\"\n", cmd );
             engine->ClientCmd( cmd );
         }
-
 
         count += nBatchLimit;
         if ( count > nTotalCount )
@@ -391,21 +372,20 @@ void ZMClientUtil::SelectZombies( const CUtlVector<C_ZMBaseZombie*>& vZombies, b
 
         // Send it as a sticky in the next batch.
         bSticky = true;
-    }
-    while ( i < nTotalCount );
+    } while ( i < nTotalCount );
 }
 
 int ZMClientUtil::GetGroupZombieCount( int group )
 {
     int num = 0;
 
-    g_ZombieManager.ForEachZombie( [ group, &num ]( C_ZMBaseZombie* pZombie )
-    {
-        if ( pZombie->GetGroup() == group )
+    g_ZombieManager.ForEachZombie( [group, &num]( C_ZMBaseZombie* pZombie )
         {
-            ++num;
-        }
-    } );
+            if ( pZombie->GetGroup() == group )
+            {
+                ++num;
+            }
+        } );
 
     return num;
 }
@@ -416,18 +396,17 @@ void ZMClientUtil::SetSelectedGroup( int group )
 
     if ( !index ) return;
 
-
-    g_ZombieManager.ForEachZombie( [ group, index ]( C_ZMBaseZombie* pZombie )
-    {
-        if ( pZombie->GetSelectorIndex() == index )
+    g_ZombieManager.ForEachZombie( [group, index]( C_ZMBaseZombie* pZombie )
         {
-            pZombie->SetGroup( group );
-        }
-        else if ( pZombie->GetGroup() == group )
-        {
-            pZombie->SetGroup( INVALID_GROUP_INDEX );
-        }
-    } );
+            if ( pZombie->GetSelectorIndex() == index )
+            {
+                pZombie->SetGroup( group );
+            }
+            else if ( pZombie->GetGroup() == group )
+            {
+                pZombie->SetGroup( INVALID_GROUP_INDEX );
+            }
+        } );
 }
 
 void ZMClientUtil::SelectGroup( int group, bool force )
@@ -436,28 +415,25 @@ void ZMClientUtil::SelectGroup( int group, bool force )
 
     if ( !index ) return;
 
-
     CUtlVector<C_ZMBaseZombie*> vSelect;
     vSelect.Purge();
-
 
     if ( !force && GetGroupZombieCount( group ) == 0 )
         return;
 
     // Don't send selection if we've already selected that group.
     bool bNew = false;
-    
-    g_ZombieManager.ForEachZombie( [ &bNew, &vSelect, group, index ]( C_ZMBaseZombie* pZombie )
-    {
-        if ( pZombie->GetGroup() == group )
-            vSelect.AddToTail( pZombie );
 
-        if ((pZombie->GetGroup() == group && pZombie->GetSelectorIndex() != index)
-        ||  (pZombie->GetGroup() != group && pZombie->GetSelectorIndex() == index))
+    g_ZombieManager.ForEachZombie( [&bNew, &vSelect, group, index]( C_ZMBaseZombie* pZombie )
         {
-            bNew = true;
-        }
-    } );
+            if ( pZombie->GetGroup() == group )
+                vSelect.AddToTail( pZombie );
+
+            if ( ( pZombie->GetGroup() == group && pZombie->GetSelectorIndex() != index ) || ( pZombie->GetGroup() != group && pZombie->GetSelectorIndex() == index ) )
+            {
+                bNew = true;
+            }
+        } );
 
     if ( bNew )
     {

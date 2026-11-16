@@ -1,13 +1,11 @@
 #pragma once
 
-
-#include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CheckButton.h>
+#include <vgui_controls/ComboBox.h>
 #include <vgui_controls/Slider.h>
 #include <vgui_controls/TextEntry.h>
 
 #include "zmr_options_tab.h"
-
 
 class CZMOptionsSubMisc : public CZMOptionsSub
 {
@@ -24,10 +22,10 @@ public:
     MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel );
 
 private:
-    vgui::CheckButton*  m_pCheck_FpDeathcam;
-    vgui::CheckButton*  m_pCheck_Deathnotice;
-    vgui::CheckButton*  m_pCheck_ShowHelp;
-    vgui::Slider*       m_pSlider_Fov;
-    vgui::TextEntry*    m_pTextEntry_Fov;
-    vgui::ComboBox*     m_pCombo_FlashRR;
+    vgui::CheckButton* m_pCheck_FpDeathcam;
+    vgui::CheckButton* m_pCheck_Deathnotice;
+    vgui::CheckButton* m_pCheck_ShowHelp;
+    vgui::Slider* m_pSlider_Fov;
+    vgui::TextEntry* m_pTextEntry_Fov;
+    vgui::ComboBox* m_pCombo_FlashRR;
 };

@@ -14,13 +14,11 @@ CZombieClawAttackSched::CZombieClawAttackSched()
 
 CZombieClawAttackSched::~CZombieClawAttackSched()
 {
-            
 }
 
 void CZombieClawAttackSched::OnStart()
 {
     m_bDidAttack = false;
-
 
     CZMBaseZombie* pOuter = GetOuter();
 
@@ -31,14 +29,11 @@ void CZombieClawAttackSched::OnStart()
         return;
     }
 
-
-        
     if ( !pOuter->DoAnimationEvent( ZOMBIEANIMEVENT_ATTACK ) )
     {
         End( "Couldn't start claw attack activity!" );
         return;
     }
-
 
     // ZMRTODO: Fix this.
     int iSeq = pOuter->SelectWeightedSequence( ACT_MELEE_ATTACK1 );
@@ -69,9 +64,7 @@ void CZombieClawAttackSched::OnUpdate()
         return;
     }
 
-
     CZMBaseZombie* pOuter = GetOuter();
-
 
     // If we for some reason lose the enemy, keep facing to the old direction.
     CBaseEntity* pEnemy = pOuter->GetEnemy();
@@ -94,7 +87,6 @@ void CZombieClawAttackSched::OnAnimActivityInterrupted( Activity newActivity )
 {
     if ( GetOuter()->GetActivity() != ACT_MELEE_ATTACK1 )
         return;
-
 
     TryEnd( "Claw attack was interrupted!" );
 }
@@ -138,10 +130,9 @@ void CZombieClawAttackSched::OnQueuedCommand( CBasePlayer* pPlayer, ZombieComman
         // Check if ZM wants for our attack to be interrupted.
         int flags = ToZMPlayer( pPlayer )->GetZMCommandInterruptFlags();
 
-        if ( !(flags & ZCO_ATTACK) )
+        if ( !( flags & ZCO_ATTACK ) )
             return;
     }
-
 
     TryEnd( "We were commanded to do something else!" );
 }

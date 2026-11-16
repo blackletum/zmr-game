@@ -1,11 +1,10 @@
 #include "cbase.h"
 
-#include "zmr_shareddefs.h"
 #include "zmr_base.h"
+#include "zmr_shareddefs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 #ifdef CLIENT_DLL
 #define CZMWeaponPistol C_ZMWeaponPistol
@@ -14,9 +13,9 @@
 class CZMWeaponPistol : public CZMBaseWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponPistol, CZMBaseWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponPistol, CZMBaseWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponPistol();
 };
@@ -33,7 +32,6 @@ END_PREDICTION_DATA()
 
 LINK_ENTITY_TO_CLASS( weapon_zm_pistol, CZMWeaponPistol );
 PRECACHE_WEAPON_REGISTER( weapon_zm_pistol );
-
 
 CZMWeaponPistol::CZMWeaponPistol()
 {

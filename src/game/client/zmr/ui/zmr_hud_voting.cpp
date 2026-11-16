@@ -1,11 +1,11 @@
 #include "cbase.h"
 
+#include "hud_macros.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "hud_macros.h"
-#include <vgui_controls/AnimationController.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
+#include <vgui_controls/AnimationController.h>
 
 #include "usermessages.h"
 //#include "c_user_message_register.h"
@@ -16,12 +16,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern IGameUIFuncs* gameuifuncs; // for key binding details
 
-
 using namespace vgui;
-
 
 class CZMHudVote : public CHudElement, public Panel
 {
@@ -31,7 +28,6 @@ public:
     CZMHudVote( const char* pElementName );
     ~CZMHudVote();
 
-
     virtual void Init( void ) override;
     virtual void LevelInit() override;
     virtual void VidInit( void ) override;
@@ -40,11 +36,11 @@ public:
     virtual void Paint() override;
     virtual void FireGameEvent( IGameEvent* event ) override;
 
-    void MsgFunc_CallVoteFailed( bf_read &msg );
-    void MsgFunc_VoteStart( bf_read &msg );
-    void MsgFunc_VotePass( bf_read &msg );
-    void MsgFunc_VoteFailed( bf_read &msg );
-    void MsgFunc_VoteSetup( bf_read &msg );
+    void MsgFunc_CallVoteFailed( bf_read& msg );
+    void MsgFunc_VoteStart( bf_read& msg );
+    void MsgFunc_VotePass( bf_read& msg );
+    void MsgFunc_VoteFailed( bf_read& msg );
+    void MsgFunc_VoteSetup( bf_read& msg );
 
 private:
     void InitVoting();
@@ -62,7 +58,6 @@ private:
 
     const wchar_t* m_pszReason;
 
-
     CPanelAnimationVar( HFont, m_hVoteFont, "VoteFont", "ZMHudVote" );
     CPanelAnimationVar( Color, m_VoteColor, "VoteColor", "0 0 0 0" );
 
@@ -79,8 +74,7 @@ DECLARE_HUD_MESSAGE( CZMHudVote, VotePass );
 DECLARE_HUD_MESSAGE( CZMHudVote, VoteFailed );
 DECLARE_HUD_MESSAGE( CZMHudVote, VoteSetup );
 
-
-CZMHudVote::CZMHudVote( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudVote" )
+CZMHudVote::CZMHudVote( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudVote" )
 {
     m_bDrawVote = false;
     m_flVoteDraw = 0.0f;
@@ -102,7 +96,6 @@ CZMHudVote::CZMHudVote( const char *pElementName ) : CHudElement( pElementName )
 
 CZMHudVote::~CZMHudVote()
 {
-    
 }
 
 void CZMHudVote::Init( void )
@@ -148,7 +141,6 @@ void CZMHudVote::InitVoting()
 
     SetPos( 0, ScreenHeight() - GetTall() - ScreenHeight() * 0.06f );
 
-
     wchar_t szYes[16];
     wchar_t szNo[16];
 
@@ -160,7 +152,6 @@ void CZMHudVote::InitVoting()
 
     g_pVGuiLocalize->ConstructString( m_szHowto, sizeof( m_szHowto ), g_pVGuiLocalize->Find( "#ZMVoteHowto" ), 2,
         szYes, szNo );
-
 
     m_pszPass = g_pVGuiLocalize->Find( "#ZMVotePassed" );
     m_pszFail = g_pVGuiLocalize->Find( "#ZMVoteFailed" );
@@ -184,25 +175,24 @@ void CZMHudVote::FireGameEvent( IGameEvent* event )
 
         if ( GetLocalPlayerIndex() == ent )
         {
-            m_pszMyVote = g_pVGuiLocalize->Find( ( option == 1 ) ?  "#ZMMyVoteYes" : "#ZMMyVoteNo" );
+            m_pszMyVote = g_pVGuiLocalize->Find( ( option == 1 ) ? "#ZMMyVoteYes" : "#ZMMyVoteNo" );
         }
     }
     else if ( FStrEq( name, "vote_changed" ) )
     {
         int i = 0;
         //for ( int i = 0; i < MAX_VOTE_OPTIONS; i++ )
-        //{	
-            char szOption[2];
-            Q_snprintf( szOption, sizeof( szOption ), "%i", i + 1 );
+        //{
+        char szOption[2];
+        Q_snprintf( szOption, sizeof( szOption ), "%i", i + 1 );
 
-            char szVoteOption[13] = "vote_option";
-            Q_strncat( szVoteOption, szOption, sizeof( szVoteOption ), COPY_ALL_CHARACTERS );
+        char szVoteOption[13] = "vote_option";
+        Q_strncat( szVoteOption, szOption, sizeof( szVoteOption ), COPY_ALL_CHARACTERS );
 
-            int yesvotes = event->GetInt( szVoteOption );
+        int yesvotes = event->GetInt( szVoteOption );
         //}
 
         int potential = event->GetInt( "potentialVotes" );
-
 
         V_snwprintf( m_szVote, ARRAYSIZE( m_szVote ), L"%i/%i", yesvotes, potential );
     }
@@ -221,10 +211,10 @@ void CZMHudVote::OnThink()
 
 void CZMHudVote::PaintString( const HFont font, const Color& clr, int x, int y, const wchar_t* txt )
 {
-	surface()->DrawSetTextFont( font );
+    surface()->DrawSetTextFont( font );
     surface()->DrawSetTextColor( clr );
-	surface()->DrawSetTextPos( x, y );
-	surface()->DrawUnicodeString( txt );
+    surface()->DrawSetTextPos( x, y );
+    surface()->DrawUnicodeString( txt );
 }
 
 void CZMHudVote::Paint()
@@ -241,7 +231,6 @@ void CZMHudVote::Paint()
         PaintString( m_hReasonFont, m_ReasonColor, GetWide() / 2.0f - w / 2.0f, 10, m_pszReason );
     }
 
-
     if ( m_szDisplay[0] != L'\0' )
     {
         surface()->GetTextSize( m_hVoteFont, m_szDisplay, w, h );
@@ -249,13 +238,11 @@ void CZMHudVote::Paint()
         PaintString( m_hVoteFont, m_VoteColor, GetWide() / 2.0f - w / 2.0f, 40, m_szDisplay );
     }
 
-
     if ( m_szHowto[0] != L'\0' )
     {
         surface()->GetTextSize( m_hTextFont, m_szHowto, w, h );
         PaintString( m_hTextFont, m_VoteColor, GetWide() / 2.0f - w / 2.0f, 60, m_szHowto );
     }
-
 
     if ( m_szVote[0] != L'\0' )
     {
@@ -279,7 +266,7 @@ void CZMHudVote::MsgFunc_VoteSetup( bf_read& msg )
     char type[64];
     char type_local[64];
     bool bEnabled;
-    
+
     for ( int i = 0; i < count; i++ )
     {
         msg.ReadString( type, sizeof( type ) );
@@ -300,9 +287,7 @@ void CZMHudVote::MsgFunc_VoteStart( bf_read& msg )
     msg.ReadString( display, sizeof( display ) );
     msg.ReadString( details, sizeof( details ) );
 
-
     DevMsg( "VoteStart | Display: %s | Details: %s\n", display, details );
-
 
     const wchar_t* local = nullptr;
 
@@ -310,7 +295,7 @@ void CZMHudVote::MsgFunc_VoteStart( bf_read& msg )
     {
         local = g_pVGuiLocalize->Find( display );
     }
-    
+
     if ( local && *local )
     {
         V_wcsncpy( m_szDisplay, local, sizeof( m_szDisplay ) );
@@ -319,8 +304,6 @@ void CZMHudVote::MsgFunc_VoteStart( bf_read& msg )
     {
         g_pVGuiLocalize->ConvertANSIToUnicode( display, m_szDisplay, sizeof( m_szDisplay ) );
     }
-    
-
 
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMVoteStart" );
 
@@ -335,14 +318,12 @@ void CZMHudVote::MsgFunc_CallVoteFailed( bf_read& msg )
 {
     DevMsg( "CallVoteFailed | Reason: %i | Time: %i\n", msg.ReadByte(), msg.ReadShort() );
 
-
     m_flVoteDraw = gpGlobals->curtime + 3.0f;
 }
 
 void CZMHudVote::MsgFunc_VoteFailed( bf_read& msg )
 {
     DevMsg( "VoteFailed | Only Team: %i | Reason: %i\n", msg.ReadByte(), msg.ReadByte() );
-    
 
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMVoteReasonStart" );
 
@@ -359,8 +340,6 @@ void CZMHudVote::MsgFunc_VotePass( bf_read& msg )
     msg.ReadString( details, sizeof( details ) );
 
     DevMsg( "VotePass | Passed: %s | Details: %s\n", passed, details );
-
-
 
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMVoteReasonStart" );
 

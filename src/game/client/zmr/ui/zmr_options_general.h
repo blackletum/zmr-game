@@ -1,13 +1,11 @@
 #pragma once
 
-
-#include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CheckButton.h>
+#include <vgui_controls/ComboBox.h>
 #include <vgui_controls/Slider.h>
 
 #include "zmr_options_tab.h"
 // #include "ui/zmr_panel_modelpanel.h"
-
 
 class CZMOptionsSubGeneral : public CZMOptionsSub
 {
@@ -24,17 +22,17 @@ public:
 
 private:
     // CZMModelPanel*      m_pModelPanel;
-    vgui::ComboBox*     m_pModelCombo;
-    vgui::ComboBox*     m_pPartBox;
-    vgui::CheckButton*  m_pCheck_NewMenus;
-    vgui::CheckButton*  m_pCheck_SwitchMouseBtns;
-    vgui::CheckButton*  m_pCheck_PowerUser;
-    vgui::CheckButton*  m_pCheck_BoxPowerUser;
-    vgui::CheckButton*  m_pCheck_ControlStyle;
-    vgui::Slider*       m_pSlider_Pitch;
-    vgui::Slider*       m_pSlider_Yaw;
-    vgui::Slider*       m_pSlider_Border;
-    
+    vgui::ComboBox* m_pModelCombo;
+    vgui::ComboBox* m_pPartBox;
+    vgui::CheckButton* m_pCheck_NewMenus;
+    vgui::CheckButton* m_pCheck_SwitchMouseBtns;
+    vgui::CheckButton* m_pCheck_PowerUser;
+    vgui::CheckButton* m_pCheck_BoxPowerUser;
+    vgui::CheckButton* m_pCheck_ControlStyle;
+    vgui::Slider* m_pSlider_Pitch;
+    vgui::Slider* m_pSlider_Yaw;
+    vgui::Slider* m_pSlider_Border;
+
     const char* GetCurrentPlayerModel();
     void AppendCustomModels();
 };

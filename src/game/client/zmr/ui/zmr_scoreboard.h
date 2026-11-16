@@ -3,9 +3,8 @@
 #include <clientscoreboarddialog.h>
 #include <vgui/IImage.h>
 
-
-#include "zmr_framepanel.h"
 #include "c_zmr_importancesystem.h"
+#include "zmr_framepanel.h"
 
 class CZMListRow;
 class CZMListSection;
@@ -20,8 +19,8 @@ struct zm_avatarimg_t
         pImage = img;
     }
 
-    CSteamID        SteamId;
-    CAvatarImage*   pImage;
+    CSteamID SteamId;
+    CAvatarImage* pImage;
 };
 
 class CZMAvatarList
@@ -29,47 +28,42 @@ class CZMAvatarList
 public:
     CZMAvatarList() { m_ImageList.Purge(); };
 
-
     int CreateAvatarBySteamId( CSteamID id );
     int FindAvatarBySteamId( CSteamID id );
 
-    CAvatarImage*   GetImage( int i ) { return m_ImageList[i].pImage; };
+    CAvatarImage* GetImage( int i ) { return m_ImageList[i].pImage; };
 
 private:
-    CUtlVector<zm_avatarimg_t>   m_ImageList;
+    CUtlVector<zm_avatarimg_t> m_ImageList;
 };
-
-
 
 class CZMClientScoreBoardDialog : public CZMFramePanel, public IViewPortPanel, public CGameEventListener
 {
 private:
     DECLARE_CLASS_SIMPLE( CZMClientScoreBoardDialog, CZMFramePanel );
-    
+
 public:
     CZMClientScoreBoardDialog( IViewPort* pViewPort );
     ~CZMClientScoreBoardDialog();
-
 
     virtual void PerformLayout() override;
     virtual void PaintBackground() override;
 
     virtual const char* GetName() override { return PANEL_SCOREBOARD; };
-    virtual void        SetData( KeyValues *data) override {};
-    virtual bool        HasInputElements() override { return true; };
-    vgui::VPANEL        GetVPanel( void ) override { return BaseClass::GetVPanel(); };
-    virtual bool        IsVisible() override { return BaseClass::IsVisible(); };
-    virtual void        SetParent( vgui::VPANEL parent ) override { BaseClass::SetParent( parent ); };
+    virtual void SetData( KeyValues* data ) override {};
+    virtual bool HasInputElements() override { return true; };
+    vgui::VPANEL GetVPanel( void ) override { return BaseClass::GetVPanel(); };
+    virtual bool IsVisible() override { return BaseClass::IsVisible(); };
+    virtual void SetParent( vgui::VPANEL parent ) override { BaseClass::SetParent( parent ); };
 
+    virtual void ApplySchemeSettings( vgui::IScheme* pScheme ) override;
+    virtual void FireGameEvent( IGameEvent* event ) override;
 
-    virtual void        ApplySchemeSettings( vgui::IScheme* pScheme ) override;
-    virtual void        FireGameEvent( IGameEvent* event ) override;
-    
-    virtual void        OnThink() override;
-    virtual void        Reset() override;
-    virtual void        Update() override;
-    virtual bool        NeedsUpdate() override;
-    virtual void        ShowPanel( bool bShow ) override;
+    virtual void OnThink() override;
+    virtual void Reset() override;
+    virtual void Update() override;
+    virtual bool NeedsUpdate() override;
+    virtual void ShowPanel( bool bShow ) override;
 
     virtual GameActionSet_t GetPreferredActionSet() override { return GAME_ACTION_SET_NONE; };
 
@@ -80,9 +74,9 @@ private:
     void UpdateStats(); // Stuff that is static and doesn't change during the map.
     void UpdateMapStats(); // Stuff that may change while we're playing.
 
-    void    ToggleVoiceMute( int playerIndex );
-    int     FindPlayerItem( int playerIndex );
-    int     TeamToSection( int iTeam );
+    void ToggleVoiceMute( int playerIndex );
+    int FindPlayerItem( int playerIndex );
+    int TeamToSection( int iTeam );
 
     void UpdateScoreboard();
 
@@ -90,24 +84,22 @@ private:
     void GetPlayerScoreInfo( int playerIndex, KeyValues* kv );
     void UpdatePlayerAvatar( int playerIndex, KeyValues* kv );
 
-
     CZMListPanel* m_pList;
 
     vgui::IImage* m_pImportanceImages[ZMIMPORTANCE_MAX];
 
-    int     m_iPlayerIndexSymbol;
-    float   m_flNextUpdateTime;
-    float   m_flLastMouseToggle;
+    int m_iPlayerIndexSymbol;
+    float m_flNextUpdateTime;
+    float m_flLastMouseToggle;
 
-    int     m_iSectionZM;
-    int     m_iSectionHuman;
+    int m_iSectionZM;
+    int m_iSectionHuman;
 
-    int     m_nTexBgSideId;
-    int     m_nTexBgTopId;
-    int     m_nTexBgCornerId;
+    int m_nTexBgSideId;
+    int m_nTexBgTopId;
+    int m_nTexBgCornerId;
 
-    
-    CZMAvatarList  m_Avatars;
+    CZMAvatarList m_Avatars;
     int m_iVoiceOff;
     int m_iVoiceOn;
 };

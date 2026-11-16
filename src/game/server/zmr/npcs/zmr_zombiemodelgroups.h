@@ -1,13 +1,11 @@
 #pragma once
 
-#include "zmr_zombiebase.h"
 #include "zmr_shareddefs.h"
-
+#include "zmr_zombiebase.h"
 
 class CZMZombieModelGroup;
 class CZMZombieDataPerType;
 class CZMZombieModelGroupSystem;
-
 
 //
 class CZMZombieModelData
@@ -16,25 +14,20 @@ public:
     CZMZombieModelData( KeyValues* kv );
     ~CZMZombieModelData();
 
-
     const char* GetModelDataName() const { return STRING( m_sName ); }
     const char* GetModelPath() const { return STRING( m_sModelPath ); }
-
 
     unsigned int GetSkinBitFlag() const { return m_fSkins; }
     unsigned int GetBodygroupBitFlag() const { return m_fBodygroups; }
 
     int GetPrecacheIndex() const { return m_iPrecacheIndex; }
 
-
     bool PrecacheMe();
-
 
     static bool IsValidModel( const char* mdlpath );
 
 private:
     void CopyData( KeyValues* kv );
-
 
     string_t m_sName;
     string_t m_sModelPath;
@@ -43,11 +36,9 @@ private:
 
     int m_iPrecacheIndex;
 
-
     friend class CZMZombieDataPerType;
 };
 //
-
 
 //
 class CZMZombieDataPerType
@@ -74,7 +65,6 @@ private:
 };
 //
 
-
 //
 class CZMZombieModelGroup
 {
@@ -82,15 +72,12 @@ public:
     CZMZombieModelGroup( KeyValues* kv );
     ~CZMZombieModelGroup();
 
-
     const char* GetModelGroupName() const { return STRING( m_sModelGroup ); }
-
 
     const CZMZombieModelData* RandomModel( ZombieClass_t zclass ) const;
 
 private:
     void CopyData( KeyValues* kv );
-
 
     string_t m_sModelGroup;
 
@@ -99,7 +86,6 @@ private:
     friend class CZMZombieModelGroupSystem;
 };
 //
-
 
 //
 class CZMZombieModelGroupSystem : private CAutoGameSystem
@@ -113,12 +99,9 @@ public:
     virtual bool Init() override;
     //
 
-
     void Reload();
 
-
     void OnZombieSpawn( CZMBaseZombie* pZombie );
-
 
     const char* GetDefaultModelGroup() const { return STRING( m_sDefaultModelGroup ); }
     void SetDefaultModelGroup( const char* group );
@@ -132,16 +115,13 @@ private:
     void AddModelGroup( KeyValues* kv );
     int FindModelGroupByName( const char* name ) const;
 
-
     void LoadFiles();
     void LoadFromFile( KeyValues* kv );
-
 
     CUtlVector<CZMZombieModelGroup*> m_vModelGroups;
 
     string_t m_sDefaultModelGroup;
 };
 //
-
 
 extern CZMZombieModelGroupSystem g_ZombieModelGroups;

@@ -4,9 +4,8 @@
 
 #include "zmr_bot_main.h"
 
-#include "npcr_schedule.h"
 #include "npcr_path_chase.h"
-
+#include "npcr_schedule.h"
 
 //
 // Follow real players.
@@ -35,7 +34,6 @@ public:
 
     //virtual void OnMoveSuccess( NPCR::CBaseNavPath* pPath ) override;
 
-
 private:
     bool IsValidFollowTarget( CBasePlayer* pPlayer, bool bCheckLoop = false ) const;
 
@@ -46,7 +44,6 @@ private:
     bool ShouldMoveCloser( CBasePlayer* pFollow ) const;
 
     CBasePlayer* FindSurvivorToFollow( CBasePlayer* pIgnore = nullptr, bool bAllowBot = false ) const;
-
 
     NPCR::CChaseNavPath m_Path;
     NPCR::CPathCostGroundOnly m_PathCost;

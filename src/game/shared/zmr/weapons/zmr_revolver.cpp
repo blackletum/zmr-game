@@ -1,21 +1,18 @@
 #include "cbase.h"
 
-#include "npcevent.h"
 #include "eventlist.h"
+#include "npcevent.h"
 #ifdef CLIENT_DLL
 #include "prediction.h"
 #endif
 
 #include "in_buttons.h"
 
-
-#include "zmr_shareddefs.h"
 #include "zmr_revolver.h"
-
+#include "zmr_shareddefs.h"
 
 #include "zmr_player_shared.h"
 
-    
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMWeaponRevolver, DT_ZM_WeaponRevolver )
 
 BEGIN_NETWORK_TABLE( CZMWeaponRevolver, DT_ZM_WeaponRevolver )
@@ -39,10 +36,8 @@ CZMWeaponRevolver::CZMWeaponRevolver()
 {
     m_flShootTime = 0.0f;
 
-
     m_fMinRange1 = m_fMinRange2 = 0.0f;
     m_fMaxRange1 = m_fMaxRange2 = 1500.0f;
-
 
     SetSlotFlag( ZMWEAPONSLOT_SIDEARM );
     SetConfigSlot( ZMWeaponConfig::ZMCONFIGSLOT_REVOLVER );
@@ -65,20 +60,17 @@ void CZMWeaponRevolver::PrimaryAttack()
     if ( !CanAct( WEPACTION_ATTACK ) )
         return;
 
-	if ( UsesClipsForAmmo1() && !Clip1() ) 
-	{
-		Reload();
-		return;
-	}
-
-
+    if ( UsesClipsForAmmo1() && !Clip1() )
+    {
+        Reload();
+        return;
+    }
 
     SendWeaponAnim( ACT_VM_PRIMARYATTACK );
 
     float waittime = GetFirstInstanceOfAnimEventTime( GetSequence(), AE_ZM_REVOLVERSHOOT );
     if ( waittime >= 0.0f )
         m_flShootTime = gpGlobals->curtime + waittime;
-
 
     m_flNextSecondaryAttack = m_flNextPrimaryAttack = gpGlobals->curtime + GetFireRate();
 }
@@ -88,19 +80,17 @@ void CZMWeaponRevolver::SecondaryAttack()
     if ( !CanAct( WEPACTION_ATTACK2 ) )
         return;
 
-	if ( UsesClipsForAmmo1() && !Clip1() ) 
-	{
-		Reload();
-		return;
-	}
-
+    if ( UsesClipsForAmmo1() && !Clip1() )
+    {
+        Reload();
+        return;
+    }
 
     SendWeaponAnim( ACT_VM_SECONDARYATTACK );
 
     float waittime = GetFirstInstanceOfAnimEventTime( GetSequence(), AE_ZM_REVOLVERSHOOT );
     if ( waittime >= 0.0f )
         m_flShootTime = gpGlobals->curtime + waittime;
-
 
     m_flNextSecondaryAttack = m_flNextPrimaryAttack = gpGlobals->curtime + GetFireRate();
 }
@@ -115,18 +105,15 @@ Vector CZMWeaponRevolver::GetBulletSpread() const
     {
         float ratio = 1.0f - pOwner->GetAccuracyRatio();
         ratio *= ratio;
-            
-            
+
         // 2 degrees
-#define     SECONDARY_MIN_RATIO         0.1f
+#define SECONDARY_MIN_RATIO 0.1f
 
         const bool bIsSecondary = IsInSecondaryAttack();
 
         // Secondary is not perfectly accurate.
         if ( bIsSecondary )
             ratio = MAX( SECONDARY_MIN_RATIO, ratio );
-
-
 
         cone.x = ratio * cone.x;
         cone.y = ratio * cone.y;
@@ -139,7 +126,6 @@ Vector CZMWeaponRevolver::GetBulletSpread() const
 void CZMWeaponRevolver::ItemPostFrame()
 {
     BaseClass::ItemPostFrame();
-
 
     if ( m_flShootTime != 0.0f && m_flShootTime <= gpGlobals->curtime )
     {
@@ -179,16 +165,16 @@ void CZMWeaponRevolver::HandleAnimEventRevolver()
 #ifndef CLIENT_DLL
 void CZMWeaponRevolver::Operator_HandleAnimEvent( animevent_t* pEvent, CBaseCombatCharacter* pOperator )
 {
-	switch( pEvent->event )
-	{
-	case AE_ZM_REVOLVERSHOOT:
-		HandleAnimEventRevolver();
-		break;
+    switch ( pEvent->event )
+    {
+    case AE_ZM_REVOLVERSHOOT:
+        HandleAnimEventRevolver();
+        break;
 
-	default:
-		BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
-		break;
-	}
+    default:
+        BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
+        break;
+    }
 }
 #else
 bool CZMWeaponRevolver::OnFireEvent( C_BaseViewModel* pViewModel, const Vector& origin, const QAngle& angles, int event, const char* options )
@@ -221,7 +207,6 @@ void CZMWeaponRevolver::AddViewKick()
         pPlayer->SnapEyeAngles( angles );
 #endif
     }
-
 
     BaseClass::AddViewKick();
 }

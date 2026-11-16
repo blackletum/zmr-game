@@ -5,9 +5,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_swat_goto( "zm_sv_debug_swat_goto", "0" );
-
 
 CZombieGotoSwatObjSchedule::CZombieGotoSwatObjSchedule()
 {
@@ -29,13 +27,11 @@ void CZombieGotoSwatObjSchedule::OnStart()
     m_ExpireTimer.Invalidate();
     m_EnemyScanTimer.Invalidate();
 
-
     CZMBaseZombie* pOuter = GetOuter();
     CBaseEntity* pSwat = pOuter->GetSwatObject();
 
     m_PathCost = *pOuter->GetPathCost();
     m_PathCost.SetStepHeight( pOuter->GetMotor()->GetStepHeight() );
-
 
     if ( !pSwat )
     {
@@ -47,7 +43,7 @@ void CZombieGotoSwatObjSchedule::OnStart()
     {
         m_pSwatSched->SetBreakObject( DoBreakObject() );
         Intercept( m_pSwatSched, "Close enough to swat!" );
-            
+
         if ( !IsIntercepted() )
         {
             End( "Failed to start swatting schedule!" );
@@ -55,15 +51,12 @@ void CZombieGotoSwatObjSchedule::OnStart()
         }
     }
 
-
     m_Path.SetGoalTolerance( 0.0f ); // Check goal manually.
 
     if ( !ComputeNewPath( pSwat->WorldSpaceCenter() ) )
         return;
 
-
     m_vecStartSwatPos = pSwat->WorldSpaceCenter();
-
 
     if ( m_flStartExpireTimer > 0.0f )
         m_ExpireTimer.Start( m_flStartExpireTimer );
@@ -82,7 +75,6 @@ void CZombieGotoSwatObjSchedule::OnUpdate()
         return;
     }
 
-
     CZMBaseZombie* pOuter = GetOuter();
 
     CBaseEntity* pSwat = pOuter->GetSwatObject();
@@ -92,12 +84,11 @@ void CZombieGotoSwatObjSchedule::OnUpdate()
         return;
     }
 
-
     const Vector vecCurPos = pSwat->WorldSpaceCenter();
 
     // Scan for any enemies that are closer than the swatting object.
-    if (DoCheckForEnemies() &&
-        (!m_EnemyScanTimer.HasStarted() || m_EnemyScanTimer.IsElapsed()) )
+    if ( DoCheckForEnemies() &&
+         ( !m_EnemyScanTimer.HasStarted() || m_EnemyScanTimer.IsElapsed() ) )
     {
         CBaseEntity* pCurEnemy = pOuter->GetEnemy();
         CBaseEntity* pEnt = pOuter->GetSenses()->GetClosestEntity();
@@ -112,9 +103,8 @@ void CZombieGotoSwatObjSchedule::OnUpdate()
             float flCurDist = mypos.DistTo( vecCurPos );
             float flNewDist = mypos.DistTo( pEnt->WorldSpaceCenter() );
 
-                
-            if (pOuter->HasConditionsForClawAttack( pEnt ) // We can attack the idiot, do it!
-            ||  flNewDist < (flCurDist*0.9f) ) // We have to be reasonably closer to the potential enemy.
+            if ( pOuter->HasConditionsForClawAttack( pEnt ) // We can attack the idiot, do it!
+                 || flNewDist < ( flCurDist * 0.9f ) ) // We have to be reasonably closer to the potential enemy.
             {
                 if ( !pCurEnemy || pEnt != pCurEnemy )
                     pOuter->AcquireEnemy( pEnt );
@@ -128,24 +118,22 @@ void CZombieGotoSwatObjSchedule::OnUpdate()
     }
 
     // We've moved way too far from the start.
-    if ( m_vecStartSwatPos.DistToSqr( vecCurPos ) > (256.0f*256.0f) )
+    if ( m_vecStartSwatPos.DistToSqr( vecCurPos ) > ( 256.0f * 256.0f ) )
     {
         End( "Swatting object moved too far!" );
         return;
     }
     // Moved a bit, compute new path.
-    else if ( m_vecCurSwatPos.DistToSqr( vecCurPos ) > (32.0f*32.0f) )
+    else if ( m_vecCurSwatPos.DistToSqr( vecCurPos ) > ( 32.0f * 32.0f ) )
     {
         if ( !ComputeNewPath( vecCurPos ) )
             return;
     }
 
-
     if ( pOuter->CanMove() )
     {
         m_Path.Update( pOuter );
     }
-            
 
     if ( !m_Path.IsValid() )
     {
@@ -153,7 +141,6 @@ void CZombieGotoSwatObjSchedule::OnUpdate()
         return;
     }
 
-            
     if ( CheckObject( pSwat ) )
     {
         m_pSwatSched->SetBreakObject( DoBreakObject() );
@@ -193,8 +180,6 @@ bool CZombieGotoSwatObjSchedule::CheckObject( CBaseEntity* pSwat )
         if ( !m_ExpireTimer.HasStarted() )
             m_ExpireTimer.Start( 3.0f );
 
-
-
         CZMBaseZombie* pOuter = GetOuter();
         const Vector vecSwatPos = pSwat->WorldSpaceCenter();
 
@@ -209,19 +194,18 @@ bool CZombieGotoSwatObjSchedule::CheckObject( CBaseEntity* pSwat )
         const Vector vecEnd = vecMyPos + dir * pOuter->CollisionProp()->OBBMaxs().x * 3.0f;
 
         trace_t tr;
-        UTIL_TraceLine( vecMyPos, vecEnd, MASK_NPCSOLID & ~(CONTENTS_MONSTERCLIP), pOuter, COLLISION_GROUP_NONE, &tr );
-
+        UTIL_TraceLine( vecMyPos, vecEnd, MASK_NPCSOLID & ~( CONTENTS_MONSTERCLIP ), pOuter, COLLISION_GROUP_NONE, &tr );
 
         if ( zm_sv_debug_swat_goto.GetBool() )
         {
             bool bDidHit = tr.DidHit();
-            NDebugOverlay::Line( vecMyPos, vecEnd, (!bDidHit) ? 255 : 0, bDidHit ? 255 : 0, 0, true, 0.1f );
+            NDebugOverlay::Line( vecMyPos, vecEnd, ( !bDidHit ) ? 255 : 0, bDidHit ? 255 : 0, 0, true, 0.1f );
         }
 
         // Didn't hit anything, check if our end is close enough to trace end pos.
         if ( tr.fraction == 1.0f )
         {
-            return vecSwatPos.DistToSqr( tr.endpos ) < (16.0f*16.0f);
+            return vecSwatPos.DistToSqr( tr.endpos ) < ( 16.0f * 16.0f );
         }
 
         return tr.m_pEnt == pSwat;
@@ -233,7 +217,7 @@ bool CZombieGotoSwatObjSchedule::CheckObject( CBaseEntity* pSwat )
 bool CZombieGotoSwatObjSchedule::IsCloseEnough( CBaseEntity* pSwat ) const
 {
     float radius = pSwat->BoundingRadius() + GetOuter()->GetClawAttackRange();
-    return GetOuter()->GetAbsOrigin().AsVector2D().DistToSqr( pSwat->GetAbsOrigin().AsVector2D() ) < (radius*radius);
+    return GetOuter()->GetAbsOrigin().AsVector2D().DistToSqr( pSwat->GetAbsOrigin().AsVector2D() ) < ( radius * radius );
 }
 
 bool CZombieGotoSwatObjSchedule::ComputeNewPath( const Vector& vecEnd )
@@ -243,14 +227,12 @@ bool CZombieGotoSwatObjSchedule::ComputeNewPath( const Vector& vecEnd )
     CNavArea* start = GetOuter()->GetLastKnownArea();
     CNavArea* goal = TheNavMesh->GetNearestNavArea( vecEnd, true, 10000.0f, true );
 
-            
     m_Path.Compute( vecStart, vecEnd, start, goal, m_PathCost );
     if ( !m_Path.IsValid() )
     {
         End( "Couldn't compute path to swat object!" );
         return false;
     }
-
 
     CBaseEntity* pEnemy = GetOuter()->GetEnemy();
     const NPCR::NavLink_t* pGoal = m_Path.FirstLink();
@@ -264,14 +246,13 @@ bool CZombieGotoSwatObjSchedule::ComputeNewPath( const Vector& vecEnd )
 
         if ( pGoal )
         {
-            if ( (pGoal->pos - vecStart).Normalized().Dot( (pEnemy->GetAbsOrigin() - vecStart).Normalized() ) < 0.0f )
+            if ( ( pGoal->pos - vecStart ).Normalized().Dot( ( pEnemy->GetAbsOrigin() - vecStart ).Normalized() ) < 0.0f )
             {
                 End( "Object path direction differs" );
                 return false;
             }
         }
     }
-
 
     m_vecCurSwatPos = vecEnd;
 

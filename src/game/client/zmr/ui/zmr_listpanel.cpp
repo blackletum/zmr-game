@@ -1,9 +1,9 @@
 #include "cbase.h"
 
-#include <vgui_controls/TextImage.h>
+#include <vgui_controls/ImageList.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/SectionedListPanel.h>
-#include <vgui_controls/ImageList.h>
+#include <vgui_controls/TextImage.h>
 #include <vgui_controls/Tooltip.h>
 
 #include "zmr_listpanel.h"
@@ -11,11 +11,10 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
-#define ITEM_DEFAULT_BOTTOMMARGIN   1
-#define ITEM_DEFAULT_HEIGHT         scheme()->GetProportionalScaledValueEx( GetScheme(), 20 )
+#define ITEM_DEFAULT_BOTTOMMARGIN 1
+#define ITEM_DEFAULT_HEIGHT       scheme()->GetProportionalScaledValueEx( GetScheme(), 20 )
 
 /*
     Item
@@ -27,7 +26,7 @@ CZMListRow::CZMListRow( CZMListSection* parent, int itemId, KeyValues* kv ) : vg
     m_pParentSection = parent;
 
     m_pKvData = kv;
-    
+
     m_iItemId = itemId;
     m_nItemHeight = parent->GetDefaultItemHeight();
     m_nItemBottomMargin = ITEM_DEFAULT_BOTTOMMARGIN;
@@ -35,7 +34,6 @@ CZMListRow::CZMListRow( CZMListSection* parent, int itemId, KeyValues* kv ) : vg
     m_hItemFont = INVALID_FONT;
     m_ItemColor = COLOR_WHITE;
     m_iLastHovered = -1;
-
 
     SetPaintBackgroundEnabled( false );
     SetMouseInputEnabled( true );
@@ -123,7 +121,6 @@ void CZMListRow::OnMousePressed( vgui::MouseCode code )
     DevMsg( "On Row Item Pressed\n" );
 #endif
 
-
     KeyValues* kv = nullptr;
     if ( GetData() )
     {
@@ -135,10 +132,8 @@ void CZMListRow::OnMousePressed( vgui::MouseCode code )
         kv = new KeyValues( "OnRowItemPressed" );
     }
 
-
     kv->SetString( "pressed_name", GetSection()->GetColumnName( m_iLastHovered ) );
     kv->SetInt( "pressed_index", m_iLastHovered );
-
 
     Panel* pParent = GetSection()->GetParent()->GetParent();
     PostMessage( pParent, kv );
@@ -186,7 +181,6 @@ void CZMListRow::PerformLayout()
         return;
     }
 
-
     LayoutColumnData();
 
     LayoutColumns();
@@ -228,13 +222,10 @@ void CZMListRow::ColumnDataLabel( int column, Label* pLabel )
     if ( GetItemFont() != INVALID_FONT )
         usefont = GetItemFont();
 
-
-
     if ( usefont != INVALID_FONT )
         pLabel->SetFont( usefont );
 
     pLabel->SetFgColor( clr );
-
 
     char temp[64];
 
@@ -244,11 +235,10 @@ void CZMListRow::ColumnDataLabel( int column, Label* pLabel )
     const bool bIsImg = ( GetSection()->GetColumnFlags( column ) & COLUMN_IMG ) != 0;
 
     const bool bHasTooltip = ( GetSection()->GetColumnFlags( column ) & COLUMN_TOOLTIP ) != 0;
-        
+
     const char* colName = GetSection()->GetColumnName( column );
 
-
-    pTextImage = ( pImage || bIsImg ) ? dynamic_cast<TextImage*>( pImage ) : (new TextImage( "" ));
+    pTextImage = ( pImage || bIsImg ) ? dynamic_cast<TextImage*>( pImage ) : ( new TextImage( "" ) );
 
     if ( bIsImg )
     {
@@ -262,7 +252,6 @@ void CZMListRow::ColumnDataLabel( int column, Label* pLabel )
         }
 
         pImage = nullptr;
-
 
         // Find the image and set it.
         int index = GetData()->GetInt( colName, -1 );
@@ -325,7 +314,8 @@ void CZMListRow::LayoutColumns()
         {
             LayoutColumn( i, x, lastx );
         }
-        else break;
+        else
+            break;
     }
 
     // Layout the rest of the columns normally.
@@ -333,11 +323,12 @@ void CZMListRow::LayoutColumns()
     x = 0;
     for ( int i = 0; i < nCols; i++ )
     {
-        if ( (GetSection()->GetColumnFlags( i ) & COLUMN_IMGALIGN_RIGHT) == 0 )
+        if ( ( GetSection()->GetColumnFlags( i ) & COLUMN_IMGALIGN_RIGHT ) == 0 )
         {
             LayoutColumn( i, x, lastx );
         }
-        else break;
+        else
+            break;
     }
 }
 
@@ -347,24 +338,21 @@ void CZMListRow::LayoutColumn( int i, int& x, int lastx )
     Panel* pChild = m_vChildren[i];
     Label* pLabel = dynamic_cast<Label*>( pChild );
 
-
     IImage* pImage = nullptr;
     if ( pLabel )
         pImage = pLabel->GetImageAtIndex( 0 );
 
     TextImage* pTextImage = dynamic_cast<TextImage*>( pImage );
-    
+
     int colWidth = GetColumnWidth( i );
     int colOffset = GetSection()->GetColumnOffset( i );
     int flags = GetSection()->GetColumnFlags( i );
-
 
     if ( flags & COLUMN_STRETCH_RIGHT )
         colWidth = lastx - xpos;
 
     if ( colWidth < 1 )
         colWidth = GetWide();
-
 
     int cw, ch;
 
@@ -402,13 +390,11 @@ void CZMListRow::LayoutColumn( int i, int& x, int lastx )
         x += wide;
     }
 
-
     // Text content has to be resized here.
-    if ( pTextImage ) 
+    if ( pTextImage )
     {
         pTextImage->ResizeImageToContentMaxWidth( wide );
     }
-    
 
     pChild->SetBounds( xpos, 0, wide, GetTall() );
 
@@ -421,7 +407,6 @@ void CZMListRow::CreateNewChild( int index, int type )
     if ( m_vChildren.IsValidIndex( index ) || index < 0 )
         return;
 
-
     while ( !m_vChildren.IsValidIndex( index ) )
     {
         m_vChildren.AddToTail( nullptr );
@@ -432,12 +417,10 @@ void CZMListRow::CreateNewChild( int index, int type )
     // Add shit here if need be.
     switch ( type )
     {
-    case 0 :
-    default :
+    case 0:
+    default:
         pChild = new Label( this, "", L"" );
     }
-
-    
 
     m_vChildren[index] = pChild;
 }
@@ -446,7 +429,6 @@ int CZMListRow::GetColumnWidth( int col )
 {
     return ( GetItemColumnCount() <= 1 ) ? GetWide() : GetSection()->GetColumnWidth( col );
 }
-
 
 /*
     Section
@@ -465,7 +447,6 @@ CZMListSection::CZMListSection( CZMListPanel* parent, const char* name ) : BaseC
     m_bNeedsSorting = false;
 
     m_pListPanel = parent;
-
 
     SetPaintBackgroundEnabled( false );
     //SetVisible( false );
@@ -490,7 +471,6 @@ void CZMListSection::SortItems()
 {
     if ( !m_pSortFunc ) return;
 
-
     CUtlVector<CZMListRow*> sorted;
     sorted.Purge();
 
@@ -500,7 +480,7 @@ void CZMListSection::SortItems()
 
         int j = 0;
         int numSorted = sorted.Count();
-        for (; j < numSorted; j++ )
+        for ( ; j < numSorted; j++ )
         {
             KeyValues* kv2 = sorted[j]->GetData();
 
@@ -663,8 +643,6 @@ int CZMListSection::FindItemById( int itemId ) const
     return -1;
 }
 
-
-
 /*
     Panel
 */
@@ -676,7 +654,6 @@ CZMListPanel::CZMListPanel( Panel* parent, const char* name ) : BaseClass( paren
     m_nFamilyIds = 0;
     m_vSections.Purge();
     m_pImageList = new CZMImageList();
-
 
     SetMouseInputEnabled( false );
     SetPaintBackgroundEnabled( false );
@@ -694,7 +671,6 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
 {
     BaseClass::ApplySettings( inKv );
 
-
     KeyValues* data = inKv->FindKey( "ListData" );
 
     if ( !data )
@@ -702,7 +678,6 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
         Warning( "Couldn't read List Panel keyvalue data!\n" );
         return;
     }
-    
 
     KeyValues* section = data->GetFirstSubKey();
 
@@ -712,7 +687,6 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
         return;
     }
 
-
     do
     {
         const char* szSectionName = section->GetName();
@@ -720,14 +694,12 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
 
         HFont font = scheme()->GetIScheme( GetScheme() )->GetFont( szDefaultFont, IsProportional() );
 
-
         int iSection = AddSection(
             szSectionName,
             font,
             scheme()->GetProportionalScaledValueEx( GetScheme(), section->GetInt( "default_itemheight" ) ) );
         SetSectionTopMargin( iSection, scheme()->GetProportionalScaledValueEx( GetScheme(), section->GetInt( "topmargin", 0 ) ) );
         SetSectionBottomMargin( iSection, scheme()->GetProportionalScaledValueEx( GetScheme(), section->GetInt( "bottommargin", 0 ) ) );
-
 
         // Create columns.
         KeyValues* cols = section->FindKey( "Columns" );
@@ -743,12 +715,12 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
         while ( col )
         {
             int flags = 0;
-            
+
             flags |= ( col->GetInt( "align_center" ) ? COLUMN_ALIGN_CENTER : 0 );
             flags |= ( col->GetInt( "align_right" ) ? COLUMN_ALIGN_RIGHT : 0 );
             flags |= ( col->GetInt( "colalign_right" ) ? COLUMN_IMGALIGN_RIGHT : 0 );
             flags |= ( col->GetInt( "is_image" ) ? COLUMN_IMG : 0 );
-            flags |=  ( col->GetInt( "stretch_right" ) ? COLUMN_STRETCH_RIGHT : 0 );
+            flags |= ( col->GetInt( "stretch_right" ) ? COLUMN_STRETCH_RIGHT : 0 );
             flags |= ( col->GetInt( "clickable" ) ? COLUMN_CLICKABLE : 0 );
             flags |= ( col->GetInt( "is_tooltip" ) ? COLUMN_TOOLTIP : 0 );
 
@@ -762,7 +734,6 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
             col = col->GetNextKey();
         }
 
-
         // Get items.
         KeyValues* items = section->FindKey( "Items" );
 
@@ -770,7 +741,6 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
         {
             continue;
         }
-
 
         KeyValues* item = items->GetFirstSubKey();
 
@@ -780,8 +750,7 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
 
             item = item->GetNextKey();
         }
-    }
-    while ( (section = section->GetNextKey()) != nullptr );
+    } while ( ( section = section->GetNextKey() ) != nullptr );
 
     DevMsg( "Parsed List Panel data.\n" );
 }
@@ -789,7 +758,6 @@ void CZMListPanel::ApplySettings( KeyValues* inKv )
 void CZMListPanel::PerformLayout()
 {
     BaseClass::PerformLayout();
-
 
     int wide = GetWide();
     int absy = 0;
@@ -799,18 +767,15 @@ void CZMListPanel::PerformLayout()
     {
         auto* section = m_vSections[i];
 
-
         section->ReSortItems();
 
         //if ( !section->IsVisible() )
         //    continue;
 
         int nItems = section->GetNumItems();
-        
 
-        
         absy += section->GetTopMargin();
-        
+
         // Layout the header items.
 
         // Section relative
@@ -829,17 +794,16 @@ void CZMListPanel::PerformLayout()
 
             height += item->GetItemBottomMargin();
 
-            sy += height; sh += height;
+            sy += height;
+            sh += height;
         }
 
         section->SetBounds( 0, systart, wide, sh );
-
 
         absy += sy + section->GetBottomMargin();
     }
 
     SetSize( wide, absy );
-
 
     PostMessage( GetParent(), new KeyValues( "OnListLayout", "name", GetName() ) );
 }
@@ -931,7 +895,7 @@ int CZMListPanel::AddItem( int section, KeyValues* kv )
     Assert( m_vSections.IsValidIndex( section ) );
 
     int item = m_vSections[section]->AddItem( m_nItemIds++, kv );
-    
+
     InvalidateLayout();
 
     return item;
@@ -1005,7 +969,7 @@ int CZMListPanel::ModifyItem( int itemId, int newSection, KeyValues* kv )
             else
             {
                 CZMListRow* pRow = m_vSections[i]->GetItem( item );
-                
+
                 int id = pRow->GetItemId();
                 KeyValues* kv = pRow->GetData()->MakeCopy();
 

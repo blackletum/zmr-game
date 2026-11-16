@@ -8,20 +8,18 @@
 #define CZMWeaponAR9mm C_ZMWeaponAR9mm
 #endif
 
+#define DELAY_AFTER_BURST 0.5f
 
-#define DELAY_AFTER_BURST       0.5f
+#define NOT_IN_BURST 0
 
-
-#define NOT_IN_BURST            0
-
-#define BURST_SHOTS             3
+#define BURST_SHOTS 3
 
 class CZMWeaponAR9mm : public CZMWeaponMac10
 {
 public:
-	DECLARE_CLASS( CZMWeaponAR9mm, CZMWeaponMac10 );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponAR9mm, CZMWeaponMac10 );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponAR9mm();
 
@@ -33,7 +31,6 @@ public:
 
     virtual void SecondaryAttackEffects( WeaponSound_t wpnsound ) override;
 
-
     bool IsFiringBurst() const;
 
 private:
@@ -42,24 +39,23 @@ private:
     CNetworkVar( int, m_nBurstShots );
 };
 
-
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMWeaponAR9mm, DT_ZM_WeaponAR9mm )
 
 BEGIN_NETWORK_TABLE( CZMWeaponAR9mm, DT_ZM_WeaponAR9mm )
 #ifdef CLIENT_DLL
-    RecvPropInt( RECVINFO( m_nBurstShots ) ),
+RecvPropInt( RECVINFO( m_nBurstShots ) ),
 #else
-    SendPropInt( SENDINFO( m_nBurstShots ), Q_log2( BURST_SHOTS ) + 1, SPROP_UNSIGNED ),
+SendPropInt( SENDINFO( m_nBurstShots ), Q_log2( BURST_SHOTS ) + 1, SPROP_UNSIGNED ),
 #endif
-END_NETWORK_TABLE()
+    END_NETWORK_TABLE()
 
 #ifdef CLIENT_DLL
-BEGIN_PREDICTION_DATA( CZMWeaponAR9mm )
-    DEFINE_PRED_FIELD( m_nBurstShots, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
-END_PREDICTION_DATA()
+        BEGIN_PREDICTION_DATA( CZMWeaponAR9mm )
+            DEFINE_PRED_FIELD( m_nBurstShots, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
+    END_PREDICTION_DATA()
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_zm_ar9mm, CZMWeaponAR9mm );
+        LINK_ENTITY_TO_CLASS( weapon_zm_ar9mm, CZMWeaponAR9mm );
 PRECACHE_WEAPON_REGISTER( weapon_zm_ar9mm );
 
 CZMWeaponAR9mm::CZMWeaponAR9mm()
@@ -83,8 +79,7 @@ void CZMWeaponAR9mm::ItemPostFrame()
     if ( IsFiringBurst() && m_flNextSecondaryAttack <= gpGlobals->curtime )
     {
         FireBurstBullet( m_nBurstShots );
-        
-        
+
         if ( m_nBurstShots >= BURST_SHOTS )
         {
             m_nBurstShots = NOT_IN_BURST;
@@ -119,7 +114,7 @@ bool CZMWeaponAR9mm::IsFiringBurst() const
 void CZMWeaponAR9mm::FireBurstBullet( int index )
 {
     // If my clip is empty (and I use clips) start reload
-    if ( UsesClipsForAmmo1() && !m_iClip1 ) 
+    if ( UsesClipsForAmmo1() && !m_iClip1 )
     {
         m_nBurstShots = NOT_IN_BURST;
 
@@ -131,7 +126,6 @@ void CZMWeaponAR9mm::FireBurstBullet( int index )
 
     m_flNextSecondaryAttack = gpGlobals->curtime + delay;
     m_flNextPrimaryAttack = m_flNextSecondaryAttack + GetWeaponConfig()->primary.flFireRate;
-    
 
     Shoot( m_iPrimaryAmmoType, -1, -1, GetWeaponConfig()->secondary.flRange, true );
 
@@ -143,7 +137,6 @@ void CZMWeaponAR9mm::SecondaryAttackEffects( WeaponSound_t wpnsound )
     CZMPlayer* pPlayer = GetPlayerOwner();
     if ( !pPlayer )
         return;
-
 
     // Only play burst anim once.
     if ( m_nBurstShots == NOT_IN_BURST )

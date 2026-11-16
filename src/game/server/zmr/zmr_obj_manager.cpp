@@ -1,23 +1,20 @@
 #include "cbase.h"
-#include "filesystem.h"
 #include "eventqueue.h"
+#include "filesystem.h"
 
-#include "zmr_player.h"
 #include "zmr_gamerules.h"
 #include "zmr_obj_manager.h"
+#include "zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_objectives( "zm_sv_debug_objectives", "0" );
-
 
 LINK_ENTITY_TO_CLASS( zm_objectives_manager, CZMEntObjectivesManager );
 
 BEGIN_DATADESC( CZMEntObjectivesManager )
 END_DATADESC()
-
 
 CZMEntObjectivesManager::CZMEntObjectivesManager()
 {
@@ -30,7 +27,6 @@ CZMEntObjectivesManager::CZMEntObjectivesManager()
     m_vInputs.Purge();
     m_vStartInputs.Purge();
 
-
     CZMRules* pRules = ZMRules();
     if ( pRules ) pRules->SetObjManager( this );
 }
@@ -39,7 +35,6 @@ CZMEntObjectivesManager::~CZMEntObjectivesManager()
 {
     m_vInputs.PurgeAndDeleteElements();
     m_vStartInputs.PurgeAndDeleteElements();
-
 
     CZMRules* pRules = ZMRules();
     if ( pRules ) pRules->SetObjManager( nullptr );
@@ -57,28 +52,29 @@ void CZMEntObjectivesManager::InitObjectiveEntities()
     // Find the map's default human/zm objective entities.
     CZMEntObjectives* pObj = nullptr;
     CBaseEntity* pEnt = nullptr;
-    while ( (pEnt = gEntList.FindEntityByClassname( pEnt, "info_objectives" )) != nullptr )
+    while ( ( pEnt = gEntList.FindEntityByClassname( pEnt, "info_objectives" ) ) != nullptr )
     {
         pObj = dynamic_cast<CZMEntObjectives*>( pEnt );
 
         if ( !pObj ) continue;
 
-
         switch ( pObj->GetRecipient() )
         {
-        case OBJRECIPIENT_HUMANS : m_pDefObjHuman = pObj; break;
-        case OBJRECIPIENT_ZM : m_pDefObjZM = pObj; break;
-        default : break;
+        case OBJRECIPIENT_HUMANS:
+            m_pDefObjHuman = pObj;
+            break;
+        case OBJRECIPIENT_ZM:
+            m_pDefObjZM = pObj;
+            break;
+        default:
+            break;
         }
 
         bFound = true;
     }
 
-
-
     // Load our objectives from file and create a dummy objectives entity that will accept input for us.
     if ( bFound ) return;
-
 
     if ( IsLoaded() || LoadFromFile() )
     {
@@ -100,9 +96,9 @@ void CZMEntObjectivesManager::Display( CZMEntObjectives* pObj, CBaseEntity* pAct
     if ( zm_sv_debug_objectives.GetBool() )
     {
         DevMsg( "Displaying objectives to %i players! (Recipient type: %i | Activator Ent Index: %i)\n",
-               filter.GetRecipientCount(),
-               rec,
-               pActivator ? pActivator->entindex() : -1 );
+            filter.GetRecipientCount(),
+            rec,
+            pActivator ? pActivator->entindex() : -1 );
     }
 
     if ( filter.GetRecipientCount() < 1 )
@@ -110,14 +106,13 @@ void CZMEntObjectivesManager::Display( CZMEntObjectives* pObj, CBaseEntity* pAct
 
     filter.MakeReliable();
 
-
     UserMessageBegin( filter, "ZMObjDisplay" );
-        WRITE_BYTE( pObj->GetRecipient() );
+    WRITE_BYTE( pObj->GetRecipient() );
 
-        for ( int i = 0; i < NUM_OBJ_LINES; i++ )
-        {
-            pObj->WriteDisplayUserMsg( i );
-        }
+    for ( int i = 0; i < NUM_OBJ_LINES; i++ )
+    {
+        pObj->WriteDisplayUserMsg( i );
+    }
     MessageEnd();
 }
 
@@ -130,9 +125,9 @@ void CZMEntObjectivesManager::Update( CZMEntObjectives* pObj, CBaseEntity* pActi
     if ( zm_sv_debug_objectives.GetBool() )
     {
         DevMsg( "Updating objectives to %i players! (Recipient type: %i | Activator Ent Index: %i)\n",
-               filter.GetRecipientCount(),
-               rec,
-               pActivator ? pActivator->entindex() : -1 );
+            filter.GetRecipientCount(),
+            rec,
+            pActivator ? pActivator->entindex() : -1 );
     }
 
     if ( filter.GetRecipientCount() < 1 )
@@ -140,12 +135,11 @@ void CZMEntObjectivesManager::Update( CZMEntObjectives* pObj, CBaseEntity* pActi
 
     filter.MakeReliable();
 
-
     UserMessageBegin( filter, "ZMObjUpdate" );
-        for ( int i = 0; i < NUM_OBJ_LINES; i++ )
-        {
-            pObj->WriteUpdateUserMsg( i );
-        }
+    for ( int i = 0; i < NUM_OBJ_LINES; i++ )
+    {
+        pObj->WriteUpdateUserMsg( i );
+    }
     MessageEnd();
 }
 
@@ -158,10 +152,10 @@ void CZMEntObjectivesManager::UpdateLine( CZMEntObjectives* pObj, int line, CBas
     if ( zm_sv_debug_objectives.GetBool() )
     {
         DevMsg( "Updating line %i to %i players! (Recipient type: %i | Activator Ent Index: %i)\n",
-               line,
-               filter.GetRecipientCount(),
-               rec,
-               pActivator ? pActivator->entindex() : -1 );
+            line,
+            filter.GetRecipientCount(),
+            rec,
+            pActivator ? pActivator->entindex() : -1 );
     }
 
     if ( filter.GetRecipientCount() < 1 )
@@ -169,13 +163,13 @@ void CZMEntObjectivesManager::UpdateLine( CZMEntObjectives* pObj, int line, CBas
 
     filter.MakeReliable();
 
-    
     UserMessageBegin( filter, "ZMObjUpdateLine" );
+    {
         WRITE_BYTE( line );
         WRITE_BYTE( pObj->GetRecipient() );
         pObj->WriteDisplayUserMsg( line );
+    }
     MessageEnd();
-    
 }
 
 void CZMEntObjectivesManager::ChangeDisplay( CZMPlayer* pPlayer )
@@ -191,7 +185,6 @@ void CZMEntObjectivesManager::ChangeDisplay( CZMPlayer* pPlayer )
         pObj = m_pDefObjZM.Get();
     }
 
-
     if ( pObj )
     {
         // Add a bit of delay so the client knows its team.
@@ -204,7 +197,6 @@ void CZMEntObjectivesManager::CreateInputs()
     CBaseEntity* pObjEnt = m_pDefObjHuman;
     if ( !pObjEnt ) return;
 
-
     int i;
     variant_t var;
     CBaseEntity* pEnt;
@@ -216,9 +208,8 @@ void CZMEntObjectivesManager::CreateInputs()
     {
         data = m_vInputs.Element( i );
 
-
         pEnt = nullptr;
-        while ( (pEnt = gEntList.FindEntityByName( pEnt, data->m_szEntName )) != nullptr )
+        while ( ( pEnt = gEntList.FindEntityByName( pEnt, data->m_szEntName ) ) != nullptr )
         {
             castable_string_t sArg( data->m_szOutput );
             var.SetString( sArg );
@@ -226,7 +217,6 @@ void CZMEntObjectivesManager::CreateInputs()
             pEnt->AcceptInput( "AddOutput", nullptr, nullptr, var, 0 );
         }
     }
-
 
     for ( i = 0; i < m_vStartInputs.Count(); i++ )
     {
@@ -246,17 +236,15 @@ void CZMEntObjectivesManager::RoundStart()
 {
     InitObjectiveEntities();
 
-
     if ( m_pDefObjHuman.Get() )
         CreateInputs();
-
 
     if ( m_bDeleteGameText )
     {
         DevMsg( "Deleting game_texts...\n" );
 
         CBaseEntity* pEnt = nullptr;
-        while ( (pEnt = gEntList.FindEntityByClassname( pEnt, "game_text" )) != nullptr )
+        while ( ( pEnt = gEntList.FindEntityByClassname( pEnt, "game_text" ) ) != nullptr )
         {
             UTIL_Remove( pEnt );
         }
@@ -274,21 +262,19 @@ void CZMEntObjectivesManager::ResetObjectives()
 
     filter.MakeReliable();
 
-
     UserMessageBegin( filter, "ZMObjDisplay" );
-        WRITE_BYTE( OBJRECIPIENT_ALL );
+    WRITE_BYTE( OBJRECIPIENT_ALL );
 
-        for ( int i = 0; i < NUM_OBJ_LINES; i++ )
-        {
-            CObjLine::WriteEmptyDisplayUserMsg();
-        }
+    for ( int i = 0; i < NUM_OBJ_LINES; i++ )
+    {
+        CObjLine::WriteEmptyDisplayUserMsg();
+    }
     MessageEnd();
 }
 
 bool CZMEntObjectivesManager::LoadFromFile()
 {
     m_bLoaded = true;
-
 
     m_vInputs.PurgeAndDeleteElements();
     m_vStartInputs.PurgeAndDeleteElements();
@@ -312,16 +298,13 @@ bool CZMEntObjectivesManager::LoadFromFile()
     {
         vBuf.PurgeAndDeleteElements();
 
-
         pKeyName = pKey->GetName();
 
         if ( !pKeyName || !*pKeyName ) continue;
 
-
         // Why?
         Q_SplitString( pKeyName, ",", vBuf );
 
-        
         // Do we want to do this at the start of the round?
         bool start = false;
 
@@ -342,16 +325,13 @@ bool CZMEntObjectivesManager::LoadFromFile()
 
         bFirstKey = false;
 
-
         const char* pEntName = nullptr;
         const char* pOutput = nullptr;
         format[0] = '\0';
-       
 
         if ( !start )
         {
             if ( vBuf.Count() < 2 ) continue;
-
 
             int once = 0;
             float delay = 0.0f;
@@ -384,7 +364,6 @@ bool CZMEntObjectivesManager::LoadFromFile()
             Q_snprintf( format, sizeof( format ), "%s info_objectives:%s:%s:%.2f:%i", pOutput, "%s", "%s", delay, once );
         }
 
-
         // Go through the values and create inputs.
         KeyValues* pValue = pKey->GetFirstValue();
 
@@ -396,11 +375,8 @@ bool CZMEntObjectivesManager::LoadFromFile()
         do
         {
             ReadInput( start, pValue, format, pEntName );
-        }
-        while ( (pValue = pValue->GetNextValue()) != nullptr );
-    }
-    while ( (pKey = pKey->GetNextKey()) != nullptr );
-
+        } while ( ( pValue = pValue->GetNextValue() ) != nullptr );
+    } while ( ( pKey = pKey->GetNextKey() ) != nullptr );
 
     vBuf.PurgeAndDeleteElements();
 
@@ -421,12 +397,12 @@ void CZMEntObjectivesManager::ReadInput( bool start, KeyValues* pValue, const ch
         {
             char szOutput[256];
             char szVar[162];
-            
+
             Q_strncpy( szVar, value, sizeof( szVar ) );
 
             // Remove ':' character.
             char* c = szVar;
-            while ( (c = strchr( c, ':' )) != nullptr )
+            while ( ( c = strchr( c, ':' ) ) != nullptr )
             {
                 *c = ' ';
                 ++c;

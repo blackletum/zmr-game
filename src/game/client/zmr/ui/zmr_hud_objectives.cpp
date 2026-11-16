@@ -1,38 +1,31 @@
 #include "cbase.h"
 //#include "hud.h"
-#include "hudelement.h"
 #include "hud_macros.h"
+#include "hudelement.h"
 #include "iclientmode.h"
-#include <vgui_controls/AnimationController.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
+#include <vgui_controls/AnimationController.h>
 //#include "ihudlcd.h"
-#include "in_buttons.h"
 #include "c_user_message_register.h"
-
+#include "in_buttons.h"
 
 #include "c_zmr_player.h"
 #include "zmr_shareddefs.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
-
 using namespace vgui;
 
+#define OBJ_SCREEN_TIME 7.0f
 
-#define OBJ_SCREEN_TIME             7.0f
+#define OBJ_FADE_RATE 512.0f
 
-#define OBJ_FADE_RATE               512.0f
-
-#define TRANSITION_NONE             0
-#define TRANSITION_HIDE             ( 1 << 0 )
-#define TRANSITION_SHOW             ( 1 << 1 )
-#define TRANSITION_CHANGETEXT       ( 1 << 2 )
-
+#define TRANSITION_NONE       0
+#define TRANSITION_HIDE       ( 1 << 0 )
+#define TRANSITION_SHOW       ( 1 << 1 )
+#define TRANSITION_CHANGETEXT ( 1 << 2 )
 
 class CObjLine
 {
@@ -78,7 +71,6 @@ public:
             return;
         }
 
-
         g_pVGuiLocalize->ConvertANSIToUnicode( m_szTexts, m_szRenderText, sizeof( m_szRenderText ) );
     }
 
@@ -86,7 +78,7 @@ public:
     {
         Q_strncpy( m_szFormat, ( format && *format ) ? format : "", sizeof( m_szFormat ) );
         m_iArgType = type;
-        
+
         SetArg( num, str );
     }
 
@@ -119,22 +111,23 @@ public:
     {
         char szBuffer[256];
 
-
         if ( m_szFormat[0] )
         {
             switch ( m_iArgType )
             {
-            case OBJARGTYPE_FLOAT :
+            case OBJARGTYPE_FLOAT:
                 Q_snprintf( szBuffer, sizeof( szBuffer ), m_szFormat, m_flArg );
                 break;
-            case OBJARGTYPE_STRING :
+            case OBJARGTYPE_STRING:
                 Q_snprintf( szBuffer, sizeof( szBuffer ), m_szFormat, m_szArg );
                 break;
-            case OBJARGTYPE_INT :
+            case OBJARGTYPE_INT:
                 Q_snprintf( szBuffer, sizeof( szBuffer ), m_szFormat, (int)m_flArg );
                 break;
-    
-            default : Q_strncpy( szBuffer, m_szFormat, sizeof( szBuffer ) ); break;
+
+            default:
+                Q_strncpy( szBuffer, m_szFormat, sizeof( szBuffer ) );
+                break;
             }
         }
         else
@@ -157,7 +150,7 @@ public:
 
     bool IsInTransition()
     {
-        return m_fTransition & (TRANSITION_HIDE | TRANSITION_CHANGETEXT | TRANSITION_SHOW) ? true : false;
+        return m_fTransition & ( TRANSITION_HIDE | TRANSITION_CHANGETEXT | TRANSITION_SHOW ) ? true : false;
     }
 
     void SetTransition( bool bShow )
@@ -177,10 +170,9 @@ public:
             SetTransition( true );
         }
 
-
         int rate = 0;
 
-        if ( m_fTransition & (TRANSITION_HIDE | TRANSITION_CHANGETEXT) )
+        if ( m_fTransition & ( TRANSITION_HIDE | TRANSITION_CHANGETEXT ) )
         {
             rate = -OBJ_FADE_RATE * gpGlobals->frametime;
             if ( rate == 0 ) rate = -1;
@@ -191,14 +183,11 @@ public:
             if ( rate == 0 ) rate = 1;
         }
 
-
         m_nAlpha = clamp( m_nAlpha + rate, 0, 255 );
-
 
         if ( m_nAlpha <= 0 )
         {
             m_fTransition &= ~TRANSITION_HIDE;
-
 
             if ( m_fTransition & TRANSITION_CHANGETEXT )
             {
@@ -213,7 +202,6 @@ public:
         {
             m_fTransition &= ~TRANSITION_SHOW;
         }
-
 
         if ( m_nAlpha > 0 && m_iArgType == OBJARGTYPE_TIMER )
         {
@@ -233,7 +221,7 @@ public:
         }
     }
 
-    bool Paint( HFont font, int x, int &y )
+    bool Paint( HFont font, int x, int& y )
     {
         if ( m_szRenderText[0] == L'\0' )
             return false;
@@ -242,10 +230,10 @@ public:
         {
             m_Color[3] = m_nAlpha;
 
-	        surface()->DrawSetTextFont( font );
+            surface()->DrawSetTextFont( font );
             surface()->DrawSetTextColor( m_Color );
-	        surface()->DrawSetTextPos( x, y + m_flAbsPosY );
-	        surface()->DrawUnicodeString( m_szRenderText );
+            surface()->DrawSetTextPos( x, y + m_flAbsPosY );
+            surface()->DrawUnicodeString( m_szRenderText );
         }
 
         int w, h;
@@ -285,22 +273,17 @@ private:
     float m_flAbsPosY;
     float m_flWantedPosY;
 
-
     int m_fTransition;
     int m_nAlpha;
 };
-
-
-
 
 class CZMHudObjectives : public CHudElement, public Panel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMHudObjectives, Panel );
 
-    CZMHudObjectives( const char *pElementName );
+    CZMHudObjectives( const char* pElementName );
     ~CZMHudObjectives();
-
 
     virtual void Init( void ) override;
     virtual void VidInit( void ) override;
@@ -308,11 +291,9 @@ public:
     virtual void OnThink() override;
     virtual void Paint( void ) override;
 
-
     void MsgFunc_ZMObjDisplay( bf_read& msg );
     void MsgFunc_ZMObjUpdate( bf_read& msg );
     void MsgFunc_ZMObjUpdateLine( bf_read& msg );
-    
 
     void InitTexts();
     void SetNextText( int i, const char* format, ObjArgType_t, float num, const char* psz );
@@ -328,7 +309,7 @@ public:
         for ( int i = 0; i < NUM_OBJ_LINES; i++ )
             if ( !m_Line[i].IsHidden() )
                 return false;
-        
+
         return true;
     };
 
@@ -337,7 +318,7 @@ public:
         for ( int i = 0; i < NUM_OBJ_LINES; i++ )
             if ( !m_Line[i].IsEmpty() )
                 return false;
-        
+
         return true;
     }
 
@@ -356,14 +337,11 @@ private:
     void SetTransition( bool bShow = true );
     void UpdateComplete();
 
-
-
     CPanelAnimationVar( HFont, m_hMainFont, "MainFont", "ZMHudObjectives" );
     CPanelAnimationVar( HFont, m_hChildFont, "ChildFont", "ZMHudObjectivesSmall" );
 
     CPanelAnimationVarAliasType( float, m_MainPosX, "MainPosX", "0", "proportional_float" );
     CPanelAnimationVarAliasType( float, m_MainPosY, "MainPosY", "0", "proportional_float" );
-
 
     float m_flLastShow;
     ObjRecipient_t m_iRecipient;
@@ -375,8 +353,7 @@ DECLARE_HUD_MESSAGE( CZMHudObjectives, ZMObjDisplay );
 DECLARE_HUD_MESSAGE( CZMHudObjectives, ZMObjUpdate );
 DECLARE_HUD_MESSAGE( CZMHudObjectives, ZMObjUpdateLine );
 
-
-CZMHudObjectives::CZMHudObjectives( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudObjectives" )
+CZMHudObjectives::CZMHudObjectives( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudObjectives" )
 {
     InitTexts();
 
@@ -394,7 +371,6 @@ void CZMHudObjectives::Init( void )
     HOOK_HUD_MESSAGE( CZMHudObjectives, ZMObjUpdate );
     HOOK_HUD_MESSAGE( CZMHudObjectives, ZMObjUpdateLine );
 
-
     SetPaintBackgroundEnabled( false );
 }
 
@@ -404,7 +380,6 @@ void CZMHudObjectives::VidInit( void )
     // This still resets when connecting to a server, etc.
     C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
     if ( pPlayer ) return;
-
 
     InitTexts();
 }
@@ -419,17 +394,15 @@ void CZMHudObjectives::OnThink()
 
     if ( !pPlayer ) return;
 
-
     for ( int i = 0; i < NUM_OBJ_LINES; i++ )
         m_Line[i].Think();
 
-
-    if ( pPlayer->m_nButtons & IN_SCORE && !(pPlayer->m_afButtonLast & IN_SCORE) )
+    if ( pPlayer->m_nButtons & IN_SCORE && !( pPlayer->m_afButtonLast & IN_SCORE ) )
     {
         Show();
     }
 
-    if ( (gpGlobals->curtime - m_flLastShow) > OBJ_SCREEN_TIME )
+    if ( ( gpGlobals->curtime - m_flLastShow ) > OBJ_SCREEN_TIME )
     {
         Hide();
     }
@@ -447,10 +420,9 @@ void CZMHudObjectives::SetNextText( int i, const char* format, ObjArgType_t type
 {
     if ( i < 0 || i >= NUM_OBJ_LINES ) return;
 
-
     m_Line[i].SetArgs( format, type, num, psz );
     m_Line[i].FormatNextLine();
-    
+
     if ( IsHidden() )
     {
         m_Line[i].UpdateComplete();
@@ -460,7 +432,6 @@ void CZMHudObjectives::SetNextText( int i, const char* format, ObjArgType_t type
 void CZMHudObjectives::Update( int i, float num, const char* psz, bool bComplete )
 {
     if ( i < 0 || i >= NUM_OBJ_LINES ) return;
-
 
     m_Line[i].SetComplete( bComplete );
     m_Line[i].SetArg( num, psz );
@@ -472,7 +443,6 @@ bool CZMHudObjectives::ShouldAutoDraw()
 {
     C_ZMPlayer* pPlayer = C_ZMPlayer::GetLocalPlayer();
     if ( !pPlayer ) return false;
-
 
     if ( pPlayer->IsZM() && m_iRecipient == OBJRECIPIENT_HUMANS )
     {
@@ -550,9 +520,7 @@ void CZMHudObjectives::MsgFunc_ZMObjDisplay( bf_read& msg )
     char arg[32];
     char format[256];
 
-
     SetRecipients( (ObjRecipient_t)msg.ReadByte() );
-
 
     for ( int i = 0; i < NUM_OBJ_LINES; i++ )
     {
@@ -560,27 +528,27 @@ void CZMHudObjectives::MsgFunc_ZMObjDisplay( bf_read& msg )
         float num = 0.0f;
         arg[0] = '\0';
 
-
         bool bString = msg.ReadByte() == 1 ? true : false;
 
         argtype = (ObjArgType_t)msg.ReadByte();
 
-
         switch ( argtype )
         {
-        case OBJARGTYPE_STRING : msg.ReadString( arg, sizeof( arg ), false ); break;
-        case OBJARGTYPE_TIMER :
-        case OBJARGTYPE_INT :
-        case OBJARGTYPE_FLOAT : 
-        default : num = msg.ReadFloat(); break;
+        case OBJARGTYPE_STRING:
+            msg.ReadString( arg, sizeof( arg ), false );
+            break;
+        case OBJARGTYPE_TIMER:
+        case OBJARGTYPE_INT:
+        case OBJARGTYPE_FLOAT:
+        default:
+            num = msg.ReadFloat();
+            break;
         }
 
-        
         if ( bString )
             msg.ReadString( format, sizeof( format ), false );
         else
             format[0] = 0;
-
 
         SetNextText( i, format, argtype, num, arg );
     }
@@ -596,7 +564,6 @@ void CZMHudObjectives::MsgFunc_ZMObjUpdate( bf_read& msg )
     {
         float num = 0.0f;
         buffer[0] = '\0';
-
 
         bool bComplete = msg.ReadByte() == 1 ? true : false;
         ObjArgType_t type = (ObjArgType_t)msg.ReadByte();
@@ -621,40 +588,37 @@ void CZMHudObjectives::MsgFunc_ZMObjUpdateLine( bf_read& msg )
     char arg[32];
     char format[256];
 
-
     int i = msg.ReadByte();
 
     if ( i < 0 || i >= NUM_OBJ_LINES ) return;
 
-
     SetRecipients( (ObjRecipient_t)msg.ReadByte() );
-
 
     ObjArgType_t argtype = OBJARGTYPE_NONE;
     float num = 0.0f;
     arg[0] = '\0';
 
-
     bool bString = msg.ReadByte() == 1 ? true : false;
 
     argtype = (ObjArgType_t)msg.ReadByte();
 
-
     switch ( argtype )
     {
-    case OBJARGTYPE_STRING : msg.ReadString( arg, sizeof( arg ), false ); break;
-    case OBJARGTYPE_TIMER :
-    case OBJARGTYPE_INT :
-    case OBJARGTYPE_FLOAT : 
-    default : num = msg.ReadFloat(); break;
+    case OBJARGTYPE_STRING:
+        msg.ReadString( arg, sizeof( arg ), false );
+        break;
+    case OBJARGTYPE_TIMER:
+    case OBJARGTYPE_INT:
+    case OBJARGTYPE_FLOAT:
+    default:
+        num = msg.ReadFloat();
+        break;
     }
 
-        
     if ( bString )
         msg.ReadString( format, sizeof( format ), false );
     else
         format[0] = 0;
-
 
     SetNextText( i, format, argtype, num, arg );
 

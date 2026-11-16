@@ -1,14 +1,12 @@
 #include "cbase.h"
 #include "filesystem.h"
 
-
+#include "c_zmr_player.h"
 #include "zmr_options_general.h"
 #include "zmr_playermodels.h"
-#include "c_zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 extern ConVar zm_cl_usenewmenus;
 extern ConVar zm_cl_zmview_switchmousebuttons;
@@ -21,7 +19,6 @@ extern ConVar zm_cl_border_pitchspeed;
 extern ConVar zm_cl_border_scroll;
 
 extern ConVar cl_playermodel;
-
 
 CZMOptionsSubGeneral::CZMOptionsSubGeneral( Panel* parent ) : BaseClass( parent )
 {
@@ -41,11 +38,9 @@ CZMOptionsSubGeneral::CZMOptionsSubGeneral( Panel* parent ) : BaseClass( parent 
 
     if ( FailedLoad() ) return;
 
-
     m_pSlider_Yaw->SetRange( 10, 500 );
     m_pSlider_Pitch->SetRange( 10, 500 );
     m_pSlider_Border->SetRange( 0, 100 );
-
 
     KeyValuesAD kv( "participation" );
 
@@ -67,9 +62,6 @@ CZMOptionsSubGeneral::CZMOptionsSubGeneral( Panel* parent ) : BaseClass( parent 
 
     m_pPartBox->ActivateItemByRow( 0 );
 
-
-
-
     // m_pModelPanel->SetPanelDirty();
     m_pModelCombo->ActivateItemByRow( 0 );
 
@@ -90,9 +82,7 @@ void CZMOptionsSubGeneral::OnApplyChanges()
 {
     if ( FailedLoad() ) return;
 
-
     C_ZMPlayer::SetLocalParticipation( (Participation_t)m_pPartBox->GetActiveItem() );
-
 
     zm_cl_usenewmenus.SetValue( m_pCheck_NewMenus->IsSelected() ? 1 : 0 );
 
@@ -100,7 +90,6 @@ void CZMOptionsSubGeneral::OnApplyChanges()
 
     zm_cl_poweruser.SetValue( m_pCheck_PowerUser->IsSelected() ? 1 : 0 );
     zm_cl_poweruser_boxselect.SetValue( m_pCheck_BoxPowerUser->IsSelected() ? 1 : 0 );
-
 
     zm_cl_border_yawspeed.SetValue( m_pSlider_Yaw->GetValue() );
     zm_cl_border_pitchspeed.SetValue( m_pSlider_Pitch->GetValue() );
@@ -115,11 +104,9 @@ void CZMOptionsSubGeneral::OnResetData()
 {
     if ( FailedLoad() ) return;
 
-
     Participation_t part = C_ZMPlayer::GetLocalParticipation();
 
     m_pPartBox->ActivateItem( part );
-
 
     m_pCheck_NewMenus->SetSelected( zm_cl_usenewmenus.GetBool() );
     m_pCheck_SwitchMouseBtns->SetSelected( zm_cl_zmview_switchmousebuttons.GetBool() );
@@ -130,8 +117,6 @@ void CZMOptionsSubGeneral::OnResetData()
     m_pSlider_Yaw->SetValue( (int)zm_cl_border_yawspeed.GetFloat() );
     m_pSlider_Pitch->SetValue( (int)zm_cl_border_pitchspeed.GetFloat() );
     m_pSlider_Border->SetValue( (int)zm_cl_border_scroll.GetInt() );
-
-
 
     AppendCustomModels();
 

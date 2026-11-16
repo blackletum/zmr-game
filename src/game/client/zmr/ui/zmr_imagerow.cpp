@@ -1,19 +1,14 @@
 #include "cbase.h"
 #include "input.h"
 
-
 #include "zmr_imagerow.h"
-
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
-
 DECLARE_BUILD_FACTORY( CZMImageRow );
-
 
 //
 CZMImageRow::CZMImageRow( Panel* parent, const char* name ) : Panel( parent, name )
@@ -39,7 +34,7 @@ CZMImageRowItem* CZMImageRow::CreateItem()
     if ( m_pCreateFunc )
         return m_pCreateFunc( this );
 
-    return m_pCreateFunc ? m_pCreateFunc( this ) : (new CZMImageRowItem( this, "" ));
+    return m_pCreateFunc ? m_pCreateFunc( this ) : ( new CZMImageRowItem( this, "" ) );
 }
 
 CZMImageRowItem* CZMImageRow::GetItemByIndex( int index ) const
@@ -114,7 +109,6 @@ bool CZMImageRow::RemoveImageByIndex( int index )
     if ( !m_Images.IsValidIndex( index ) )
         return false;
 
-
     auto* pImage = m_Images[index];
 
     m_Images.Remove( index );
@@ -173,12 +167,15 @@ void CZMImageRow::DefaultLayout()
 
     switch ( m_iDirection )
     {
-    case DIR_Y : size = GetTall(); break;
-    default : size = GetWide(); break;
+    case DIR_Y:
+        size = GetTall();
+        break;
+    default:
+        size = GetWide();
+        break;
     }
 
     Assert( size != 0 );
-
 
     int xDir = m_iDirection == DIR_X ? 1 : 0;
     int yDir = m_iDirection == DIR_Y ? 1 : 0;
@@ -187,7 +184,6 @@ void CZMImageRow::DefaultLayout()
     int imgsize = GetImagesSize();
 
     //float f = (imgsize * m_Images.Count()) / (float)size;
-
 
     int jump = imgsize;
 
@@ -228,7 +224,6 @@ void CZMImageRow::OnThink()
 {
     if ( !IsVisible() ) return;
 
-
     // Update whether we should capture the mouse. Only capture while the mouse is on top our elements.
     int mx, my;
     int myx, myy;
@@ -243,9 +238,8 @@ void CZMImageRow::OnThink()
 
     ::input->GetFullscreenMousePos( &mx, &my );
     GetPos( myx, myy );
-    
 
-    m_iLastImageOver = GetImageIndexAtPos( mx - (px + myx), my - (py + myy) );
+    m_iLastImageOver = GetImageIndexAtPos( mx - ( px + myx ), my - ( py + myy ) );
 
     if ( m_iLastImageOver != -1 )
     {
@@ -270,7 +264,6 @@ void CZMImageRow::PerformLayout()
     LayoutImages();
 }
 //
-
 
 //
 CZMImageRowItem::CZMImageRowItem( vgui::Panel* pParent, const char* name ) : Panel( pParent, name )

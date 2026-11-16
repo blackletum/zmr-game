@@ -6,14 +6,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CZMOptionsSubCrosshair::CZMOptionsSubCrosshair( Panel* parent ) : BaseClass( parent )
 {
     m_iCurCrosshair = -1;
 
-
     LoadControlSettings( "resource/ui/zmoptionssubcrosshair.res" );
-
 
     LoadItem( &m_pCrosshairPanel, "CrosshairDraw" );
     LoadItem( &m_pCrosshairCombo, "CrosshairCombo" );
@@ -28,12 +25,10 @@ CZMOptionsSubCrosshair::CZMOptionsSubCrosshair( Panel* parent ) : BaseClass( par
 
     if ( FailedLoad() ) return;
 
-
     m_pSlider_ColorR->SetRange( 0, 255 );
     m_pSlider_ColorG->SetRange( 0, 255 );
     m_pSlider_ColorB->SetRange( 0, 255 );
     m_pSlider_ColorA->SetRange( 0, 255 );
-
 
     // Copy the crosshairs, so we can safely edit the values without changing the real in-game crosshair.
     KeyValuesAD tempkv( "data" );
@@ -64,7 +59,6 @@ CZMOptionsSubCrosshair::CZMOptionsSubCrosshair( Panel* parent ) : BaseClass( par
         m_pCrosshairCombo->ActivateItemByRow( 0 );
         m_pCrosshairPanel->SetCrosshairToDraw( m_vCrosshairs[0] );
 
-
         m_iCurCrosshair = 0;
         UpdateSettings();
     }
@@ -85,11 +79,9 @@ void CZMOptionsSubCrosshair::OnApplyChanges()
 {
     if ( FailedLoad() ) return;
 
-
     // We want these changes, copy our data over to the in-game crosshairs.
     CUtlVector<CZMBaseCrosshair*>* crosses = g_ZMCrosshairs.GetCrosshairs();
     Assert( crosses->Count() == m_vCrosshairs.Count() );
-
 
     FOR_EACH_VEC( m_vCrosshairs, i )
     {
@@ -108,14 +100,11 @@ void CZMOptionsSubCrosshair::OnResetData()
 {
     if ( FailedLoad() ) return;
 
-    
-
     // Reset our to the in-game equivalent
 
     CUtlVector<CZMBaseCrosshair*>* crosses = g_ZMCrosshairs.GetCrosshairs();
     if ( crosses->Count() != m_vCrosshairs.Count() )
         return;
-
 
     for ( int i = 0; i < crosses->Count(); i++ )
     {
@@ -131,7 +120,6 @@ void CZMOptionsSubCrosshair::OnComboChanged( Panel* panel )
 {
     if ( FailedLoad() )
         return;
-
 
     // Something changed...
 
@@ -152,15 +140,12 @@ void CZMOptionsSubCrosshair::OnComboChanged( Panel* panel )
         return;
     }
 
-
-
     UpdateCrosshair();
 }
 
 void CZMOptionsSubCrosshair::OnSliderMoved( Panel* panel )
 {
     if ( FailedLoad() ) return;
-
 
     // Something changed...
 
@@ -178,16 +163,12 @@ void CZMOptionsSubCrosshair::UpdateSettings( int index )
         if ( !m_vCrosshairs.IsValidIndex( index ) ) return;
     }
 
-
     // Update the ui elements to fit the crosshair data.
-
 
     CZMBaseCrosshair* pCross = m_vCrosshairs[index];
 
-
     KeyValuesAD kv( pCross->GetName() );
     pCross->WriteValues( kv );
-
 
     Color clr;
 
@@ -196,7 +177,6 @@ void CZMOptionsSubCrosshair::UpdateSettings( int index )
     m_pSlider_ColorG->SetValue( clr[1], false );
     m_pSlider_ColorB->SetValue( clr[2], false );
     m_pSlider_ColorA->SetValue( clr[3], false );
-
 
     m_pOutlineSize->SetValue( kv->GetFloat( "outline" ), false );
 
@@ -220,18 +200,14 @@ void CZMOptionsSubCrosshair::UpdateCrosshair( int index )
         if ( !m_vCrosshairs.IsValidIndex( index ) ) return;
     }
 
-
     // Update the display crosshair to fit the settings.
 
     CZMBaseCrosshair* pCross = m_vCrosshairs[index];
 
-
     KeyValuesAD kv( pCross->GetName() );
     pCross->WriteValues( kv );
 
-
     Color clr;
-
 
     clr[0] = m_pSlider_ColorR->GetValue();
     clr[1] = m_pSlider_ColorG->GetValue();
@@ -246,7 +222,6 @@ void CZMOptionsSubCrosshair::UpdateCrosshair( int index )
 
     kv->SetFloat( "offsetfromcenter", m_pOffsetFromCenter->GetValue() );
     kv->SetFloat( "dynamicmove", m_pDynMove->GetValue() );
-
 
     pCross->LoadValues( kv );
 }

@@ -1,5 +1,5 @@
-#include "cbase.h"
 #include "ammodef.h"
+#include "cbase.h"
 #include "glowstencil/c_glowbase.h"
 
 #include "c_zmr_player.h"
@@ -7,14 +7,10 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_cl_glow_ammo( "zm_cl_glow_ammo", "1 .2 .2", FCVAR_ARCHIVE );
 ConVar zm_cl_glow_ammo_enabled( "zm_cl_glow_ammo_enabled", "1", FCVAR_ARCHIVE );
 
-
 extern ConVar zm_sv_glow_item_enabled;
-
-
 
 class C_ZMAmmo : public C_BaseGlowEntity
 {
@@ -24,16 +20,14 @@ public:
 
     C_ZMAmmo();
 
+    virtual void Spawn() override;
+    virtual void ClientThink() override;
 
-    virtual void    Spawn() override;
-    virtual void    ClientThink() override;
+    void UpdateGlow();
+    virtual void GetGlowEffectColor( float& r, float& g, float& b ) const override;
 
-
-    void            UpdateGlow();
-    virtual void    GetGlowEffectColor( float& r, float& g, float& b ) const override;
-    
-    virtual bool    GlowOccluded() const override { return false; };
-    virtual bool    GlowUnoccluded() const override { return true; };
+    virtual bool GlowOccluded() const override { return false; };
+    virtual bool GlowUnoccluded() const override { return true; };
 
 protected:
     CNetworkVar( int, m_iAmmoType );
@@ -42,11 +36,10 @@ protected:
 };
 
 IMPLEMENT_CLIENTCLASS_DT( C_ZMAmmo, DT_ZM_Ammo, CZMAmmo )
-    RecvPropInt( RECVINFO( m_iAmmoType ) ),
+RecvPropInt( RECVINFO( m_iAmmoType ) ),
     RecvPropInt( RECVINFO( m_nAmmo ), SPROP_UNSIGNED ),
     RecvPropInt( RECVINFO( m_nMaxAmmo ), SPROP_UNSIGNED ),
 END_RECV_TABLE()
-
 
 C_ZMAmmo::C_ZMAmmo()
 {
@@ -79,14 +72,9 @@ void C_ZMAmmo::UpdateGlow()
         return;
     }
 
-
     C_ZMPlayer* pPlayer = C_ZMPlayer::GetLocalPlayer();
 
-    if (pPlayer
-    &&  pPlayer->IsHuman()
-    &&  pPlayer->GetAbsOrigin().DistToSqr( GetAbsOrigin() ) < ITEM_GLOW_DIST_SQR
-    &&  pPlayer->GetWeaponForAmmo( m_iAmmoType ) != nullptr
-    &&  pPlayer->GetAmmoCount( m_iAmmoType ) < GetAmmoDef()->MaxCarry( m_iAmmoType ) )
+    if ( pPlayer && pPlayer->IsHuman() && pPlayer->GetAbsOrigin().DistToSqr( GetAbsOrigin() ) < ITEM_GLOW_DIST_SQR && pPlayer->GetWeaponForAmmo( m_iAmmoType ) != nullptr && pPlayer->GetAmmoCount( m_iAmmoType ) < GetAmmoDef()->MaxCarry( m_iAmmoType ) )
     {
         if ( !IsClientSideGlowEnabled() )
             SetClientSideGlowEnabled( true );

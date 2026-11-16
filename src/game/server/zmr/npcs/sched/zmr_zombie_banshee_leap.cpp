@@ -7,7 +7,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CBansheeLeapSchedule::CBansheeLeapSchedule()
 {
     m_bInLeap = false;
@@ -25,7 +24,6 @@ void CBansheeLeapSchedule::OnStart()
     m_FinishTimer.Invalidate();
     m_ExpireTimer.Start( 5.0f );
     m_bDidLeapAttack = false;
-
 
     CBaseEntity* pEnemy = pOuter->GetEnemy();
     if ( !pEnemy )
@@ -57,7 +55,6 @@ void CBansheeLeapSchedule::OnUpdate()
         return;
     }
 
-
     if ( !m_bInLeap )
     {
         DoLeapStart();
@@ -81,7 +78,6 @@ void CBansheeLeapSchedule::OnAnimEvent( animevent_t* pEvent )
     if ( pEvent->event == AE_FASTZOMBIE_LEAP )
     {
         GetOuter()->HandledAnimEvent();
-            
 
         if ( DoLeap() )
         {
@@ -130,9 +126,7 @@ void CBansheeLeapSchedule::OnLandedGround( CBaseEntity* pGround )
 void CBansheeLeapSchedule::OnTouch( CBaseEntity* pEnt, trace_t* pTrace )
 {
     float minspd = CZMBanshee::GetMinLeapAttackSpeed();
-    if (!m_bDidLeapAttack
-    &&  GetOuter()->GetVel().LengthSqr() > (minspd*minspd)
-    &&  pEnt )
+    if ( !m_bDidLeapAttack && GetOuter()->GetVel().LengthSqr() > ( minspd * minspd ) && pEnt )
     {
         //
         // We're leaping and hit something.
@@ -144,7 +138,7 @@ void CBansheeLeapSchedule::OnTouch( CBaseEntity* pEnt, trace_t* pTrace )
         if ( pPhys && pPhys->GetGameFlags() & FVPHYSICS_PLAYER_HELD )
         {
             auto* pPlayer = ToZMPlayer( pEnt->GetOwnerEntity() );
-        
+
             if ( pPlayer )
             {
                 pPlayer->ForceDropOfCarriedPhysObjects( pEnt );
@@ -159,14 +153,12 @@ void CBansheeLeapSchedule::OnTouch( CBaseEntity* pEnt, trace_t* pTrace )
             QAngle angPunch( 15.0f, random->RandomInt( -5.0f, 5.0f ), random->RandomInt( -5.0f, 5.0f ) );
             Vector vecPunchVel = fwd * 500.0f;
 
-
             float damage = zm_sk_banshee_dmg_leap.GetFloat();
-    
+
             bool bHit = pOuter->LeapAttack( angPunch, vecPunchVel, damage );
 
             m_bDidLeapAttack = bHit;
         }
-
     }
 }
 
@@ -183,7 +175,6 @@ void CBansheeLeapSchedule::OnAnimActivityInterrupted( Activity newActivity )
 
     if ( newActivity == ACT_FASTZOMBIE_FRENZY )
         return;
-
 
     TryEnd( "Banshee leap was interrupted by another activity!" );
 }
@@ -226,16 +217,14 @@ void CBansheeLeapSchedule::OnQueuedCommand( CBasePlayer* pPlayer, ZombieCommandT
     if ( m_bInLeap )
         return;
 
-
     if ( pPlayer )
     {
         // Check if ZM wants for our attack to be interrupted.
         int flags = ToZMPlayer( pPlayer )->GetZMCommandInterruptFlags();
 
-        if ( !(flags & ZCO_ATTACK) )
+        if ( !( flags & ZCO_ATTACK ) )
             return;
     }
-
 
     TryEnd( "We were commanded to do something else!" );
 }
@@ -251,11 +240,9 @@ void CBansheeLeapSchedule::DoLeapStart()
         return;
     }
 
-
     Vector vecEnemyPos = pEnemy->GetAbsOrigin();
 
     pOuter->GetMotor()->FaceTowards( vecEnemyPos );
-
 
     if ( pOuter->GetActivity() != ACT_RANGE_ATTACK1 )
     {
@@ -281,7 +268,6 @@ bool CBansheeLeapSchedule::DoLeap()
     CBaseEntity* pEnemy = pOuter->GetEnemy();
     if ( !pEnemy )
         return false;
-
 
     pOuter->LeapAttackSound();
 
@@ -309,16 +295,15 @@ bool CBansheeLeapSchedule::DoLeap()
     // Scale the sideways velocity to get there at the right time
     //
     vecJump = vecEnemyPos - vecMyPos;
-    vecJump = vecJump / (speed / gravity);
+    vecJump = vecJump / ( speed / gravity );
     vecJump.z = height >= 0.0f ? speed : -speed; // We may be going downwards.
-            
+
     float maxspd = pOuter->GetMaxLeapSpeed();
     float distance = vecJump.Length();
     if ( distance > 0.0f && distance > maxspd )
     {
-        vecJump *= (maxspd / distance);
+        vecJump *= ( maxspd / distance );
     }
-
 
     pOuter->GetMotor()->SetVelocity( vecJump );
     pOuter->GetMotor()->Jump();

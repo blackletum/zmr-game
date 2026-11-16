@@ -5,9 +5,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZMCC_DEATH              "materials/colorcorrection/game_death.raw"
-
+#define ZMCC_DEATH "materials/colorcorrection/game_death.raw"
 
 class CZMDeathEffect : public CZMBaseCCEffect
 {
@@ -32,7 +30,7 @@ public:
 
     virtual bool IsDone() const override
     {
-        return (m_flEnd - gpGlobals->curtime) <= 0.0f;
+        return ( m_flEnd - gpGlobals->curtime ) <= 0.0f;
     }
 
 private:

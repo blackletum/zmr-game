@@ -1,12 +1,11 @@
-#include "cbase.h"
-#include "base_playeranimstate.h"
-#include "tier0/vprof.h"
 #include "animation.h"
-#include "studio.h"
 #include "apparent_velocity_helper.h"
-#include "utldict.h"
+#include "base_playeranimstate.h"
+#include "cbase.h"
 #include "datacache/imdlcache.h"
-
+#include "studio.h"
+#include "tier0/vprof.h"
+#include "utldict.h"
 
 #include "zmr_playeranimstate.h"
 
@@ -16,18 +15,16 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define MAX_FEET_GOAL_DELTA         45.0f
+#define MAX_FEET_GOAL_DELTA 45.0f
 
 // Don't let the head spass out.
-#define ZM_LOOKAT_UPDATE_TIME       0.1f
-#define ZM_LOOKAT_DIST              100.0f
-#define ZM_LOOKAT_DOT               0.5f // < 0 is way too big of an angle.
-
+#define ZM_LOOKAT_UPDATE_TIME 0.1f
+#define ZM_LOOKAT_DIST        100.0f
+#define ZM_LOOKAT_DOT         0.5f // < 0 is way too big of an angle.
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pPlayer - 
+// Purpose:
+// Input  : *pPlayer -
 // Output : CMultiPlayerAnimState*
 //-----------------------------------------------------------------------------
 CZMPlayerAnimState* CreateZMPlayerAnimState( CZMPlayer* pPlayer )
@@ -51,9 +48,9 @@ CZMPlayerAnimState* CreateZMPlayerAnimState( CZMPlayer* pPlayer )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pPlayer - 
-//			&movementData - 
+// Purpose:
+// Input  : *pPlayer -
+//			&movementData -
 //-----------------------------------------------------------------------------
 CZMPlayerAnimState::CZMPlayerAnimState( CBasePlayer* pPlayer, MultiPlayerMovementData_t& movementData )
     : CMultiPlayerAnimState( pPlayer, movementData )
@@ -77,8 +74,8 @@ CZMPlayerAnimState::CZMPlayerAnimState( CBasePlayer* pPlayer, MultiPlayerMovemen
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  :  - 
+// Purpose:
+// Input  :  -
 //-----------------------------------------------------------------------------
 CZMPlayerAnimState::~CZMPlayerAnimState()
 {
@@ -86,7 +83,7 @@ CZMPlayerAnimState::~CZMPlayerAnimState()
 
 //-----------------------------------------------------------------------------
 // Purpose: Initialize ZM specific animation state.
-// Input  : *pPlayer - 
+// Input  : *pPlayer -
 //-----------------------------------------------------------------------------
 void CZMPlayerAnimState::InitZMAnimState( CZMPlayer* pPlayer )
 {
@@ -128,7 +125,7 @@ bool CZMPlayerAnimState::ShouldUpdateAnimState()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CZMPlayerAnimState::ClearAnimationState()
 {
@@ -136,8 +133,8 @@ void CZMPlayerAnimState::ClearAnimationState()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : actDesired - 
+// Purpose:
+// Input  : actDesired -
 // Output : Activity
 //-----------------------------------------------------------------------------
 Activity CZMPlayerAnimState::TranslateActivity( Activity actDesired )
@@ -154,7 +151,7 @@ Activity CZMPlayerAnimState::TranslateActivity( Activity actDesired )
     return translateActivity;
 }
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CZMPlayerAnimState::Update( float eyeYaw, float eyePitch )
 {
@@ -165,7 +162,6 @@ void CZMPlayerAnimState::Update( float eyeYaw, float eyePitch )
     auto* pStudioHdr = GetZMPlayer()->GetModelPtr();
     if ( !pStudioHdr )
         return;
-
 
     // We're not updating if we don't need to.
 #ifdef CLIENT_DLL
@@ -210,100 +206,100 @@ void CZMPlayerAnimState::Update( float eyeYaw, float eyePitch )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : event - 
+// Purpose:
+// Input  : event -
 //-----------------------------------------------------------------------------
 void CZMPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t playerAnim, int nData )
 {
     Activity iGestureActivity = ACT_INVALID;
 
-    switch( playerAnim )
+    switch ( playerAnim )
     {
     case PLAYERANIMEVENT_ATTACK_PRIMARY:
-        {
-            // Weapon primary fire.
-            if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_CROUCH_PRIMARYFIRE );
-            else
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_STAND_PRIMARYFIRE );
+    {
+        // Weapon primary fire.
+        if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_CROUCH_PRIMARYFIRE );
+        else
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_STAND_PRIMARYFIRE );
 
-            iGestureActivity = ACT_VM_PRIMARYATTACK;
-            break;
-        }
+        iGestureActivity = ACT_VM_PRIMARYATTACK;
+        break;
+    }
 
     case PLAYERANIMEVENT_VOICE_COMMAND_GESTURE:
-        {
-            if ( !IsGestureSlotActive( GESTURE_SLOT_ATTACK_AND_RELOAD ) )
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, (Activity)nData );
+    {
+        if ( !IsGestureSlotActive( GESTURE_SLOT_ATTACK_AND_RELOAD ) )
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, (Activity)nData );
 
-            break;
-        }
+        break;
+    }
     case PLAYERANIMEVENT_ATTACK_SECONDARY:
-        {
-            // Weapon secondary fire.
-            if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_CROUCH_SECONDARYFIRE );
-            else
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_STAND_SECONDARYFIRE );
+    {
+        // Weapon secondary fire.
+        if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_CROUCH_SECONDARYFIRE );
+        else
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_STAND_SECONDARYFIRE );
 
-            iGestureActivity = ACT_VM_PRIMARYATTACK;
-            break;
-        }
+        iGestureActivity = ACT_VM_PRIMARYATTACK;
+        break;
+    }
     case PLAYERANIMEVENT_ATTACK_PRE:
+    {
+        if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
         {
-            if ( m_pZMPlayer->GetFlags() & FL_DUCKING ) 
-            {
-                // Weapon pre-fire. Used for minigun windup, sniper aiming start, etc in crouch.
-                iGestureActivity = ACT_MP_ATTACK_CROUCH_PREFIRE;
-            }
-            else
-            {
-                // Weapon pre-fire. Used for minigun windup, sniper aiming start, etc.
-                iGestureActivity = ACT_MP_ATTACK_STAND_PREFIRE;
-            }
-
-            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, iGestureActivity, false );
-
-            break;
+            // Weapon pre-fire. Used for minigun windup, sniper aiming start, etc in crouch.
+            iGestureActivity = ACT_MP_ATTACK_CROUCH_PREFIRE;
         }
+        else
+        {
+            // Weapon pre-fire. Used for minigun windup, sniper aiming start, etc.
+            iGestureActivity = ACT_MP_ATTACK_STAND_PREFIRE;
+        }
+
+        RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, iGestureActivity, false );
+
+        break;
+    }
     case PLAYERANIMEVENT_ATTACK_POST:
-        {
-            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_STAND_POSTFIRE );
-            break;
-        }
+    {
+        RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_ATTACK_STAND_POSTFIRE );
+        break;
+    }
 
     case PLAYERANIMEVENT_RELOAD:
-        {
-            // Weapon reload.
-            if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_CROUCH );
-            else
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_STAND );
-            break;
-        }
+    {
+        // Weapon reload.
+        if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_CROUCH );
+        else
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_STAND );
+        break;
+    }
     case PLAYERANIMEVENT_RELOAD_LOOP:
-        {
-            // Weapon reload.
-            if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_CROUCH_LOOP );
-            else
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_STAND_LOOP );
-            break;
-        }
+    {
+        // Weapon reload.
+        if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_CROUCH_LOOP );
+        else
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_STAND_LOOP );
+        break;
+    }
     case PLAYERANIMEVENT_RELOAD_END:
-        {
-            // Weapon reload.
-            if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_CROUCH_END );
-            else
-                RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_STAND_END );
-            break;
-        }
+    {
+        // Weapon reload.
+        if ( m_pZMPlayer->GetFlags() & FL_DUCKING )
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_CROUCH_END );
+        else
+            RestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_MP_RELOAD_STAND_END );
+        break;
+    }
     default:
-        {
-            BaseClass::DoAnimationEvent( playerAnim, nData );
-            break;
-        }
+    {
+        BaseClass::DoAnimationEvent( playerAnim, nData );
+        break;
+    }
     }
 
 #ifdef CLIENT_DLL
@@ -327,10 +323,10 @@ void CZMPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t playerAnim, int nDa
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *idealActivity - 
+// Purpose:
+// Input  : *idealActivity -
 //-----------------------------------------------------------------------------
-bool CZMPlayerAnimState::HandleSwimming( Activity &idealActivity )
+bool CZMPlayerAnimState::HandleSwimming( Activity& idealActivity )
 {
     //bool bInWater = BaseClass::HandleSwimming( idealActivity );
     //
@@ -340,18 +336,18 @@ bool CZMPlayerAnimState::HandleSwimming( Activity &idealActivity )
     if ( m_pZMPlayer->GetWaterLevel() >= WL_Waist )
     {
         idealActivity = ACT_MP_JUMP;
-        return true; 
+        return true;
     }
-    
+
     return false;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *idealActivity - 
+// Purpose:
+// Input  : *idealActivity -
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CZMPlayerAnimState::HandleMoving( Activity &idealActivity )
+bool CZMPlayerAnimState::HandleMoving( Activity& idealActivity )
 {
     float flSpeed = GetOuterXYSpeed();
 
@@ -359,7 +355,6 @@ bool CZMPlayerAnimState::HandleMoving( Activity &idealActivity )
     {
         return false;
     }
-
 
     if ( m_pZMPlayer->IsRat() )
     {
@@ -374,11 +369,11 @@ bool CZMPlayerAnimState::HandleMoving( Activity &idealActivity )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *idealActivity - 
+// Purpose:
+// Input  : *idealActivity -
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CZMPlayerAnimState::HandleDucking( Activity &idealActivity )
+bool CZMPlayerAnimState::HandleDucking( Activity& idealActivity )
 {
     if ( m_pZMPlayer->IsRat() )
     {
@@ -389,22 +384,22 @@ bool CZMPlayerAnimState::HandleDucking( Activity &idealActivity )
     {
         if ( GetOuterXYSpeed() < MOVING_MINIMUM_SPEED )
         {
-            idealActivity = ACT_MP_CROUCH_IDLE;		
+            idealActivity = ACT_MP_CROUCH_IDLE;
         }
         else
         {
-            idealActivity = ACT_MP_CROUCHWALK;		
+            idealActivity = ACT_MP_CROUCHWALK;
         }
 
         return true;
     }
-    
+
     return false;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-bool CZMPlayerAnimState::HandleJumping( Activity &idealActivity )
+// Purpose:
+bool CZMPlayerAnimState::HandleJumping( Activity& idealActivity )
 {
     Vector vecVelocity;
     GetOuterAbsVelocity( vecVelocity );
@@ -416,7 +411,7 @@ bool CZMPlayerAnimState::HandleJumping( Activity &idealActivity )
         if ( m_bFirstJumpFrame )
         {
             m_bFirstJumpFrame = false;
-            RestartMainSequence();	// Reset the animation.
+            RestartMainSequence(); // Reset the animation.
         }
 
         // Reset if we hit water and start swimming.
@@ -436,7 +431,7 @@ bool CZMPlayerAnimState::HandleJumping( Activity &idealActivity )
 
                 if ( bNewJump )
                 {
-                    RestartGesture( GESTURE_SLOT_JUMP, ACT_MP_JUMP_LAND );					
+                    RestartGesture( GESTURE_SLOT_JUMP, ACT_MP_JUMP_LAND );
                 }
             }
         }
@@ -446,7 +441,7 @@ bool CZMPlayerAnimState::HandleJumping( Activity &idealActivity )
         {
             if ( bNewJump )
             {
-                if ( (gpGlobals->curtime - m_flJumpStartTime) > 0.5f )
+                if ( ( gpGlobals->curtime - m_flJumpStartTime ) > 0.5f )
                 {
                     idealActivity = ACT_MP_JUMP_FLOAT;
                 }
@@ -460,7 +455,7 @@ bool CZMPlayerAnimState::HandleJumping( Activity &idealActivity )
                 idealActivity = ACT_MP_JUMP;
             }
         }
-    }	
+    }
 
     if ( m_bJumping )
         return true;
@@ -468,7 +463,7 @@ bool CZMPlayerAnimState::HandleJumping( Activity &idealActivity )
     return false;
 }
 
-bool CZMPlayerAnimState::SetupPoseParameters( CStudioHdr *pStudioHdr )
+bool CZMPlayerAnimState::SetupPoseParameters( CStudioHdr* pStudioHdr )
 {
     // Check to see if this has already been done.
     if ( m_bPoseParameterInit )
@@ -478,8 +473,6 @@ bool CZMPlayerAnimState::SetupPoseParameters( CStudioHdr *pStudioHdr )
     if ( !pStudioHdr )
         return false;
 
-
-    
     m_bIs9Way = false;
 
     m_PoseParameterData.m_iMoveX = m_pZMPlayer->LookupPoseParameter( pStudioHdr, "move_x" );
@@ -500,7 +493,7 @@ bool CZMPlayerAnimState::SetupPoseParameters( CStudioHdr *pStudioHdr )
         // 8way blending doesn't use move_x/move_y
         // and it only has one "move_yaw" param.
         m_PoseParameterData.m_iMoveX =
-        m_PoseParameterData.m_iMoveY = m_pZMPlayer->LookupPoseParameter( pStudioHdr, "move_yaw" );
+            m_PoseParameterData.m_iMoveY = m_pZMPlayer->LookupPoseParameter( pStudioHdr, "move_yaw" );
         if ( ( m_PoseParameterData.m_iMoveX < 0 ) || ( m_PoseParameterData.m_iMoveY < 0 ) )
             return false;
 
@@ -512,7 +505,6 @@ bool CZMPlayerAnimState::SetupPoseParameters( CStudioHdr *pStudioHdr )
         if ( m_PoseParameterData.m_iAimYaw < 0 )
             return false;
     }
-
 
 #ifdef CLIENT_DLL
     // ZMR
@@ -533,7 +525,7 @@ bool CZMPlayerAnimState::SetupPoseParameters( CStudioHdr *pStudioHdr )
 }
 float SnapYawTo( float flValue );
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CZMPlayerAnimState::EstimateYaw()
 {
@@ -585,44 +577,44 @@ void CZMPlayerAnimState::EstimateYaw()
         if ( vecEstVelocity.y == 0 && vecEstVelocity.x == 0 )
         {
             float flYawDiff = angles[YAW] - m_PoseParameterData.m_flEstimateYaw;
-            flYawDiff = flYawDiff - (int)(flYawDiff / 360) * 360;
-            if (flYawDiff > 180)
+            flYawDiff = flYawDiff - (int)( flYawDiff / 360 ) * 360;
+            if ( flYawDiff > 180 )
                 flYawDiff -= 360;
-            if (flYawDiff < -180)
+            if ( flYawDiff < -180 )
                 flYawDiff += 360;
 
-            if (flDeltaTime < 0.25)
+            if ( flDeltaTime < 0.25 )
                 flYawDiff *= flDeltaTime * 4;
             else
                 flYawDiff *= flDeltaTime;
 
             m_PoseParameterData.m_flEstimateYaw += flYawDiff;
-            m_PoseParameterData.m_flEstimateYaw = m_PoseParameterData.m_flEstimateYaw - (int)(m_PoseParameterData.m_flEstimateYaw / 360) * 360;
+            m_PoseParameterData.m_flEstimateYaw = m_PoseParameterData.m_flEstimateYaw - (int)( m_PoseParameterData.m_flEstimateYaw / 360 ) * 360;
         }
         else
         {
-            m_PoseParameterData.m_flEstimateYaw = (atan2(vecEstVelocity.y, vecEstVelocity.x) * 180 / M_PI);
+            m_PoseParameterData.m_flEstimateYaw = ( atan2( vecEstVelocity.y, vecEstVelocity.x ) * 180 / M_PI );
 
-            if (m_PoseParameterData.m_flEstimateYaw > 180)
+            if ( m_PoseParameterData.m_flEstimateYaw > 180 )
                 m_PoseParameterData.m_flEstimateYaw = 180;
-            else if (m_PoseParameterData.m_flEstimateYaw < -180)
+            else if ( m_PoseParameterData.m_flEstimateYaw < -180 )
                 m_PoseParameterData.m_flEstimateYaw = -180;
         }
     }
 }
 //-----------------------------------------------------------------------------
 // Purpose: Override for backpeddling
-// Input  : dt - 
+// Input  : dt -
 //-----------------------------------------------------------------------------
 float SnapYawTo( float flValue );
-void CZMPlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
+void CZMPlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr* pStudioHdr )
 {
     // Get the estimated movement yaw.
     EstimateYaw();
 
     if ( Uses9WayAnim() )
     {
-        ConVarRef mp_slammoveyaw("mp_slammoveyaw");
+        ConVarRef mp_slammoveyaw( "mp_slammoveyaw" );
 
         // Get the view yaw.
         float flAngle = AngleNormalize( m_flEyeYaw );
@@ -633,7 +625,7 @@ void CZMPlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
 
         // Get the current speed the character is running.
         bool bIsMoving;
-        float flPlaybackRate = 	CalcMovementPlaybackRate( &bIsMoving );
+        float flPlaybackRate = CalcMovementPlaybackRate( &bIsMoving );
 
         // Setup the 9-way blend parameters based on our speed and direction.
         Vector2D vecCurrentMoveYaw( 0.0f, 0.0f );
@@ -654,7 +646,7 @@ void CZMPlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
     else
     {
         // view direction relative to movement
-        float flYaw;	 
+        float flYaw;
 
         // ZMRCHANGE: This fucked feet movement.
         // I spent way too much time (AGAIN) debugging this shit.
@@ -676,13 +668,13 @@ void CZMPlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
         flYaw = ang - m_PoseParameterData.m_flEstimateYaw;
         // Invert for mapping into 8way blend
         flYaw = -flYaw;
-        flYaw = flYaw - (int)(flYaw / 360) * 360;
+        flYaw = flYaw - (int)( flYaw / 360 ) * 360;
 
-        if (flYaw < -180)
+        if ( flYaw < -180 )
         {
             flYaw = flYaw + 360;
         }
-        else if (flYaw > 180)
+        else if ( flYaw > 180 )
         {
             flYaw = flYaw - 360;
         }
@@ -693,9 +685,9 @@ void CZMPlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
-void CZMPlayerAnimState::ComputePoseParam_AimPitch( CStudioHdr *pStudioHdr )
+void CZMPlayerAnimState::ComputePoseParam_AimPitch( CStudioHdr* pStudioHdr )
 {
     // Get the view pitch.
     float flAimPitch = m_flEyePitch;
@@ -709,9 +701,9 @@ void CZMPlayerAnimState::ComputePoseParam_AimPitch( CStudioHdr *pStudioHdr )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
-void CZMPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
+void CZMPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr* pStudioHdr )
 {
     // Get the movement velocity.
     Vector vecVelocity;
@@ -732,7 +724,7 @@ void CZMPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
         // Initialize the feet.
         if ( m_PoseParameterData.m_flLastAimTurnTime <= 0.0f )
         {
-            m_flGoalFeetYaw	= m_flEyeYaw;
+            m_flGoalFeetYaw = m_flEyeYaw;
             m_flCurrentFeetYaw = m_flEyeYaw;
             m_PoseParameterData.m_flLastAimTurnTime = gpGlobals->curtime;
         }
@@ -740,7 +732,7 @@ void CZMPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
         // TODO: Do something better here!
         else
         {
-            float flYawDelta = AngleNormalize(  m_flGoalFeetYaw - m_flEyeYaw );
+            float flYawDelta = AngleNormalize( m_flGoalFeetYaw - m_flEyeYaw );
 
             const float flMaxDelta = MAX_FEET_GOAL_DELTA;
 
@@ -784,7 +776,7 @@ void CZMPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
         m_flCurrentAimYaw = 0.0f;
     }
 
-    m_DebugAnimData.m_flAimYaw	= flAimYaw;
+    m_DebugAnimData.m_flAimYaw = flAimYaw;
 
     // Turn off a force aim yaw - either we have already updated or we don't need to.
     m_bForceAimYaw = false;
@@ -800,16 +792,15 @@ void CZMPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
 #ifdef CLIENT_DLL
 void CZMPlayerAnimState::UpdateLookAt()
 {
-    if ( (gpGlobals->curtime - m_flLastLookAtUpdate) < ZM_LOOKAT_UPDATE_TIME )
+    if ( ( gpGlobals->curtime - m_flLastLookAtUpdate ) < ZM_LOOKAT_UPDATE_TIME )
         return;
 
     if ( !m_pZMPlayer->IsAlive() )
         return;
 
-
     // Update player model's look at target.
     bool bFoundViewTarget = false;
-    
+
     Vector vForward;
     AngleVectors( m_pZMPlayer->EyeAngles(), &vForward );
 
@@ -818,7 +809,7 @@ void CZMPlayerAnimState::UpdateLookAt()
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
     {
         C_ZMPlayer* pPlayer = ToZMPlayer( UTIL_PlayerByIndex( i ) );
-        if( !pPlayer ) continue;
+        if ( !pPlayer ) continue;
 
         // Don't look at dead players :(
         if ( !pPlayer->IsAlive() )
@@ -833,18 +824,17 @@ void CZMPlayerAnimState::UpdateLookAt()
         if ( pPlayer->entindex() == m_pZMPlayer->entindex() )
             continue;
 
-
         Vector vTargetOrigin = pPlayer->GetAbsOrigin();
 
         Vector vDir = vTargetOrigin - vMyOrigin;
-        
-        if ( vDir.LengthSqr() > (ZM_LOOKAT_DIST*ZM_LOOKAT_DIST) ) 
+
+        if ( vDir.LengthSqr() > ( ZM_LOOKAT_DIST * ZM_LOOKAT_DIST ) )
             continue;
 
         VectorNormalize( vDir );
 
         if ( DotProduct( vForward, vDir ) < ZM_LOOKAT_DOT )
-                continue;
+            continue;
 
         m_vLookAtTarget = pPlayer->EyePosition();
         bFoundViewTarget = true;
@@ -856,14 +846,12 @@ void CZMPlayerAnimState::UpdateLookAt()
         m_vLookAtTarget = m_pZMPlayer->EyePosition() + vForward * 512.0f;
     }
 
-
     m_flLastLookAtUpdate = gpGlobals->curtime;
 }
 
 void CZMPlayerAnimState::ComputePoseParam_Head( CStudioHdr* hdr )
 {
     UpdateLookAt();
-
 
     // orient eyes
     m_pZMPlayer->SetLookat( m_vLookAtTarget );
@@ -884,10 +872,8 @@ void CZMPlayerAnimState::ComputePoseParam_Head( CStudioHdr* hdr )
     QAngle bodyAngles( 0, 0, 0 );
     bodyAngles[YAW] = m_flGoalFeetYaw; // Just use our feet goal yaw.
 
-
     float flBodyYawDiff = bodyAngles[YAW] - m_flLastBodyYaw;
     m_flLastBodyYaw = bodyAngles[YAW];
-    
 
     // Set the head's yaw.
     // Take into account aim yaw.
@@ -898,14 +884,13 @@ void CZMPlayerAnimState::ComputePoseParam_Head( CStudioHdr* hdr )
     // Counterrotate the head from the body rotation so it doesn't rotate past its target.
     m_flCurrentHeadYaw = AngleNormalize( m_flCurrentHeadYaw - flBodyYawDiff );
     desired = clamp( desired, m_headYawMin, m_headYawMax );
-    
+
     m_pZMPlayer->SetPoseParameter( m_headYawPoseParam, m_flCurrentHeadYaw );
 
-    
     // Set the head's pitch.
     desired = AngleNormalize( desiredAngles[PITCH] );
     desired = clamp( desired, m_headPitchMin, m_headPitchMax );
-    
+
     m_flCurrentHeadPitch = ApproachAngle( desired, m_flCurrentHeadPitch, 130 * gpGlobals->frametime );
     m_flCurrentHeadPitch = AngleNormalize( m_flCurrentHeadPitch );
     m_pZMPlayer->SetPoseParameter( m_headPitchPoseParam, m_flCurrentHeadPitch );
@@ -914,38 +899,38 @@ void CZMPlayerAnimState::ComputePoseParam_Head( CStudioHdr* hdr )
 
 //-----------------------------------------------------------------------------
 // Purpose: Override the default, because hl2mp models don't use moveX
-// Input  :  - 
+// Input  :  -
 // Output : float
 //-----------------------------------------------------------------------------
 float CZMPlayerAnimState::GetCurrentMaxGroundSpeed()
 {
-    CStudioHdr *pStudioHdr = m_pZMPlayer->GetModelPtr();
+    CStudioHdr* pStudioHdr = m_pZMPlayer->GetModelPtr();
 
     if ( pStudioHdr == nullptr )
         return 1.0f;
 
-//	float prevX = GetBasePlayer()->GetPoseParameter( m_PoseParameterData.m_iMoveX );
+    //	float prevX = GetBasePlayer()->GetPoseParameter( m_PoseParameterData.m_iMoveX );
     float prevY = m_pZMPlayer->GetPoseParameter( m_PoseParameterData.m_iMoveY );
 
-    float d = sqrtf( /*prevX * prevX + */prevY * prevY );
+    float d = sqrtf( /*prevX * prevX + */ prevY * prevY );
     float newY;//, newX;
     if ( d == 0.0 )
-    { 
-//		newX = 1.0;
+    {
+        //		newX = 1.0;
         newY = 0.0;
     }
     else
     {
-//		newX = prevX / d;
+        //		newX = prevX / d;
         newY = prevY / d;
     }
 
-//	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, newX );
+    //	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, newX );
     m_pZMPlayer->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveY, newY );
 
     float speed = m_pZMPlayer->GetSequenceGroundSpeed( m_pZMPlayer->GetSequence() );
 
-//	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, prevX );
+    //	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, prevX );
     m_pZMPlayer->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveY, prevY );
 
     return speed;

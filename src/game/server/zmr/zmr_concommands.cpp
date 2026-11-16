@@ -2,30 +2,26 @@
 
 #include "items.h"
 
-
-#include "zmr_ammo.h"
 #include "weapons/zmr_base.h"
-#include "zmr_shareddefs.h"
-#include "zmr_player.h"
+#include "zmr_ammo.h"
 #include "zmr_gamerules.h"
+#include "zmr_player.h"
+#include "zmr_shareddefs.h"
 #include "zmr_voicelines.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 /*
     Drop ammo
 */
-void ZM_DropAmmo( const CCommand &args )
+void ZM_DropAmmo( const CCommand& args )
 {
     CZMPlayer* pPlayer = ToZMPlayer( UTIL_GetCommandClient() );
-    
+
     if ( !pPlayer ) return;
 
     if ( !pPlayer->IsHuman() || !pPlayer->IsAlive() ) return;
-
-
 
     CZMBaseWeapon* pWeapon = ToZMBaseWeapon( pPlayer->GetActiveWeapon() );
 
@@ -33,10 +29,9 @@ void ZM_DropAmmo( const CCommand &args )
 
     if ( !pWeapon->CanBeDropped() ) return;
 
-
     const char* ammoname = pWeapon->GetDropAmmoName();
     int amount = pWeapon->GetDropAmmoAmount();
-    
+
     // We have no ammo to drop.
     if ( !ammoname ) return;
 
@@ -56,18 +51,15 @@ void ZM_DropAmmo( const CCommand &args )
 
     // Make sure we don't spawn in the wall.
     Vector testhull( 6, 6, 6 );
-    
+
     UTIL_TraceHull( src, end, -testhull, testhull, MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &trace );
 
-
     CZMAmmo* ammobox = (CZMAmmo*)CBaseEntity::Create( ammoname, trace.endpos, pWeapon->GetAbsAngles(), nullptr );
-    
-    if ( !ammobox ) return;
 
+    if ( !ammobox ) return;
 
     // Don't let players pickup this ammo instantly...
     ammobox->SetNextPickupTouch( 1.0f );
-
 
     IPhysicsObject* pPhys = ammobox->VPhysicsGetObject();
 
@@ -90,14 +82,13 @@ static ConCommand dropammo( "dropammo", ZM_DropAmmo, "Drop your ammo from your c
 /*
     Drop weapon
 */
-void ZM_DropWeapon( const CCommand &args )
+void ZM_DropWeapon( const CCommand& args )
 {
     CZMPlayer* pPlayer = ToZMPlayer( UTIL_GetCommandClient() );
-    
+
     if ( !pPlayer ) return;
 
     if ( !pPlayer->IsHuman() || !pPlayer->IsAlive() ) return;
-
 
     CZMBaseWeapon* pWeapon = ToZMBaseWeapon( pPlayer->GetActiveWeapon() );
 
@@ -108,7 +99,6 @@ void ZM_DropWeapon( const CCommand &args )
 
     if ( !pWeapon->CanBeDropped() ) return;
 
-
     pPlayer->Weapon_Drop( pWeapon, nullptr, nullptr );
 }
 
@@ -117,7 +107,7 @@ static ConCommand dropweapon( "dropweapon", ZM_DropWeapon, "Drop your current we
 /*
     Round restart
 */
-void ZM_RoundRestart( const CCommand &args )
+void ZM_RoundRestart( const CCommand& args )
 {
     if ( !UTIL_IsCommandIssuedByServerAdmin() )
     {
@@ -131,7 +121,6 @@ void ZM_RoundRestart( const CCommand &args )
             return;
         }
     }
-    
 
     ZMRules()->EndRound( ZMROUND_ZMSUBMIT );
 }
@@ -163,16 +152,15 @@ void ZM_MoveToSurvivor( const CCommand& args )
     }
 
     vSurvivors.Sort( []( CZMPlayer* const* p1, CZMPlayer* const* p2 )
-    {
-        float a = ( *p1 )->GetAbsOrigin().x;
-        float b = ( *p2 )->GetAbsOrigin().x;
-        if ( a < b ) return -1;
-        if ( a > b ) return 1;
-        return 0;
-    } );
-    
-    Vector myPos = pPlayer->GetAbsOrigin();
+        {
+            float a = ( *p1 )->GetAbsOrigin().x;
+            float b = ( *p2 )->GetAbsOrigin().x;
+            if ( a < b ) return -1;
+            if ( a > b ) return 1;
+            return 0;
+        } );
 
+    Vector myPos = pPlayer->GetAbsOrigin();
 
     const float flMinDistSqr = 512.0f * 512.0f;
 
@@ -195,22 +183,19 @@ void ZM_MoveToSurvivor( const CCommand& args )
         nextIndex = 0;
     }
 
-
     Vector pos = vSurvivors[nextIndex]->EyePosition();
     pPlayer->Teleport( &pos, nullptr, nullptr );
 }
 
 static ConCommand zm_movetosurvivor( "zm_movetosurvivor", ZM_MoveToSurvivor, "Move yourself to a survivor. Cycles to the next one when executed rapidly." );
 
-
-void ZM_ObserveZombie( const CCommand &args )
+void ZM_ObserveZombie( const CCommand& args )
 {
     CZMPlayer* pPlayer = ToZMPlayer( UTIL_GetCommandClient() );
 
     if ( !pPlayer ) return;
 
     if ( !pPlayer->IsObserver() ) return;
-
 
     CZMBaseZombie* pZombie = nullptr;
     if ( args.ArgC() > 1 )
@@ -220,9 +205,9 @@ void ZM_ObserveZombie( const CCommand &args )
     else
     {
         // No argument, trace a line.
-        CBaseEntity* pIgnore = (pPlayer->GetObserverTarget() && pPlayer->GetObserverMode() != OBS_MODE_ROAMING)
-            ? pPlayer->GetObserverTarget()
-            : pPlayer;
+        CBaseEntity* pIgnore = ( pPlayer->GetObserverTarget() && pPlayer->GetObserverMode() != OBS_MODE_ROAMING )
+                                 ? pPlayer->GetObserverTarget()
+                                 : pPlayer;
 
         trace_t tr;
         UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyeDirection3D() * MAX_COORD_FLOAT, MASK_NPCSOLID, pIgnore, COLLISION_GROUP_NPC, &tr );
@@ -233,7 +218,6 @@ void ZM_ObserveZombie( const CCommand &args )
         }
     }
 
-
     CBaseCombatCharacter* pCharacter = pZombie;
 
     // No valid zombie found. Try a random one.
@@ -241,18 +225,17 @@ void ZM_ObserveZombie( const CCommand &args )
     {
         pCharacter = nullptr;
 
-
         int i;
         CUtlVector<CBaseCombatCharacter*> vChars;
         CBaseEntity* pCurTarget = pPlayer->GetObserverTarget();
-        
+
         // Flip from players to zombies and vice versa.
         if ( !pCurTarget || pCurTarget->IsPlayer() )
         {
-            g_ZombieManager.ForEachAliveZombie( [ &vChars ]( CZMBaseZombie* pZombie )
-            {
-                vChars.AddToTail( pZombie );
-            } );
+            g_ZombieManager.ForEachAliveZombie( [&vChars]( CZMBaseZombie* pZombie )
+                {
+                    vChars.AddToTail( pZombie );
+                } );
         }
         else
         {
@@ -265,11 +248,9 @@ void ZM_ObserveZombie( const CCommand &args )
             }
         }
 
-
         if ( vChars.Count() > 0 )
             pCharacter = vChars[random->RandomInt( 0, vChars.Count() - 1 )];
     }
-
 
     if ( pCharacter && pPlayer->SetObserverTarget( pCharacter ) )
     {
@@ -279,21 +260,17 @@ void ZM_ObserveZombie( const CCommand &args )
 
 static ConCommand zm_observezombie( "zm_observezombie", ZM_ObserveZombie, "Allows observer to spectate a given zombie (ent index)." );
 
-
 /*
 
 */
-void ZM_VoiceMenu( const CCommand &args )
+void ZM_VoiceMenu( const CCommand& args )
 {
     if ( args.ArgC() <= 1 ) return;
 
-
     CZMPlayer* pPlayer = ToZMPlayer( UTIL_GetCommandClient() );
-    if ( !pPlayer )  return;
+    if ( !pPlayer ) return;
 
     if ( !pPlayer->IsHuman() || !pPlayer->IsAlive() ) return;
-
-
 
     ZMGetVoiceLines()->OnVoiceLine( pPlayer, atoi( args.Arg( 1 ) ) );
 }
@@ -312,7 +289,7 @@ void ZM_RatMode( const CCommand& args )
     }
 
     CZMPlayer* pPlayer = ToZMPlayer( UTIL_GetCommandClient() );
-    
+
     if ( !pPlayer ) return;
 
     if ( pPlayer->GetTeamNumber() != ZMTEAM_SPECTATOR || pPlayer->IsRat() )
@@ -335,17 +312,16 @@ static ConCommand zm_ratmode( "zm_ratmode", ZM_RatMode, "Turn into a rat." );
     Mirror legacy cvars to the new ones.
     Only set because some maps can break without these.
 */
-#define LEGACY_CVAR( oldcvar, newcvar ) \
-    CON_COMMAND( oldcvar, "DON'T EDIT THIS CVAR, USE "#newcvar" INSTEAD!" ) \
-    { \
-        extern ConVar newcvar; \
-        if ( UTIL_IsCommandIssuedByServerAdmin() ) \
-        { \
+#define LEGACY_CVAR( oldcvar, newcvar )                                            \
+    CON_COMMAND( oldcvar, "DON'T EDIT THIS CVAR, USE " #newcvar " INSTEAD!" )      \
+    {                                                                              \
+        extern ConVar newcvar;                                                     \
+        if ( UTIL_IsCommandIssuedByServerAdmin() )                                 \
+        {                                                                          \
             Msg( "LEGACY CVAR %s | %s -> %s\n", #oldcvar, #newcvar, args.ArgS() ); \
-            newcvar.SetValue( args.ArgS() ); \
-        } \
+            newcvar.SetValue( args.ArgS() );                                       \
+        }                                                                          \
     }
-
 
 // taters_made_this
 LEGACY_CVAR( zm_resource_limit, zm_sv_resource_max )

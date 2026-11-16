@@ -2,9 +2,7 @@
 
 #include "npcr_motor_player.h"
 
-
 extern ConVar sv_stepsize;
-
 
 NPCR::CPlayerMotor::CPlayerMotor( CPlayerCmdHandler* pNPC ) : CBaseMotor( pNPC )
 {
@@ -40,7 +38,6 @@ void NPCR::CPlayerMotor::Update()
 {
     Move();
 
-
     BaseClass::Update();
 }
 
@@ -61,13 +58,12 @@ void NPCR::CPlayerMotor::Move()
     }
 
     m_flMoveDist = m_vecMoveDir.NormalizeInPlace();
-    
+
     const float epsilon = 0.1f;
     if ( m_flMoveDist < epsilon )
     {
         return;
     }
-
 
     AngleVectors( ang, &fwd, &right, &up );
 

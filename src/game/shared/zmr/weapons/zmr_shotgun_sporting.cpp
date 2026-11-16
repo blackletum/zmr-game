@@ -8,7 +8,6 @@
 
 #include "zmr_basepump.h"
 
-
 #ifdef CLIENT_DLL
 #define CZMWeaponShotgunSporting C_ZMWeaponShotgunSporting
 #endif
@@ -22,18 +21,14 @@ public:
 
     CZMWeaponShotgunSporting();
 
-
     bool IsFiringBothBarrels() const { return IsInSecondaryAttack(); }
-
 
     virtual void PrimaryAttack() override;
     virtual void SecondaryAttack() override;
     virtual bool Reload() override;
     virtual void SecondaryAttackEffects( WeaponSound_t wpnsound ) override;
 
-
     void ShootBarrels( bool bWantBoth );
-
 
 #ifdef GAME_DLL
     virtual int GetMaxUserCmdBullets( ZMUserCmdValidData_t& data ) const override;
@@ -53,7 +48,6 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS( weapon_zm_shotgun_sporting, CZMWeaponShotgunSporting );
 
 PRECACHE_WEAPON_REGISTER( weapon_zm_shotgun_sporting );
-
 
 CZMWeaponShotgunSporting::CZMWeaponShotgunSporting()
 {
@@ -75,27 +69,22 @@ void CZMWeaponShotgunSporting::ShootBarrels( bool bWantBoth )
 {
     if ( !CanAct( bWantBoth ? WEPACTION_ATTACK2 : WEPACTION_ATTACK ) ) return;
 
-
     if ( m_flNextPrimaryAttack > gpGlobals->curtime )
         return;
 
-
     // If my clip is empty (and I use clips) start reload
-    if ( UsesClipsForAmmo1() && !m_iClip1 ) 
+    if ( UsesClipsForAmmo1() && !m_iClip1 )
     {
         Reload();
         return;
     }
 
-
     bool bShootSingle = m_iClip1 < 2 || !bWantBoth;
-
 
     float delay = GetFireRate();
 
     m_flNextSecondaryAttack = gpGlobals->curtime + delay;
     m_flNextPrimaryAttack = m_flNextSecondaryAttack;
-    
 
     if ( bShootSingle )
     {
@@ -124,6 +113,6 @@ void CZMWeaponShotgunSporting::SecondaryAttackEffects( WeaponSound_t wpnsound )
 int CZMWeaponShotgunSporting::GetMaxUserCmdBullets( ZMUserCmdValidData_t& data ) const
 {
     int bullets = GetBulletsPerShot();
-    return IsInSecondaryAttack() ? (bullets * 2) : bullets;
+    return IsInSecondaryAttack() ? ( bullets * 2 ) : bullets;
 }
 #endif

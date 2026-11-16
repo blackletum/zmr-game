@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include "npcs/zmr_zombiebase.h"
 #include "npcs/zmr_banshee.h"
+#include "npcs/zmr_zombiebase.h"
 #include "zmr_zombie_main.h"
 
 //
@@ -48,7 +47,6 @@ private:
     CBaseEntity* GetClingAmbushTarget() const;
 
     void Leap( CBaseEntity* pTarget );
-
 
     CountdownTimer m_ExpireTimer;
     CountdownTimer m_NextAmbushCheck;

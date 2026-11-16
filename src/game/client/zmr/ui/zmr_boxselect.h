@@ -3,7 +3,6 @@
 #include "baseviewport.h"
 #include "hudelement.h"
 
-
 class CZMBoxSelect : public vgui::Panel
 
 {
@@ -12,11 +11,10 @@ public:
 
     CZMBoxSelect( vgui::Panel* pParent );
 
-
     //virtual bool ShouldDraw() override;
     //virtual void Init() override;
     virtual void Paint() override;
-    
+
     //inline void SetDraw( bool b ) { m_bDraw = b; };
 
     void SetStart( int, int );
@@ -32,11 +30,12 @@ public:
 
     inline bool ShouldSelect()
     {
-        return abs(end_x - start_x) > 2 && abs(end_y - start_y) > 2;
+        return abs( end_x - start_x ) > 2 && abs( end_y - start_y ) > 2;
     }
+
 private:
     //bool m_bDraw;
-    
+
     int start_x, start_y;
     int end_x, end_y;
 };

@@ -1,9 +1,6 @@
 #pragma once
 
-
-
 #include "zmr_player_shared.h"
-
 
 struct ZMVoiceLine_t
 {
@@ -30,7 +27,6 @@ struct ZMVoiceLine_t
 #endif
 };
 
-
 class CZMVoiceLines : public CAutoGameSystem
 #ifdef CLIENT_DLL
     , public CGameEventListener
@@ -40,7 +36,6 @@ public:
     CZMVoiceLines();
     ~CZMVoiceLines();
 
-
     virtual void PostInit() override;
 
 #ifdef CLIENT_DLL
@@ -48,12 +43,10 @@ public:
 
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
 
-
     static void PlayVoiceLine( C_BasePlayer* pOrigin, const Vector* vecPos, const char* szLine, int seed = -1 );
 
     bool IsFemale( C_ZMPlayer* pPlayer ) const;
 #endif
-
 
 #ifdef GAME_DLL
     void OnVoiceLine( CZMPlayer* pPlayer, int index );
@@ -61,7 +54,6 @@ public:
     void SendVoiceLine( int index );
 #endif
     void LoadVoiceLines();
-
 
     ZMVoiceLine_t* FindVoiceLineByIndex( int index ) const;
 

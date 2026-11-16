@@ -6,25 +6,21 @@
 #include <collisionutils.h>
 #endif
 
-
-
 #include "zmr_usercmd.h"
 #ifdef GAME_DLL
-#include "weapons/zmr_base.h"
 #include "npcs/zmr_zombiebase.h"
+#include "weapons/zmr_base.h"
 #include "zmr_player.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 static ConVar zm_sv_clientsidehitdetection( "zm_sv_clientsidehitdetection", "1", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED );
 
 #ifdef GAME_DLL
 ConVar zm_sv_debug_clientsidehitdetec( "zm_sv_debug_clientsidehitdetec", "0" );
 #endif
-
 
 void ZMUserCmdHitData_t::Merge( const ZMUserCmdHitData_t& hit )
 {
@@ -48,37 +44,31 @@ void ZMUserCmdHitData_t::WriteTo( bf_write* buf ) const
 {
     int i;
 
-	buf->WriteUBitLong( entindex, MAX_EDICT_BITS );
+    buf->WriteUBitLong( entindex, MAX_EDICT_BITS );
     buf->WriteUBitLong( nHits, ZM_NUMHITS_BITS );
     for ( i = 0; i < nHits; i++ )
-		buf->WriteUBitLong( hitgroups[i], ZM_HITGROUP_BITS );
+        buf->WriteUBitLong( hitgroups[i], ZM_HITGROUP_BITS );
 }
 
 void ZMUserCmdHitData_t::ReadFrom( bf_read* buf )
 {
     int n, i;
 
-	entindex = buf->ReadUBitLong( MAX_EDICT_BITS );
+    entindex = buf->ReadUBitLong( MAX_EDICT_BITS );
 
     n = buf->ReadUBitLong( ZM_NUMHITS_BITS );
-	nHits = MIN( n, ZM_USERCMD_MAX_BULLETS_PER_SHOT );
+    nHits = MIN( n, ZM_USERCMD_MAX_BULLETS_PER_SHOT );
 
-
-	for ( i = 0; i < nHits; i++ )
+    for ( i = 0; i < nHits; i++ )
         hitgroups[i] = buf->ReadUBitLong( ZM_HITGROUP_BITS );
 }
 
-
-
-
 CZMUserCmdSystem::CZMUserCmdSystem() : CAutoGameSystem( "CZMUserCmdSystem" )
 {
-
 }
 
 CZMUserCmdSystem::~CZMUserCmdSystem()
 {
-    
 }
 
 #ifdef CLIENT_DLL
@@ -135,7 +125,7 @@ ZMUserCmdHitData_t* CZMUserCmdSystem::FindDamageByEntity( int entindex )
     {
         if ( m_vHitEnts[i].entindex == entindex )
         {
-            return &(m_vHitEnts[i]);
+            return &( m_vHitEnts[i] );
         }
     }
 
@@ -148,7 +138,6 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
 {
     const CUserCmd* pCmd = pPlayer->GetCurrentCommand();
 
-
     CZMBaseWeapon* pWep = wepdata.hWeapon.Get();
     if ( !pWep )
         return 0;
@@ -160,11 +149,10 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
     // We also need some sort of snapshot of the last time we shot to make sure the player's not cheating,
     // hence wepdata.
     //
-    if ( (wepdata.iLastFireCommandNumber+1) > pCmd->command_number )
+    if ( ( wepdata.iLastFireCommandNumber + 1 ) > pCmd->command_number )
     {
         return 0;
     }
-
 
     int iAmmoType = wepdata.iAmmoType;
     int fDmgBits = GetAmmoDef()->DamageType( wepdata.iAmmoType );
@@ -191,7 +179,6 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
             continue;
         }
 
-
         CBaseEntity* pEntity = CBaseEntity::Instance( engine->PEntityOfEntIndex( entindex ) );
         if ( !pEntity )
             continue;
@@ -202,11 +189,8 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
         if ( !pEntity->IsAlive() )
             continue;
 
-
         float flDamage = wepdata.flDamage;
         int nHits = cmddata.nHits;
-
-
 
         // Verify that the player isn't cheating
         data.pVictim = pEntity;
@@ -223,9 +207,8 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
             continue;
         }
 
-
         // Construct a pseudo FireBullets to let the entity handle all the damage scaling, etc.
-        
+
         // Copy the data back in case the validator updated anything.
         nHits = data.nHits;
         nHitsAccumulated = data.nAlreadyHit;
@@ -238,10 +221,8 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
         tr.endpos = vecDefEnd;
         tr.fraction = 1.0f; // We'll have to fraction it properly.
 
-
         Vector dir = tr.endpos - tr.startpos;
         dir.NormalizeInPlace();
-
 
         CTakeDamageInfo dmg( pPlayer, pPlayer, pWep, vec3_origin, vec3_origin, flDamage, fDmgBits );
         dmg.SetAmmoType( iAmmoType );
@@ -271,7 +252,6 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
             // Entity needs hitgroups
             tr.hitgroup = cmddata.hitgroups[j];
 
-
             // Compute the trace end if the hitgroup changes.
             if ( bHasHitboxes && tr.hitgroup != iLastHitGroup )
             {
@@ -287,7 +267,6 @@ int CZMUserCmdSystem::ApplyDamage( CZMPlayer* pPlayer, const ZMServerWepData_t& 
                 NDebugOverlay::Axis( tr.endpos, ang, 8.0f, true, zm_sv_debug_clientsidehitdetec.GetFloat() );
             }
 #endif
-
 
             pEntity->DispatchTraceAttack( dmg, dir, &tr, nullptr );
 
@@ -328,7 +307,6 @@ bool CZMUserCmdSystem::HasHitboxes( CBaseEntity* pVictim )
     if ( !set || !set->numhitboxes )
         return false;
 
-
     int iHitGroup = -1;
 
     for ( int i = 0; i < set->numhitboxes; i++ )
@@ -362,7 +340,6 @@ bool CZMUserCmdSystem::ComputeTraceEnd( CBaseEntity* pVictim, trace_t& tr )
     if ( !set || !set->numhitboxes )
         return false;
 
-
     // The model will have multiple hitboxes with the same hitgroup but it's not a big deal, really.
     int iHitGroup = tr.hitgroup;
 
@@ -371,33 +348,28 @@ bool CZMUserCmdSystem::ComputeTraceEnd( CBaseEntity* pVictim, trace_t& tr )
         mstudiobbox_t* pBox = set->pHitbox( i );
         if ( pBox->group != iHitGroup )
             continue;
-        
 
         // We found the bone with the same hitgroup, now compute the actual intersection.
 
         int iBone = pBox->bone;
         mstudiobone_t* pBone = pHdr->pBone( iBone );
 
-
         tr.surface.flags = SURF_HITBOX;
         tr.surface.surfaceProps = physprops->GetSurfaceIndex( pBone->pszSurfaceProp() );
         tr.physicsbone = pBone->physicsbone; // We need the physics bone for proper ragdolling.
 
-
         matrix3x4_t* pMatrix = pAnim->GetBoneCache()->GetCachedBone( iBone );
         if ( !pMatrix )
             return false;
-
 
         MatrixPosition( *pMatrix, tr.endpos );
 
         // Center it
         Vector boxextents;
         for ( int j = 0; j < 3; j++ )
-            boxextents[j] = (pBox->bbmin[j] + pBox->bbmax[j]) * 0.5f;
+            boxextents[j] = ( pBox->bbmin[j] + pBox->bbmax[j] ) * 0.5f;
 
         VectorTransform( boxextents, *pMatrix, tr.endpos );
-
 
         // Do the actual magic
         //trace_t tempTrace;
@@ -408,7 +380,7 @@ bool CZMUserCmdSystem::ComputeTraceEnd( CBaseEntity* pVictim, trace_t& tr )
 
         return true;
     }
-    
+
     return false;
 }
 #endif
@@ -432,6 +404,5 @@ bool CZMUserCmdSystem::UsesClientsideDetection( CBaseEntity* pEnt ) const
     return pEnt && pEnt->IsBaseZombie();
 #endif
 }
-
 
 CZMUserCmdSystem g_ZMUserCmdSystem;

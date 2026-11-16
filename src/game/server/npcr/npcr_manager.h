@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace NPCR
 {
     class CBaseNPC;
@@ -11,9 +10,8 @@ namespace NPCR
         NPCManager();
         ~NPCManager();
 
-
         static double GetProfilingTime();
-        
+
         void RegisterNPC( CBaseNPC* pNPC );
         void UnRegisterNPC( CBaseNPC* pNPC );
 
@@ -32,7 +30,6 @@ namespace NPCR
                     break;
             }
         }
-
 
         bool UsesUpdateSlots() const;
         void UpdateSlots();

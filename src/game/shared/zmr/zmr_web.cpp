@@ -6,17 +6,15 @@
 #ifndef CLIENT_DLL
 #include "steam/steam_gameserver.h"
 
-#define STEAMAPI_CONTEXT     steamgameserverapicontext
+#define STEAMAPI_CONTEXT steamgameserverapicontext
 #else
-#define STEAMAPI_CONTEXT     steamapicontext
+#define STEAMAPI_CONTEXT steamapicontext
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define VERSION_URL     "http://version.zombiemaster.dev"
-
+#define VERSION_URL "http://version.zombiemaster.dev"
 
 void CZMWeb::Get( const char* url, HTTPCallback::func_t func )
 {
@@ -25,9 +23,8 @@ void CZMWeb::Get( const char* url, HTTPCallback::func_t func )
         Assert( 0 );
         return;
     }
-    
-    HTTPRequestHandle req = STEAMAPI_CONTEXT->SteamHTTP()->CreateHTTPRequest( k_EHTTPMethodGET, url );
 
+    HTTPRequestHandle req = STEAMAPI_CONTEXT->SteamHTTP()->CreateHTTPRequest( k_EHTTPMethodGET, url );
 
     SteamAPICall_t call;
 
@@ -58,11 +55,10 @@ void CZMWeb::Callback_Version( HTTPRequestCompleted_t* pResult, bool bIOFailure 
 
     if ( !pResult || !pResult->m_hRequest ) return;
 
-
-    if (!bIOFailure &&
-        pResult->m_bRequestSuccessful &&
-        pResult->m_eStatusCode == k_EHTTPStatusCode200OK &&
-        pResult->m_unBodySize > 0 )
+    if ( !bIOFailure &&
+         pResult->m_bRequestSuccessful &&
+         pResult->m_eStatusCode == k_EHTTPStatusCode200OK &&
+         pResult->m_unBodySize > 0 )
     {
         uint8* data = new uint8[pResult->m_unBodySize + 1];
         STEAMAPI_CONTEXT->SteamHTTP()->GetHTTPResponseBodyData( pResult->m_hRequest, data, pResult->m_unBodySize );
@@ -90,11 +86,9 @@ void CZMWeb::ParseVersion( const char* pszVersionString )
         return;
     }
 
-
     const char* sep[] = { ".", "\n" };
 
     CSplitString strs( pszVersionString, sep, ARRAYSIZE( sep ) );
-
 
     int len = strs.Count() >= 2 ? 2 : 0;
     for ( int i = 0; i < len; i++ )
@@ -106,8 +100,7 @@ void CZMWeb::ParseVersion( const char* pszVersionString )
 #endif
             continue;
 
-
-        if ( !FStrEq( &(strs[i][1]), ZMR_VERSION ) )
+        if ( !FStrEq( &( strs[i][1] ), ZMR_VERSION ) )
         {
 #ifdef CLIENT_DLL
             engine->ClientCmd_Unrestricted( "OpenZMNewVersion" );

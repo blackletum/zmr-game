@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include <hud_basechat.h>
-
 
 class CHudChatLine : public CBaseHudChatLine
 {
@@ -11,7 +9,7 @@ class CHudChatLine : public CBaseHudChatLine
 public:
     CHudChatLine( vgui::Panel* parent, const char* panelName ) : CBaseHudChatLine( parent, panelName ) {}
 
-    virtual void    ApplySchemeSettings( vgui::IScheme* pScheme ) override;
+    virtual void ApplySchemeSettings( vgui::IScheme* pScheme ) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -20,7 +18,7 @@ public:
 class CHudChatInputLine : public CBaseHudChatInputLine
 {
     DECLARE_CLASS_SIMPLE( CHudChatInputLine, CBaseHudChatInputLine );
-    
+
 public:
     CHudChatInputLine( CBaseHudChat* parent, char const* panelName ) : CBaseHudChatInputLine( parent, panelName ) {}
 
@@ -45,5 +43,5 @@ public:
 
     virtual Color GetClientColor( int clientIndex ) override;
 
-    virtual void MsgFunc_SayText2( bf_read &msg ) override;
+    virtual void MsgFunc_SayText2( bf_read& msg ) override;
 };

@@ -6,7 +6,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CSurvivorAttackCloseRangeSchedule::CSurvivorAttackCloseRangeSchedule()
 {
     m_bAllowMelee = false;
@@ -24,7 +23,6 @@ void CSurvivorAttackCloseRangeSchedule::OnStart()
     m_Path.Invalidate();
     m_NextRangeCheck.Invalidate();
     m_NextMovingToRange.Invalidate();
-
 
     CZMPlayerBot* pOuter = GetOuter();
 
@@ -48,7 +46,6 @@ void CSurvivorAttackCloseRangeSchedule::OnStart()
         }
     }
 
-        
     End( "Couldn't find any weapons with ammo!" );
 }
 
@@ -68,28 +65,23 @@ void CSurvivorAttackCloseRangeSchedule::OnUpdate()
         return;
     }
 
-
     if ( !pOuter->HasEquippedWeaponOfType( BOTWEPRANGE_MELEE ) && !pOuter->WeaponHasAmmo( pOuter->GetActiveWeapon() ) )
     {
         End( "No ammo left!" );
         return;
     }
 
-
     auto* pFollow = pOuter->GetFollowTarget();
 
-    if ( pFollow && pFollow->GetAbsOrigin().DistToSqr( pOuter->GetAbsOrigin() ) > (256.0f*256.0f) )
+    if ( pFollow && pFollow->GetAbsOrigin().DistToSqr( pOuter->GetAbsOrigin() ) > ( 256.0f * 256.0f ) )
     {
         End( "Follow target was too far away to attack anymore!" );
         return;
     }
 
-
-
     if ( !m_NextRangeCheck.HasStarted() || m_NextRangeCheck.IsElapsed() )
     {
         m_NextRangeCheck.Start( 0.1f );
-
 
         if ( !m_bMovingOutOfRange && ShouldMoveBack( pEnemy ) )
         {
@@ -101,7 +93,6 @@ void CSurvivorAttackCloseRangeSchedule::OnUpdate()
         }
     }
 
-
     if ( m_Path.IsValid() )
     {
         m_Path.Update( pOuter );
@@ -112,25 +103,20 @@ void CSurvivorAttackCloseRangeSchedule::OnUpdate()
         m_bMovingToRange = false;
     }
 
-
     Vector vecAimTarget;
-
 
     // TODO: Aim at head?
     vecAimTarget = pEnemy->WorldSpaceCenter();
 
-
     pOuter->GetMotor()->FaceTowards( vecAimTarget );
-
 
     // Fix this grace stuff as the bot will not aim accurately.
     float grace = IsMeleeing() ? 60.0f : 8.0f;
 
-
     if ( IsInRangeToAttack( pEnemy ) && pOuter->GetMotor()->IsFacing( vecAimTarget, grace ) )
     {
-        if (pOuter->GetSenses()->CanSee( vecAimTarget ) &&
-            (!pOuter->MustStopToShoot() || pOuter->GetLocalVelocity().IsLengthLessThan( 1.0f )))
+        if ( pOuter->GetSenses()->CanSee( vecAimTarget ) &&
+             ( !pOuter->MustStopToShoot() || pOuter->GetLocalVelocity().IsLengthLessThan( 1.0f ) ) )
         {
             pOuter->PressFire1( 0.1f );
         }
@@ -161,7 +147,7 @@ bool CSurvivorAttackCloseRangeSchedule::IsInRangeToAttack( CBaseEntity* pEnemy )
 {
     float flDist = GetOuter()->GetMaxAttackDistance();
 
-    return pEnemy->GetAbsOrigin().DistToSqr( GetOuter()->GetPosition() ) < (flDist*flDist);
+    return pEnemy->GetAbsOrigin().DistToSqr( GetOuter()->GetPosition() ) < ( flDist * flDist );
 }
 
 bool CSurvivorAttackCloseRangeSchedule::ShouldMoveBack( CBaseEntity* pEnemy ) const
@@ -170,9 +156,8 @@ bool CSurvivorAttackCloseRangeSchedule::ShouldMoveBack( CBaseEntity* pEnemy ) co
 
     float flMoveBackRange = IsMeleeing() ? 32.0f : 128.0f;
 
-    if ( flDistSqr > (flMoveBackRange*flMoveBackRange) )
+    if ( flDistSqr > ( flMoveBackRange * flMoveBackRange ) )
         return false;
-
 
     return true;
 }
@@ -184,8 +169,7 @@ void CSurvivorAttackCloseRangeSchedule::MoveToShootingRange( CBaseEntity* pEnemy
     const Vector vecEnemyPos = pEnemy->GetAbsOrigin();
     const Vector vecMyPos = pOuter->GetPosition();
 
-    Vector dir = (vecMyPos - vecEnemyPos).Normalized();
-
+    Vector dir = ( vecMyPos - vecEnemyPos ).Normalized();
 
     float flDist = pOuter->GetOptimalAttackDistance();
 
@@ -204,7 +188,6 @@ void CSurvivorAttackCloseRangeSchedule::MoveToShootingRange( CBaseEntity* pEnemy
 
     m_Path.Compute( vecMyPos, vecTarget, pStart, pGoal, m_PathCost );
 
-
     m_bMovingOutOfRange = false;
     m_bMovingToRange = m_Path.IsValid();
 }
@@ -216,7 +199,7 @@ void CSurvivorAttackCloseRangeSchedule::MoveBackFromThreat( CBaseEntity* pEnemy 
     const Vector vecEnemyPos = pEnemy->GetAbsOrigin();
     const Vector vecMyPos = pOuter->GetPosition();
 
-    Vector dir = (vecMyPos - vecEnemyPos).Normalized();
+    Vector dir = ( vecMyPos - vecEnemyPos ).Normalized();
 
     Vector vecTarget = vecMyPos + dir * 128.0f;
 
@@ -232,7 +215,6 @@ void CSurvivorAttackCloseRangeSchedule::MoveBackFromThreat( CBaseEntity* pEnemy 
     m_PathCost.SetGoalPos( vecTarget, pGoal );
 
     m_Path.Compute( vecMyPos, vecTarget, pStart, pGoal, m_PathCost );
-
 
     m_bMovingOutOfRange = m_Path.IsValid();
     m_bMovingToRange = false;

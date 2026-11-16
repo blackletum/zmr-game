@@ -1,13 +1,11 @@
 #include "cbase.h"
 #include "filesystem.h"
 
-
-#include "zmr_options_misc.h"
 #include "c_zmr_player.h"
+#include "zmr_options_misc.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 extern ConVar zm_cl_firstperson_deathcam;
 extern ConVar zm_cl_deathnotice_enabled;
@@ -16,15 +14,12 @@ extern ConVar zm_cl_fov;
 extern ConVar zm_cl_roundrestart_flashtaskbar;
 extern ConVar zm_cl_roundrestart_sound;
 
-
 static int RoundRestartCvarsToIndex();
 static void IndexToRoundRestartCvars( int index );
-
 
 CZMOptionsSubMisc::CZMOptionsSubMisc( Panel* parent ) : BaseClass( parent )
 {
     LoadControlSettings( "resource/ui/zmoptionssubmisc.res" );
-
 
     LoadItem( &m_pCheck_FpDeathcam, "CheckFpDeathcam" );
     LoadItem( &m_pCheck_Deathnotice, "CheckDeathnotice" );
@@ -35,7 +30,6 @@ CZMOptionsSubMisc::CZMOptionsSubMisc( Panel* parent ) : BaseClass( parent )
 
     if ( FailedLoad() ) return;
 
-
     float fmin, fmax;
 
     if ( zm_cl_fov.GetMin( fmin ) && zm_cl_fov.GetMax( fmax ) )
@@ -43,12 +37,11 @@ CZMOptionsSubMisc::CZMOptionsSubMisc( Panel* parent ) : BaseClass( parent )
 
     m_pSlider_Fov->AddActionSignalTarget( this );
 
-
     m_pCombo_FlashRR->AddItem( "None", nullptr );
     m_pCombo_FlashRR->AddItem( "Play sound", nullptr );
     m_pCombo_FlashRR->AddItem( "Flash taskbar", nullptr );
     m_pCombo_FlashRR->AddItem( "Play sound + flash taskbar", nullptr );
-    
+
 #ifdef LINUX
     m_pCombo_FlashRR->SetEnabled( false );
 #endif
@@ -62,7 +55,6 @@ void CZMOptionsSubMisc::OnApplyChanges()
 {
     if ( FailedLoad() ) return;
 
-
     zm_cl_firstperson_deathcam.SetValue( m_pCheck_FpDeathcam->IsSelected() ? 1 : 0 );
     zm_cl_deathnotice_enabled.SetValue( m_pCheck_Deathnotice->IsSelected() ? 1 : 0 );
     zm_cl_showhelp.SetValue( m_pCheck_ShowHelp->IsSelected() ? 1 : 0 );
@@ -74,7 +66,6 @@ void CZMOptionsSubMisc::OnResetData()
 {
     if ( FailedLoad() ) return;
 
-
     m_pCheck_FpDeathcam->SetSelected( zm_cl_firstperson_deathcam.GetBool() );
     m_pCheck_Deathnotice->SetSelected( zm_cl_deathnotice_enabled.GetBool() );
     m_pCheck_ShowHelp->SetSelected( zm_cl_showhelp.GetBool() );
@@ -85,7 +76,6 @@ void CZMOptionsSubMisc::OnResetData()
 void CZMOptionsSubMisc::OnSliderMoved( Panel* panel )
 {
     if ( FailedLoad() ) return;
-
 
     if ( panel == m_pSlider_Fov )
     {
@@ -100,7 +90,6 @@ void CZMOptionsSubMisc::OnTextChanged( Panel* panel )
 {
     if ( FailedLoad() ) return;
 
-
     if ( panel == m_pTextEntry_Fov )
     {
         char buffer[32];
@@ -109,7 +98,6 @@ void CZMOptionsSubMisc::OnTextChanged( Panel* panel )
         m_pSlider_Fov->SetValue( atoi( buffer ) );
     }
 }
-
 
 static int RoundRestartCvarsToIndex()
 {
@@ -133,20 +121,20 @@ static void IndexToRoundRestartCvars( int index )
 {
     switch ( index )
     {
-    case 0 :
+    case 0:
         zm_cl_roundrestart_flashtaskbar.SetValue( 0 );
         zm_cl_roundrestart_sound.SetValue( 0 );
         break;
-    case 1 :
+    case 1:
         zm_cl_roundrestart_flashtaskbar.SetValue( 0 );
         zm_cl_roundrestart_sound.SetValue( 1 );
         break;
-    case 2 :
+    case 2:
         zm_cl_roundrestart_flashtaskbar.SetValue( 1 );
         zm_cl_roundrestart_sound.SetValue( 0 );
         break;
-    case 3 :
-    default :
+    case 3:
+    default:
         zm_cl_roundrestart_flashtaskbar.SetValue( 1 );
         zm_cl_roundrestart_sound.SetValue( 1 );
         break;

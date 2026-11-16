@@ -1,12 +1,10 @@
 #include "cbase.h"
 
-
-#include "c_zmr_player.h"
 #include "c_zmr_colorcorrection.h"
+#include "c_zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 CZMColorCorrectionSystem* ZMGetCCSystem()
 {
@@ -14,9 +12,7 @@ CZMColorCorrectionSystem* ZMGetCCSystem()
     return &s;
 }
 
-
 ConVar zm_cl_colorcorrection_effects( "zm_cl_colorcorrection_effects", "1", FCVAR_ARCHIVE );
-
 
 //
 CZMBaseCCEffect::CZMBaseCCEffect( const char* name, const char* filename )
@@ -60,7 +56,6 @@ void CZMBaseCCEffect::SetHandle( ClientCCHandle_t hndl )
 }
 //
 
-
 //
 C_ZMEntColorCorrection::C_ZMEntColorCorrection()
 {
@@ -80,7 +75,6 @@ void C_ZMEntColorCorrection::ClientThink()
         ClearEffects();
         return;
     }
-
 
     FOR_EACH_VEC( m_vCCs, i )
     {
@@ -107,7 +101,7 @@ void C_ZMEntColorCorrection::ClearEffects()
         if ( eff->HasHandle() )
         {
             g_pColorCorrectionMgr->SetColorCorrectionWeight( eff->GetHandle(), 0.0f );
-            
+
             // ZMRTODO: Figure out if this is safe to do.
             //g_pColorCorrectionMgr->RemoveColorCorrection( eff->GetHandle() );
             //eff->SetHandle( INVALID_CLIENT_CCHANDLE );
@@ -125,7 +119,6 @@ void C_ZMEntColorCorrection::AddCC( CZMBaseCCEffect* cc )
     m_vCCs.AddToTail( cc );
 }
 //
-
 
 //
 CZMColorCorrectionSystem::CZMColorCorrectionSystem() : CAutoGameSystem( "ZMColorCorrectionSystem" )
@@ -177,13 +170,11 @@ bool CZMColorCorrectionSystem::CheckCC()
     //if ( !IsReady() )
     //    InitCC();
 
-
     InitEnt();
 
     InitEffects();
 
     return true;
-    
 }
 
 void CZMColorCorrectionSystem::InitEffects()
@@ -221,7 +212,6 @@ void CZMColorCorrectionSystem::OnDeath()
 {
     if ( !CheckCC() ) return;
 
-
     FOR_EACH_VEC( m_vEffects, i )
     {
         auto* eff = m_vEffects[i];
@@ -235,7 +225,6 @@ void CZMColorCorrectionSystem::OnDeath()
 void CZMColorCorrectionSystem::OnTeamChange( int iTeam )
 {
     if ( !CheckCC() ) return;
-
 
     FOR_EACH_VEC( m_vEffects, i )
     {

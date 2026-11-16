@@ -1,0 +1,11 @@
+**/*
+!src/game/client/cl_ents/**/*
+!src/game/client/glowstencil/**/*
+!src/game/client/hl2compatibility/**/*
+!src/game/client/npcr/**/*
+!src/game/client/zmr/**/*
+!src/game/server/glowstencil/**/*
+!src/game/server/hl2compatibility/**/*
+!src/game/server/zmr/**/*
+!src/game/shared/npcr/**/*
+!src/game/shared/zmr/**/*

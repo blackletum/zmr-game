@@ -13,7 +13,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 //
 // Unused for now.
 //
@@ -50,15 +49,14 @@ static bool ZMSetBorderlessFullscreen( HWND window )
         // Have to use these in case monitor size != actual "window" size
         ScreenWidth(), //monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left
         ScreenHeight(), //monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top
-        SWP_NOSENDCHANGING | SWP_NOZORDER | SWP_NOOWNERZORDER
-    );
+        SWP_NOSENDCHANGING | SWP_NOZORDER | SWP_NOOWNERZORDER );
 
     return true;
 }
 
 static BOOL CALLBACK FindAndSetBorderless( HWND hwnd, LPARAM lParam )
 {
-    if ( hwnd == nullptr)
+    if ( hwnd == nullptr )
         return TRUE;
 
     DWORD wpid;
@@ -119,7 +117,6 @@ void ZMSetBorderless( bool state )
     else
     {
         CommandLine()->RemoveParm( "-borderless" );
-        
     }
 
     if ( updated )

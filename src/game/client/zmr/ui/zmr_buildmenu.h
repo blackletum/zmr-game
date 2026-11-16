@@ -3,22 +3,18 @@
 #include "baseviewport.h"
 #include "hudelement.h"
 
-#include <vgui/KeyCode.h>
 #include <utlvector.h>
+#include <vgui/KeyCode.h>
 
-
+#include <game/client/iviewport.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/Label.h>
-#include <game/client/iviewport.h>
 
-
-#include "zmr_buildmenu_base.h"
 #include "c_zmr_entities.h"
+#include "zmr_buildmenu_base.h"
 #include "zmr_shareddefs.h"
 
-
-
-#define TYPE_TOTAL 5
+#define TYPE_TOTAL    5
 #define BM_QUEUE_SIZE 10
 
 class CZMImageRowItemSpawn;
@@ -28,62 +24,51 @@ class CZMBuildMenu : public CZMBuildMenuBase
 public:
     DECLARE_CLASS_SIMPLE( CZMBuildMenu, CZMBuildMenuBase );
 
-
     CZMBuildMenu( vgui::Panel* pParent );
     ~CZMBuildMenu();
 
-
     virtual void ShowPanel( bool state ) override;
-	void OnThink( void );
+    void OnThink( void );
 
     virtual const char* GetName() override { return "ZMBuildMenu"; };
 
-    
+    void CalculateButtonState();
 
+    void AutoAssign();
+    int m_iLastFlags;
 
-	void CalculateButtonState();
-
-	void AutoAssign();
-	int m_iLastFlags;
-	
-	virtual void UpdateQueue( const ZMQueueSlotData_t q[], int size ) override;
+    virtual void UpdateQueue( const ZMQueueSlotData_t q[], int size ) override;
 
 protected:
+    //int             GetCostForType(int type) const;
 
+    void ShowZombieInfo( int type );
 
-	//int             GetCostForType(int type) const;
+    // helper functions
+    void SetLabelText( const char* textEntryName, const char* text );
+    void GetLabelText( const char* element, char* buffer, int buflen );
 
-	void			ShowZombieInfo(int type);
+    // command callbacks
 
+    int m_iJumpKey;
+    //int				m_iScoreBoardKey;
 
-	// helper functions
-	void			SetLabelText(const char *textEntryName, const char *text);
-	void			GetLabelText(const char* element, char *buffer, int buflen);
-	
-	// command callbacks
-	
+    vgui::Panel* spawnbuttons[TYPE_TOTAL];
+    vgui::Panel* spawnfives[TYPE_TOTAL];
+    vgui::IImage* zombieimages[TYPE_TOTAL];
+    vgui::IImage* zombiequeue[TYPE_TOTAL];
+    char* zombiedescriptions[TYPE_TOTAL];
 
-	
+    //unit info area
+    vgui::ImagePanel* info_image;
+    vgui::Label* info_rescost;
+    vgui::Label* info_popcost;
+    vgui::Label* info_description;
 
-	int				m_iJumpKey;
-	//int				m_iScoreBoardKey;
+    //queue
+    //CUtlLinkedList<vgui::ImagePanel*> queueimages; //we'll be allocating these
+    CZMImageRowItemSpawn* queueimages[BM_QUEUE_SIZE];
 
-	vgui::Panel		*spawnbuttons[TYPE_TOTAL];
-	vgui::Panel		*spawnfives[TYPE_TOTAL];
-	vgui::IImage	*zombieimages[TYPE_TOTAL];
-	vgui::IImage	*zombiequeue[TYPE_TOTAL];
-	char*			zombiedescriptions[TYPE_TOTAL];
-
-	//unit info area
-	vgui::ImagePanel *info_image;
-	vgui::Label		*info_rescost;
-	vgui::Label		*info_popcost;
-	vgui::Label		*info_description;
-
-	//queue
-	//CUtlLinkedList<vgui::ImagePanel*> queueimages; //we'll be allocating these
-	CZMImageRowItemSpawn *queueimages[BM_QUEUE_SIZE];
-
-	vgui::Button	*removelast;
-	vgui::Button	*clearqueue;
+    vgui::Button* removelast;
+    vgui::Button* clearqueue;
 };

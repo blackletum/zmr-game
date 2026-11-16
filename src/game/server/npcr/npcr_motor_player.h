@@ -1,9 +1,7 @@
 #pragma once
 
-
 #include "npcr_motor.h"
 #include "npcr_player.h"
-
 
 namespace NPCR
 {
@@ -16,9 +14,7 @@ namespace NPCR
         CPlayerMotor( CPlayerCmdHandler* pNPC );
         ~CPlayerMotor();
 
-
         virtual void Update() override;
-
 
         virtual float GetHullWidth() const override { return 16.0f; }
 
@@ -27,10 +23,8 @@ namespace NPCR
         virtual float GetYawRate( float delta ) const override;
         virtual float GetStepHeight() const override;
 
-
         virtual CBaseEntity* GetGroundEntity() const override { return GetOuter()->GetGroundEntity(); }
         virtual bool IsOnGround() const override { return GetGroundEntity() != nullptr; }
-
 
         virtual bool ShouldDoFullMove() const;
 

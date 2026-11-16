@@ -1,24 +1,22 @@
-#include "cbase.h"
 #include "GameEventListener.h"
+#include "cbase.h"
 #include <ctime>
 #ifdef GAME_DLL
 #include "networkstringtable_gamedll.h"
 #endif
 
 #ifdef CLIENT_DLL
-#include "physpropclientside.h"
+#include "c_soundscape.h"
 #include "c_te_legacytempents.h"
 #include "cdll_client_int.h"
-#include "c_soundscape.h"
+#include "physpropclientside.h"
 
 #include "cl_ents/c_cliententitysystem.h"
 
 #include <engine/IEngineSound.h>
 
-
-#include "c_zmr_zmvision.h"
 #include "c_zmr_util.h"
-
+#include "c_zmr_zmvision.h"
 
 #ifdef _WIN32
 #define _WINREG_
@@ -38,7 +36,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 #ifdef CLIENT_DLL
 ConVar zm_cl_roundrestart_flashtaskbar( "zm_cl_roundrestart_flashtaskbar", "1", 0, "Flash the taskbar icon (Windows) whenever round restarts. 1 = Only when window is not active, 2 = Always" );
 ConVar zm_cl_roundrestart_sound( "zm_cl_roundrestart_sound", "1", 0, "Play a sound whenever round restarts. (Windows) 1 = Only when window is not active, 2 = Always" );
@@ -50,8 +47,6 @@ ConVar zm_sv_checkversion( "zm_sv_checkversion", "1", 0, "Is the game version ch
 
 #endif // CLIENT_DLL
 
-
-
 class CZMSystem : public CAutoGameSystem, public CGameEventListener
 {
 public:
@@ -61,10 +56,8 @@ public:
 
     virtual void PostInit() override;
 
-
     virtual void LevelShutdownPreEntity() override;
     virtual void LevelInitPostEntity() override;
-
 
 #ifndef CLIENT_DLL
     void CheckSpecialDates();
@@ -73,7 +66,6 @@ public:
 
     void RoundRestartEffect();
 #endif
-
 
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
 };
@@ -86,7 +78,6 @@ void CZMSystem::PostInit()
     //
     ConVarRef r_flashlightscissor( "r_flashlightscissor" );
     r_flashlightscissor.SetValue( "0" );
-
 
     ListenForGameEvent( "round_end_post" );
     ListenForGameEvent( "round_restart_post" );
@@ -106,7 +97,6 @@ void CZMSystem::CheckSpecialDates()
 {
     if ( !zm_sv_happyzombies_usedate.GetBool() )
         return;
-
 
     time_t curtime;
     time( &curtime );
@@ -129,7 +119,6 @@ void CZMSystem::CheckSpecialDates()
     {
         iEvent = HZEVENT_HALLOWEEN;
     }
-
 
     if ( iEvent != HZEVENT_INVALID )
     {
@@ -156,7 +145,7 @@ void CZMSystem::LevelInitPostEntity()
         {
             steamgameserverapicontext->Init();
         }
-        
+
 #if !defined( _DEBUG ) && !defined( ZMR_STEAM )
         if ( zm_sv_checkversion.GetBool() )
         {
@@ -171,14 +160,12 @@ void CZMSystem::LevelInitPostEntity()
 #endif
 }
 
-
 void CZMSystem::FireGameEvent( IGameEvent* pEvent )
 {
 #ifdef CLIENT_DLL
     if ( Q_strcmp( pEvent->GetName(), "round_end_post" ) == 0 )
     {
         DevMsg( "Client received round end event!\n" );
-        
 
         ZMRoundEndReason_t reason = (ZMRoundEndReason_t)pEvent->GetInt( "reason", ZMROUND_GAMEBEGIN );
 
@@ -188,22 +175,18 @@ void CZMSystem::FireGameEvent( IGameEvent* pEvent )
     {
         DevMsg( "Client received round restart event!\n" );
 
-
         // Read client-side entities from map and recreate em.
         C_PhysPropClientside::RecreateAll();
         g_ClientEntitySystem.RecreateAll();
 
-
         tempents->Clear();
-        
+
         // Stop sounds.
         enginesound->StopAllSounds( true );
         Soundscape_OnStopAllSounds();
 
-
         // Clear decals.
         engine->ClientCmd( "r_cleardecals" );
-        
 
         // Remove client ragdolls since they don't like getting removed.
         C_ClientRagdoll* pRagdoll;
@@ -238,13 +221,26 @@ void CZMSystem::PrintRoundEndMessage( ZMRoundEndReason_t reason )
 
     switch ( reason )
     {
-    case ZMROUND_HUMANDEAD : pMsg = "#ZMRoundEndHumanDead"; break;
-    case ZMROUND_HUMANLOSE : pMsg = "#ZMRoundEndHumanLose"; break;
-    case ZMROUND_HUMANWIN : pMsg = "#ZMRoundEndHumanWin"; break;
-    case ZMROUND_ZMSUBMIT : pMsg = "#ZMRoundEndSubmit"; break;
-    case ZMROUND_GAMEBEGIN : pMsg = "#ZMRoundEndGameBegin"; break;
-    case ZMROUND_VOTERESTART : pMsg = "#ZMRoundEndVoteRestart"; break;
-    default : break;
+    case ZMROUND_HUMANDEAD:
+        pMsg = "#ZMRoundEndHumanDead";
+        break;
+    case ZMROUND_HUMANLOSE:
+        pMsg = "#ZMRoundEndHumanLose";
+        break;
+    case ZMROUND_HUMANWIN:
+        pMsg = "#ZMRoundEndHumanWin";
+        break;
+    case ZMROUND_ZMSUBMIT:
+        pMsg = "#ZMRoundEndSubmit";
+        break;
+    case ZMROUND_GAMEBEGIN:
+        pMsg = "#ZMRoundEndGameBegin";
+        break;
+    case ZMROUND_VOTERESTART:
+        pMsg = "#ZMRoundEndVoteRestart";
+        break;
+    default:
+        break;
     }
 
     if ( pMsg )
@@ -257,36 +253,33 @@ void CZMSystem::RoundRestartEffect()
 {
     bool bActive = engine->IsActiveApp();
 
-
-
     switch ( zm_cl_roundrestart_sound.GetInt() )
     {
-    case 1 :
+    case 1:
         if ( bActive )
             break;
-    case 2 :
+    case 2:
 #ifdef _WIN32
         PlaySound( (LPCTSTR)SND_ALIAS_SYSTEMEXCLAMATION, NULL, SND_ALIAS_ID | SND_ASYNC );
 #endif
         break;
-    default :
+    default:
         break;
     }
 
     switch ( zm_cl_roundrestart_flashtaskbar.GetInt() )
     {
-    case 1 : 
+    case 1:
         if ( bActive )
             break;
-    case 2 :
+    case 2:
         engine->FlashWindow();
         break;
-    default :
+    default:
         break;
     }
 }
 #endif
-
 
 #ifdef GAME_DLL
 void ZMCreateStringTables()

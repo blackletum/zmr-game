@@ -8,9 +8,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 static CZMTEZombieAnimEvent g_ZMTEZombieAnimEvent( "ZombieAnimEvent" );
-
 
 IMPLEMENT_SERVERCLASS_ST_NOBASE( CZMTEZombieAnimEvent, DT_ZM_TEZombieAnimEvent )
     SendPropEHandle( SENDINFO( m_hZombie ) ),

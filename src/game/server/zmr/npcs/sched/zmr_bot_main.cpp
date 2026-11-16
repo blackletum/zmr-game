@@ -1,7 +1,7 @@
 #include "cbase.h"
 
-#include "zmr_survivor_combat.h"
 #include "zmr_bot_main.h"
+#include "zmr_survivor_combat.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -36,7 +36,7 @@ void CPlayerBotMainSchedule::OnUpdate()
         m_ExpireTimer.Start( 10.0f );
     }*/
 }
-    
+
 void CPlayerBotMainSchedule::ComputePath()
 {
     CZMPlayerBot* pOuter = GetOuter();

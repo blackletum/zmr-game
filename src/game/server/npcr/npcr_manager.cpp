@@ -3,10 +3,9 @@
 #include "npcr_basenpc.h"
 #include "npcr_manager.h"
 
-
 NPCR::NPCManager NPCR::g_NPCManager;
 
-static void OnUpdateConVarChanged( IConVar *var, const char *pOldValue, float flOldValue )
+static void OnUpdateConVarChanged( IConVar* var, const char* pOldValue, float flOldValue )
 {
     NPCR::g_NPCManager.UpdateSlots();
 }
@@ -19,7 +18,6 @@ ConVar npcr_updatebalancing( "npcr_updatebalancing", "1", FCVAR_NOTIFY | FCVAR_A
 ConVar npcr_debug_manager( "npcr_debug_manager", "0" );
 ConVar npcr_debug_manager_updatesum( "npcr_debug_manager_updatesum", "0" );
 
-
 NPCR::NPCManager::NPCManager()
 {
     m_iLastFrame = 0;
@@ -31,7 +29,6 @@ NPCR::NPCManager::NPCManager()
 
 NPCR::NPCManager::~NPCManager()
 {
-
 }
 
 bool NPCR::NPCManager::UsesUpdateSlots() const
@@ -41,16 +38,14 @@ bool NPCR::NPCManager::UsesUpdateSlots() const
 
 void NPCR::NPCManager::UpdateSlots()
 {
-    int newSlotCount = (int)floor( (1.0f / npcr_updaterate.GetInt()) / gpGlobals->interval_per_tick );
-    
+    int newSlotCount = (int)floor( ( 1.0f / npcr_updaterate.GetInt() ) / gpGlobals->interval_per_tick );
+
     // We don't want balancing
     if ( !npcr_updatebalancing.GetBool() )
         newSlotCount = 0;
 
-
     if ( newSlotCount == m_nUpdateSlots )
         return;
-
 
     m_nUpdateSlots = newSlotCount;
     m_iCurUpdateSlot = 0;
@@ -73,11 +68,10 @@ void NPCR::NPCManager::UpdateSlots()
         }
     }
 
-
     Msg( "[NPCR] Updating npcs %i times a second with %i update slots @ %itick!\n",
         npcr_updaterate.GetInt(),
         m_nUpdateSlots,
-        (int)(1.0f / gpGlobals->interval_per_tick) );
+        (int)( 1.0f / gpGlobals->interval_per_tick ) );
 }
 
 void NPCR::NPCManager::RegisterNPC( CBaseNPC* pNPC )
@@ -85,7 +79,7 @@ void NPCR::NPCManager::RegisterNPC( CBaseNPC* pNPC )
     Assert( m_vNPCs.Find( pNPC ) == m_vNPCs.InvalidIndex() );
     int index = m_vNPCs.AddToTail( pNPC );
 
-    m_vNPCs[index]->m_iUpdateSlot = UsesUpdateSlots() ? (index % m_nUpdateSlots) : 0;
+    m_vNPCs[index]->m_iUpdateSlot = UsesUpdateSlots() ? ( index % m_nUpdateSlots ) : 0;
 
     UpdateSlots();
 }
@@ -102,22 +96,19 @@ void NPCR::NPCManager::OnGameFrame()
         return;
     m_iLastFrame = gpGlobals->framecount;
 
-
-
     if ( npcr_debug_manager_updatesum.GetBool() )
     {
         DevMsg( "[NPCR] Previous update: %.0f\n", m_flUpdateSum * 1000.0f );
     }
 
-
     m_flUpdateSum = 0.0f;
-    
+
     int iDeltaTick = TIME_TO_TICKS( 1.0f / npcr_updaterate.GetFloat() );
 
     int iCurTick = gpGlobals->tickcount;
     FOR_EACH_VEC( m_vNPCs, i )
     {
-        if ( (iCurTick - m_vNPCs[i]->m_iLastUpdateTick) < iDeltaTick )
+        if ( ( iCurTick - m_vNPCs[i]->m_iLastUpdateTick ) < iDeltaTick )
             continue;
 
         if ( m_vNPCs[i]->m_iUpdateSlot != m_iCurUpdateSlot )
@@ -128,7 +119,7 @@ void NPCR::NPCManager::OnGameFrame()
 
     if ( UsesUpdateSlots() )
     {
-        m_iCurUpdateSlot = (m_iCurUpdateSlot + 1) % m_nUpdateSlots;
+        m_iCurUpdateSlot = ( m_iCurUpdateSlot + 1 ) % m_nUpdateSlots;
     }
 }
 
@@ -136,7 +127,6 @@ double NPCR::NPCManager::GetProfilingTime()
 {
     // Floating point is not enough for us.
     // The precision starts to suffer after a day or two of upkeeping the server.
-
 
     return Plat_FloatTime();
     //return engine->Time();
@@ -163,15 +153,13 @@ bool NPCR::NPCManager::ShouldUpdate( const NPCR::CBaseNPC* pNPC ) const
     if ( npcr_debug_noupdates.GetBool() )
         return false;
 
-
     float limit = npcr_framelimit.GetFloat();
-    float sum = (float)(m_flUpdateSum * 1000.0);
+    float sum = (float)( m_flUpdateSum * 1000.0 );
 
     if ( sum < limit )
     {
         return true;
     }
-
 
     if ( npcr_debug_manager.GetBool() )
     {
@@ -189,8 +177,8 @@ CON_COMMAND( npcr_remove_all, "" )
     }
 
     NPCR::g_NPCManager.ForEachNPC( []( NPCR::CBaseNPC* pNPC )
-    {
-        pNPC->RemoveNPC();
-        return false;
-    } );
+        {
+            pNPC->RemoveNPC();
+            return false;
+        } );
 }

@@ -1,16 +1,14 @@
 #pragma once
 
-
 #include "player.h"
 
-#include "zmr_player_shared.h"
-#include "zmr_entities.h"
 #include "weapons/zmr_base.h"
-#include "zmr_shareddefs.h"
-#include "zmr_playerlocaldata.h"
+#include "zmr_entities.h"
+#include "zmr_player_shared.h"
 #include "zmr_playeranimstate.h"
+#include "zmr_playerlocaldata.h"
+#include "zmr_shareddefs.h"
 #include "zmr_viewmodel.h"
-
 
 /*
     NOTE: You have to:
@@ -23,7 +21,6 @@
 */
 
 extern ConVar zm_sv_antiafk;
-
 
 struct ZMFireBulletsInfo_t;
 class CZMPlayerAttackTraceFilter;
@@ -61,66 +58,63 @@ public:
     DECLARE_SERVERCLASS()
     //DECLARE_PREDICTABLE()
     DECLARE_DATADESC()
-    
+
     CZMPlayer();
     ~CZMPlayer();
 
-    
     static CZMPlayer* CreatePlayer( const char* className, edict_t* ed )
     {
         CZMPlayer::s_PlayerEdict = ed;
         return static_cast<CZMPlayer*>( CreateEntityByName( className ) );
     }
 
+    virtual void Precache() override;
+    virtual void InitialSpawn() override;
+    virtual void Spawn() override;
 
-    virtual void    Precache() override;
-    virtual void    InitialSpawn() override;
-    virtual void    Spawn() override;
+    virtual void InitVCollision( const Vector& vecAbsOrigin, const Vector& vecAbsVelocity ) override;
+    virtual void SetupVisibility( CBaseEntity* pViewEntity, unsigned char* pvs, int pvssize ) override;
 
-	virtual void    InitVCollision( const Vector& vecAbsOrigin, const Vector& vecAbsVelocity ) override;
-	virtual void    SetupVisibility( CBaseEntity* pViewEntity, unsigned char* pvs, int pvssize ) override;
+    virtual void UpdateOnRemove() override;
+    virtual void PreThink() override;
+    virtual void PostThink() override;
+    virtual void PlayerDeathThink() override;
+    virtual void PhysicsSimulate() override;
+    void ItemPreFrame();
+    virtual void ItemPostFrame() override;
+    virtual bool ClientCommand( const CCommand& args ) override;
 
-    virtual void    UpdateOnRemove() override;
-    virtual void    PreThink() override;
-    virtual void    PostThink() override;
-    virtual void    PlayerDeathThink() override;
-    virtual void    PhysicsSimulate() override;
-    void            ItemPreFrame();
-    virtual void    ItemPostFrame() override;
-    virtual bool    ClientCommand( const CCommand& args ) override;
+    virtual void UpdateClientData() override;
+    virtual void StopLoopingSounds() override;
+    virtual void Splash() override;
 
-	virtual void UpdateClientData() override;
-	virtual void StopLoopingSounds() override;
-	virtual void Splash() override;
+    void PickDefaultSpawnTeam();
+    virtual void ChangeTeam( int iTeam ) override;
+    bool ShouldSpawn();
 
-    void            PickDefaultSpawnTeam();
-    virtual void    ChangeTeam( int iTeam ) override;
-    bool            ShouldSpawn();
+    virtual bool IsValidObserverTarget( CBaseEntity* pEnt ) override;
+    virtual CBaseEntity* FindNextObserverTarget( bool bReverse ) override;
+    virtual void CheckObserverSettings() override;
 
-    virtual bool            IsValidObserverTarget( CBaseEntity* pEnt ) override;
-    virtual CBaseEntity*    FindNextObserverTarget( bool bReverse ) override;
-    virtual void            CheckObserverSettings() override;
+    virtual int ShouldTransmit( const CCheckTransmitInfo* ) override;
 
-    virtual int     ShouldTransmit( const CCheckTransmitInfo* ) override;
+    virtual void SetAnimation( PLAYER_ANIM playerAnim ) override;
+    bool SetPlayerModel();
+    void UpdatePlayerFOV();
+    void UpdateArms( int iArmVersion );
+    virtual void CreateViewModel( int index = 0 ) override;
 
-    virtual void    SetAnimation( PLAYER_ANIM playerAnim ) override;
-    bool            SetPlayerModel();
-    void            UpdatePlayerFOV();
-    void            UpdateArms( int iArmVersion );
-    virtual void    CreateViewModel( int index = 0 ) override;
+    virtual int FlashlightIsOn() override;
+    virtual void FlashlightTurnOn() override;
+    virtual void FlashlightTurnOff() override;
 
-
-    virtual int     FlashlightIsOn() override;
-    virtual void    FlashlightTurnOn() override;
-    virtual void    FlashlightTurnOff() override;
-
-    virtual void    CreateCorpse() override;
-    virtual bool    BecomeRagdollOnClient( const Vector& force ) override;
-    void            CreateRagdollEntity();
+    virtual void CreateCorpse() override;
+    virtual bool BecomeRagdollOnClient( const Vector& force ) override;
+    void CreateRagdollEntity();
 
     LadderMove_t* GetLadderMove() { return &m_ZMLocal.m_LadderMove; }
-	virtual void ExitLadder() override;
-	virtual surfacedata_t* GetLadderSurface( const Vector& origin ) override;
+    virtual void ExitLadder() override;
+    virtual surfacedata_t* GetLadderSurface( const Vector& origin ) override;
 
     virtual void PickupObject( CBaseEntity* pObject, bool bLimitMassAndSize ) override;
     virtual float GetHeldObjectMass( IPhysicsObject* pHeldObject ) override;
@@ -136,23 +130,23 @@ public:
     bool WantsLagCompensationOnNPC( const CZMBaseZombie* pZombie, const CUserCmd* pCmd, const CBitVec<MAX_EDICTS>* pEntityTransmitBits ) const;
     void NoteWeaponFired();
 
-    virtual void    DeathSound( const CTakeDamageInfo& info ) override;
-    virtual void    Event_Killed( const CTakeDamageInfo& info ) override;
-    virtual int     OnTakeDamage( const CTakeDamageInfo& info ) override;
-    virtual int     OnTakeDamage_Alive( const CTakeDamageInfo& info ) override;
-	virtual void    CommitSuicide( bool bExplode = false, bool bForce = false ) override;
-	virtual void    CommitSuicide( const Vector &vecForce, bool bExplode = false, bool bForce = false ) override;
-    virtual void    Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, bool bCalledByLevelDesigner ) override;
+    virtual void DeathSound( const CTakeDamageInfo& info ) override;
+    virtual void Event_Killed( const CTakeDamageInfo& info ) override;
+    virtual int OnTakeDamage( const CTakeDamageInfo& info ) override;
+    virtual int OnTakeDamage_Alive( const CTakeDamageInfo& info ) override;
+    virtual void CommitSuicide( bool bExplode = false, bool bForce = false ) override;
+    virtual void CommitSuicide( const Vector& vecForce, bool bExplode = false, bool bForce = false ) override;
+    virtual void Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, bool bCalledByLevelDesigner ) override;
 
     virtual CBaseEntity* EntSelectSpawnPoint( void ) override;
 
-    virtual void    ImpulseCommands() override;
-    virtual void    CheatImpulseCommands( int ) override;
+    virtual void ImpulseCommands() override;
+    virtual void CheatImpulseCommands( int ) override;
 
-    virtual int     GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound ) override;
-    void            GiveDefaultItems( void );
-    virtual void    EquipSuit( bool bPlayEffects = false ) override;
-    virtual void    RemoveAllItems( bool removeSuit ) override;
+    virtual int GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound ) override;
+    void GiveDefaultItems( void );
+    virtual void EquipSuit( bool bPlayEffects = false ) override;
+    virtual void RemoveAllItems( bool removeSuit ) override;
 
     void UpdatePlayerUseEntity();
     virtual void PlayerUse() override;
@@ -163,22 +157,18 @@ public:
     void State_Enter_OBSERVER_MODE();
     void State_PreThink_OBSERVER_MODE();
 
-
     virtual bool StartObserverMode( int mode ) override;
     virtual void StopObserverMode( void ) override;
 
-    
     inline bool IsZM() const { return GetTeamNumber() == ZMTEAM_ZM; }
     inline bool IsHuman() const { return GetTeamNumber() == ZMTEAM_HUMAN; }
     inline bool IsRat() const { return GetTeamNumber() == ZMTEAM_SPECTATOR && !IsObserver(); }
-
 
     void SetMenuEnt( CZMEntBaseUsable* pEnt )
     {
         int index = 0;
         if ( pEnt )
             index = pEnt->entindex();
-
 
         m_iMenuEntIndex = index;
     }
@@ -195,82 +185,77 @@ public:
 
     void DeselectAllZombies();
 
-
     void SetTeamSpecificProps();
     void UnlinkAndRemoveChildren();
     void PushAway( const Vector& pos, float force );
 
-
     // Implemented in zm_player_shared
-    bool                HasEnoughResToSpawn( ZombieClass_t zclass ) const;
-    bool                HasEnoughRes( int cost ) const;
-    int                 GetWeaponSlotFlags() const;
-    int                 GetResources() const;
-    void                IncResources( int res, bool bLimit = false );
-    void                SetResources( int res );
-    float               GetFlashlightBattery() const;
-    void                SetFlashlightBattery( float battery );
-    bool                Weapon_CanSwitchTo( CBaseCombatWeapon* pWeapon ) override;
-    Participation_t     GetParticipation() const;
-    virtual void        PlayStepSound( Vector& vecOrigin, surfacedata_t* psurface, float fvol, bool force ) override;
-    CBaseCombatWeapon*  GetWeaponForAmmo( int iAmmoType ) const;
-    virtual Vector      GetAttackSpread( CBaseCombatWeapon* pWeapon, CBaseEntity* pTarget = nullptr ) override;
-    virtual Vector      GetAutoaimVector( float flScale ) override;
-    void                DoAnimationEvent( PlayerAnimEvent_t playerAnim, int nData = 0 );
-    float               GetAccuracyRatio() const;
-    void                UpdateAccuracyRatio();
-    void                GetZMMovementVars( float& maxspd, float& accel, float& decel ) const;
-    virtual void        FireBullets( const FireBulletsInfo_t& info ) override;
-    void                SimulateBullet( ZMFireBulletsInfo_t& bulletinfo );
-    bool                HandleBulletPenetration( trace_t& tr, const ZMFireBulletsInfo_t& bulletinfo, Vector& vecNextSrc, float& flDistance );
-    bool                HandleShotImpactingWater( const FireBulletsInfo_t& info, const Vector& vecEnd, CTraceFilter* pFilter );
-    virtual void        DoMuzzleFlash() override;
-    int                 GetTotalAmmoAmount( int iValidAmmoIndex ) const;
-    int                 GetAmmoRoom( int iValidAmmoIndex ) const;
-    bool                IsFlashlightOn() const;
-    CZMViewModel*       GetViewModel( int vmIndex = VMINDEX_WEP, bool bObserverOk = true ) const;
-    CZMBaseWeapon*      GetActiveZMWeapon() const;
+    bool HasEnoughResToSpawn( ZombieClass_t zclass ) const;
+    bool HasEnoughRes( int cost ) const;
+    int GetWeaponSlotFlags() const;
+    int GetResources() const;
+    void IncResources( int res, bool bLimit = false );
+    void SetResources( int res );
+    float GetFlashlightBattery() const;
+    void SetFlashlightBattery( float battery );
+    bool Weapon_CanSwitchTo( CBaseCombatWeapon* pWeapon ) override;
+    Participation_t GetParticipation() const;
+    virtual void PlayStepSound( Vector& vecOrigin, surfacedata_t* psurface, float fvol, bool force ) override;
+    CBaseCombatWeapon* GetWeaponForAmmo( int iAmmoType ) const;
+    virtual Vector GetAttackSpread( CBaseCombatWeapon* pWeapon, CBaseEntity* pTarget = nullptr ) override;
+    virtual Vector GetAutoaimVector( float flScale ) override;
+    void DoAnimationEvent( PlayerAnimEvent_t playerAnim, int nData = 0 );
+    float GetAccuracyRatio() const;
+    void UpdateAccuracyRatio();
+    void GetZMMovementVars( float& maxspd, float& accel, float& decel ) const;
+    virtual void FireBullets( const FireBulletsInfo_t& info ) override;
+    void SimulateBullet( ZMFireBulletsInfo_t& bulletinfo );
+    bool HandleBulletPenetration( trace_t& tr, const ZMFireBulletsInfo_t& bulletinfo, Vector& vecNextSrc, float& flDistance );
+    bool HandleShotImpactingWater( const FireBulletsInfo_t& info, const Vector& vecEnd, CTraceFilter* pFilter );
+    virtual void DoMuzzleFlash() override;
+    int GetTotalAmmoAmount( int iValidAmmoIndex ) const;
+    int GetAmmoRoom( int iValidAmmoIndex ) const;
+    bool IsFlashlightOn() const;
+    CZMViewModel* GetViewModel( int vmIndex = VMINDEX_WEP, bool bObserverOk = true ) const;
+    CZMBaseWeapon* GetActiveZMWeapon() const;
 
+    CZMBaseWeapon* GetWeaponOfHighestSlot() const;
+    CZMBaseWeapon* GetWeaponOfSlot( const char* szSlotName ) const;
+    CZMBaseWeapon* GetWeaponOfSlot( int slot ) const;
+    void SetWeaponSlotFlags( int flags ) { m_ZMLocal.m_fWeaponSlotFlags = flags; }
+    void AddWeaponSlotFlag( int flag ) { m_ZMLocal.m_fWeaponSlotFlags |= flag; }
+    void RemoveWeaponSlotFlag( int flag ) { m_ZMLocal.m_fWeaponSlotFlags &= ~flag; }
 
-    CZMBaseWeapon*  GetWeaponOfHighestSlot() const;
-    CZMBaseWeapon*  GetWeaponOfSlot( const char* szSlotName ) const;
-    CZMBaseWeapon*  GetWeaponOfSlot( int slot ) const;
-    void            SetWeaponSlotFlags( int flags ) { m_ZMLocal.m_fWeaponSlotFlags = flags; }
-    void            AddWeaponSlotFlag( int flag ) { m_ZMLocal.m_fWeaponSlotFlags |= flag; }
-    void            RemoveWeaponSlotFlag( int flag ) { m_ZMLocal.m_fWeaponSlotFlags &= ~flag; }
-
-    inline int  GetPickPriority() const { return m_nPickPriority; }
+    inline int GetPickPriority() const { return m_nPickPriority; }
     inline void SetPickPriority( int i ) { m_nPickPriority = i; }
-    
-    inline float    GetLastActivity() const { return m_flLastActivity; }
-    inline bool     IsCloseToAFK() const { return zm_sv_antiafk.GetInt() > 0 && (gpGlobals->curtime - GetLastActivity()) > (zm_sv_antiafk.GetFloat() * 0.8f); }
-    inline bool     IsAFK() const { return zm_sv_antiafk.GetInt() > 0 && (gpGlobals->curtime - GetLastActivity()) > zm_sv_antiafk.GetFloat(); }
 
-    inline float    GetNextModelChangeTime() const { return m_flNextModelChangeTime; }
-    inline float    GetNextVoiceLineTime() const { return m_flNextVoiceLineTime; }
-    inline void     SetNextVoiceLineTime( float t ) { m_flNextVoiceLineTime = t; }
+    inline float GetLastActivity() const { return m_flLastActivity; }
+    inline bool IsCloseToAFK() const { return zm_sv_antiafk.GetInt() > 0 && ( gpGlobals->curtime - GetLastActivity() ) > ( zm_sv_antiafk.GetFloat() * 0.8f ); }
+    inline bool IsAFK() const { return zm_sv_antiafk.GetInt() > 0 && ( gpGlobals->curtime - GetLastActivity() ) > zm_sv_antiafk.GetFloat(); }
 
-    int                     GetZMCommandInterruptFlags() const;
-    ZombieCommandStyle_t    GetZMCommandStyle() const;
+    inline float GetNextModelChangeTime() const { return m_flNextModelChangeTime; }
+    inline float GetNextVoiceLineTime() const { return m_flNextVoiceLineTime; }
+    inline void SetNextVoiceLineTime( float t ) { m_flNextVoiceLineTime = t; }
 
-    float           GetInterpNPCTime() const { return m_flInterpNPCTime; }
-    void            UpdatePlayerInterpNPC();
+    int GetZMCommandInterruptFlags() const;
+    ZombieCommandStyle_t GetZMCommandStyle() const;
 
-    void            UpdatePlayerZMVars();
+    float GetInterpNPCTime() const { return m_flInterpNPCTime; }
+    void UpdatePlayerInterpNPC();
 
-    void            UpdateFlashlight();
+    void UpdatePlayerZMVars();
 
-    void            GetMyRecipientFilter( CRecipientFilter& filter ) const;
+    void UpdateFlashlight();
+
+    void GetMyRecipientFilter( CRecipientFilter& filter ) const;
 
     void InitZMFog();
-
 
     void CopyWeaponDamage( CZMBaseWeapon* pWeapon, const FireBulletsInfo_t& info );
     void CopyMeleeDamage( CZMBaseWeapon* pWeapon, const Vector& vecSrc, float flDamage );
 
-
     void StartWaterDeathSounds();
-	void StopWaterDeathSounds();
+    void StopWaterDeathSounds();
 
     void StartRatMode();
 
@@ -286,7 +271,6 @@ private:
     void HandleDamagesFromUserCmd();
     ZMServerWepData_t m_ServerWepData;
 
-
     // Since I didn't get this at first either, this is only sent to THIS player.
     CNetworkVarEmbedded( CZMPlayerLocalData, m_ZMLocal );
 
@@ -294,11 +278,11 @@ private:
     CNetworkVar( int, m_iSpawnInterpCounter );
     CNetworkHandle( CZMRagdoll, m_hRagdoll );
 
-    int                 m_iLastWeaponFireUsercmd;
-    Vector              m_vecTotalBulletForce; // Accumulator for bullet force in a single frame
-    bool                m_bEnterObserver;
-    float               m_flNextModelChangeTime;
-    float               m_flNextVoiceLineTime;
+    int m_iLastWeaponFireUsercmd;
+    Vector m_vecTotalBulletForce; // Accumulator for bullet force in a single frame
+    bool m_bEnterObserver;
+    float m_flNextModelChangeTime;
+    float m_flNextVoiceLineTime;
 
     CZMPlayerAnimState* m_pPlayerAnimState;
 
@@ -325,29 +309,27 @@ private:
 
     bool m_bPlayUseDenySound;
 
-	CSoundPatch* m_sndLeeches;
-	CSoundPatch* m_sndWaterSplashes;
+    CSoundPatch* m_sndLeeches;
+    CSoundPatch* m_sndWaterSplashes;
 
     // Falldamage related
     float m_flTimeIgnoreFallDamage;
     bool m_bIgnoreFallDamageResetAfterImpact;
 
-
     CHandle<CBaseEntity> m_hContinuousUseEntity;
-
 
     friend class CZMGameMovement;
 };
 
 inline CZMPlayer* ToZMPlayer( CBaseEntity* pEntity )
 {
-	if ( !pEntity || !pEntity->IsPlayer() )
-		return nullptr;
+    if ( !pEntity || !pEntity->IsPlayer() )
+        return nullptr;
 
-	return static_cast<CZMPlayer*>( pEntity );
+    return static_cast<CZMPlayer*>( pEntity );
 }
 
 inline CZMPlayer* ToZMPlayer( CBasePlayer* pPlayer )
 {
-	return static_cast<CZMPlayer*>( pPlayer );
+    return static_cast<CZMPlayer*>( pPlayer );
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include "zmr_zombiebase.h"
 
 class CZMHulkMotor : public CZMBaseZombieMotor
@@ -27,25 +25,19 @@ public:
     CZMHulk();
     ~CZMHulk();
 
-
     virtual CZMHulkMotor* CreateMotor() override { return new CZMHulkMotor( this ); }
-
 
     virtual void Precache() override;
     virtual void Spawn() override;
 
     virtual void HandleAnimEvent( animevent_t* pEvent ) override;
 
-
-    virtual NPCR::CPathCostGroundOnly*  GetPathCost() const override;
-
+    virtual NPCR::CPathCostGroundOnly* GetPathCost() const override;
 
     virtual bool ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) const override;
 
-
     virtual float GetClawAttackRange() const override { return 80.0f; }
     virtual float GetAttackHeight() const override { return CollisionProp()->OBBMaxs().z + 10.0f; }
-
 
     virtual bool ShouldPlayIdleSound() const override;
     virtual float IdleSound() override;
@@ -53,7 +45,6 @@ public:
     virtual void AlertSound() override;
     virtual void DeathSound() override;
 
-
     // Shared
-    virtual bool    CanBePenetrated() const override;
+    virtual bool CanBePenetrated() const override;
 };

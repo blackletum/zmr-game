@@ -3,7 +3,6 @@
 #include "npcs/zmr_zombiebase.h"
 #include "zmr_zombie_main.h"
 
-
 extern ConVar zm_sv_swatlift;
 extern ConVar zm_sv_swatforcemin;
 extern ConVar zm_sv_swatforcemax;
@@ -22,6 +21,7 @@ public:
 
     bool DoBreakObject() const { return m_bBreakObject; }
     void SetBreakObject( bool state ) { m_bBreakObject = state; }
+
 private:
     bool m_bBreakObject;
 };
@@ -50,7 +50,6 @@ public:
 
 private:
     void DoSwatting();
-
 
     Vector m_vecFaceTowards;
     CountdownTimer m_FinishTimer;

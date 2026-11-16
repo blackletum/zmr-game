@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "npcs/c_zmr_zombiebase.h"
 #include "zmr_shareddefs.h"
 
@@ -10,7 +9,6 @@ namespace ZMClientUtil
     void GetNotifyTypeColor( ZMChatNotifyType_t type, char* buffer, size_t len );
 
     void ChatPrint( int iPlayerIndex, bool bPlaySound, const char* format, ... );
-
 
     void QueueTooltip( const char*, float delay );
     int ShowTooltipByName( const char*, bool force = false );

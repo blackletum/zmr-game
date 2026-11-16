@@ -1,9 +1,7 @@
 #include "cbase.h"
 
-
-#include "zmr_mainmenu_subbtn.h"
 #include "zmr_mainmenu.h"
-
+#include "zmr_mainmenu_subbtn.h"
 
 using namespace vgui;
 
@@ -15,16 +13,12 @@ CZMMainMenuSubButton::CZMMainMenuSubButton( Panel* pParent, const char* name ) :
 
     SetParent( pRealParent );
 
-    
-    
     m_pButtonParent = pParent;
-
 
     m_flFadeOutTime = 0.0f;
     m_flFadeOut = 0.0f;
     m_flFadeInTime = 0.0f;
     m_flFadeIn = 0.0f;
-
 
     SetPaintBackgroundEnabled( false );
     SetPaintBorderEnabled( false );
@@ -39,7 +33,7 @@ void CZMMainMenuSubButton::Paint()
     // We always need to repaint
     if ( m_flFadeIn != 0.0f )
     {
-        int a = (gpGlobals->realtime - m_flFadeIn) / m_flFadeInTime * 255;
+        int a = ( gpGlobals->realtime - m_flFadeIn ) / m_flFadeInTime * 255;
 
         if ( a >= 255 )
         {
@@ -47,14 +41,13 @@ void CZMMainMenuSubButton::Paint()
             m_flFadeIn = 0.0f;
         }
 
-        
         _defaultFgColor[3] = a;
         SetFgColor( _defaultFgColor );
         Repaint();
     }
     else if ( m_flFadeOut != 0.0f )
     {
-        int a = (m_flFadeOut - gpGlobals->realtime) / m_flFadeOutTime * 255;
+        int a = ( m_flFadeOut - gpGlobals->realtime ) / m_flFadeOutTime * 255;
 
         if ( a <= 0 )
         {
@@ -68,9 +61,6 @@ void CZMMainMenuSubButton::Paint()
             Repaint();
         }
     }
-
-
-
 
     BaseClass::Paint();
 }
@@ -87,12 +77,10 @@ void CZMMainMenuSubButton::FadeIn( float fade )
     if ( m_flFadeIn != 0.0f && m_flFadeIn > gpGlobals->realtime )
         return;
 
-
     m_flFadeIn = gpGlobals->realtime;
-    
+
     m_flFadeInTime = fade;
     m_flFadeOut = 0.0f;
-
 
     SetVisible( true );
     Repaint();
@@ -100,9 +88,8 @@ void CZMMainMenuSubButton::FadeIn( float fade )
 
 void CZMMainMenuSubButton::FadeOut( float fade )
 {
-    if ( m_flFadeOut != 0.0f && m_flFadeOut <= (gpGlobals->realtime+2.0f) )
+    if ( m_flFadeOut != 0.0f && m_flFadeOut <= ( gpGlobals->realtime + 2.0f ) )
         return;
-
 
     m_flFadeOut = gpGlobals->realtime + fade;
 

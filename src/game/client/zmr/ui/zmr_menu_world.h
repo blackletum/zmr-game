@@ -1,13 +1,11 @@
 #pragma once
 
-
-#include "cdll_util.h"
 #include "baseviewport.h"
+#include "cdll_util.h"
 #include "iclientmode.h"
 #include <vgui_controls/Frame.h>
 
 #include "c_zmr_util.h"
-
 
 abstract_class CZMWorldMenu
 {
@@ -22,11 +20,10 @@ public:
             x -= m_nOffsetCenterX;
             y -= m_nOffsetCenterY;
 
-
-            if ( (x + m_nLimitMinX) < 0 ) x = -m_nLimitMinX;
-            if ( (y + m_nLimitMinY) < 0 ) y = -m_nLimitMinY;
-            if ( (x+m_nLimitMaxX) >= ScreenWidth() ) x = ScreenWidth() - m_nLimitMaxX;
-            if ( (y+m_nLimitMaxY) >= ScreenHeight() ) y = ScreenHeight() - m_nLimitMaxY;
+            if ( ( x + m_nLimitMinX ) < 0 ) x = -m_nLimitMinX;
+            if ( ( y + m_nLimitMinY ) < 0 ) y = -m_nLimitMinY;
+            if ( ( x + m_nLimitMaxX ) >= ScreenWidth() ) x = ScreenWidth() - m_nLimitMaxX;
+            if ( ( y + m_nLimitMaxY ) >= ScreenHeight() ) y = ScreenHeight() - m_nLimitMaxY;
 
             out_x = x;
             out_y = y;
@@ -37,10 +34,13 @@ public:
         return false;
     }
 
-
 protected:
     inline void SetWorldPos( Vector pos ) { m_vecWorldPos = pos; };
-    inline void SetOffset( int x, int y ) { m_nOffsetCenterX = x; m_nOffsetCenterY = y; };
+    inline void SetOffset( int x, int y )
+    {
+        m_nOffsetCenterX = x;
+        m_nOffsetCenterY = y;
+    };
 
     inline void SetLimits( int minx, int miny, int maxx, int maxy )
     {

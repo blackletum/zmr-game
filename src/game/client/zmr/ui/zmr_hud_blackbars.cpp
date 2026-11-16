@@ -4,26 +4,20 @@
 #include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
 
-
 #include "zmr_hud_blackbars.h"
-
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
 
 extern ConVar zm_sv_roundintermissiontime;
 extern ConVar zm_cl_round_cinematic_effects_duration;
 
 ConVar zm_cl_round_cinematic_effects( "zm_cl_round_cinematic_effects", "1", FCVAR_ARCHIVE, "The cinematic effects (black bars)" );
 
-
-#define SHOW_BARS           g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMBarsShow" )
-#define HIDE_BARS           g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMBarsHide" )
-
+#define SHOW_BARS g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMBarsShow" )
+#define HIDE_BARS g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMBarsHide" )
 
 CON_COMMAND( zm_hudbars_show, "" )
 {
@@ -35,11 +29,9 @@ CON_COMMAND( zm_hudbars_hide, "" )
     CZMHudBars::Hide();
 }
 
-
 DECLARE_HUDELEMENT( CZMHudBars );
 
-
-CZMHudBars::CZMHudBars( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudBars" )
+CZMHudBars::CZMHudBars( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudBars" )
 {
     m_flAlpha = 0.0f;
     m_flTopBarY = 0.0f;
@@ -124,13 +116,12 @@ void CZMHudBars::PaintBorder( int border_y, int border_height, bool bFlip )
     float tx1 = (float)w / 512.0f;
     float ty1 = 1.0f;
 
-
     if ( bFlip )
     {
-        tx0 = tx1; ty0 = ty1;
+        tx0 = tx1;
+        ty0 = ty1;
         tx1 = ty1 = 0.0f;
     }
-
 
     surface()->DrawSetTexture( m_nTexPanelBgEdgesId );
     surface()->DrawTexturedSubRect( 0, border_y, w, border_y + border_height, tx0, ty0, tx1, ty1 );
@@ -139,19 +130,15 @@ void CZMHudBars::PaintBorder( int border_y, int border_height, bool bFlip )
 void CZMHudBars::Paint()
 {
     if ( m_flAlpha <= 0.0f ) return;
-    
 
     Color clr = Color( 0, 0, 0, m_flAlpha );
 
     surface()->DrawSetColor( clr );
 
-
     const int w = ScreenWidth();
     const int h = GetTall();
 
-
     const int border_height = 64;
-
 
     //
     // Top bar

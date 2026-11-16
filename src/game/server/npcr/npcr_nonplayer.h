@@ -1,18 +1,15 @@
 #pragma once
 
-
-#include "basecombatcharacter.h"
 #include "ai_basenpc.h"
+#include "basecombatcharacter.h"
 
 #include "npcr_basenpc.h"
 //#include "npcr_motor_nonplayer.h"
-
 
 namespace NPCR
 {
     class CNonPlayerMotor;
 }
-
 
 //
 // Unfortunately, we have to leave this outside the namespace, because data desc gets fucked. Trust me, I tried.
@@ -35,18 +32,19 @@ public:
 
     virtual void PostUpdate() override;
 
-
     virtual CBaseNPC* MyNPCRPointer() override { return this; }
     //virtual bool IsNPC() const override { return true; }
     virtual bool IsTemplate() override { return HasSpawnFlags( SF_NPC_TEMPLATE ); }
 
     // Just outright remove us.
-    virtual bool RemoveNPC() override { UTIL_Remove( this ); return true; }
-
+    virtual bool RemoveNPC() override
+    {
+        UTIL_Remove( this );
+        return true;
+    }
 
     virtual void VPhysicsUpdate( IPhysicsObject* pPhys ) override;
     virtual void PerformCustomPhysics( Vector* pNewPosition, Vector* pNewVelocity, QAngle* pNewAngles, QAngle* pNewAngVelocity ) override;
-
 
     virtual void HandleAnimEvent( animevent_t* pEvent ) override;
 
@@ -54,42 +52,35 @@ public:
 
     virtual void Event_Killed( const CTakeDamageInfo& info ) override;
 
-
     // Don't mind the odd name, it's to avoid confusion between move activity ground speed and "move speed"
     virtual float GetMoveActivityMovementSpeed();
 
-
-    virtual bool    IsEnemy( CBaseEntity* pEnt ) const override { return pEnt && pEnt->IsPlayer(); }
-    virtual bool    IsTargetedEnemy( CBaseEntity* pEnt ) const override { return pEnt && GetEnemy() == pEnt; }
-
-
-        
+    virtual bool IsEnemy( CBaseEntity* pEnt ) const override { return pEnt && pEnt->IsPlayer(); }
+    virtual bool IsTargetedEnemy( CBaseEntity* pEnt ) const override { return pEnt && GetEnemy() == pEnt; }
 
     // We shouldn't send this anim event to base classes.
     void HandledAnimEvent() { m_bHandledAnimEvent = true; }
 
+    CBaseEntity* GetEnemy() const { return m_hEnemy.Get(); }
+    void SetEnemy( CBaseEntity* pEnt ) { m_hEnemy.Set( pEnt ); }
 
-    CBaseEntity*    GetEnemy() const { return m_hEnemy.Get(); }
-    void            SetEnemy( CBaseEntity* pEnt ) { m_hEnemy.Set( pEnt ); }
-
-    virtual void    AcquireEnemy( CBaseEntity* pEnemy );
-    virtual void    LostEnemy();
-
+    virtual void AcquireEnemy( CBaseEntity* pEnemy );
+    virtual void LostEnemy();
 
     // Shared - Implemented in npcr_nonplayer_shared
 public:
-    virtual int     GetAnimationRandomSeed();
+    virtual int GetAnimationRandomSeed();
 
-    bool            HasActivity( Activity act );
-    Activity        GetActivity() const { return m_iCurActivity; }
-    bool            SetActivity( Activity act );
+    bool HasActivity( Activity act );
+    Activity GetActivity() const { return m_iCurActivity; }
+    bool SetActivity( Activity act );
+
 private:
-    Activity    m_iCurActivity;
-    Activity    m_iLastActivity;
-    bool        m_bCurActivityLoops;
+    Activity m_iCurActivity;
+    Activity m_iLastActivity;
+    bool m_bCurActivityLoops;
+
 public:
-
-
 protected:
     void NPCThink();
 
@@ -98,9 +89,7 @@ protected:
 private:
     CHandle<CBaseEntity> m_hEnemy; // The enemy we're trying to attack.
 
-
-    bool        m_bHandledAnimEvent;
-
+    bool m_bHandledAnimEvent;
 
 public:
     // Outputs
@@ -113,9 +102,10 @@ public:
     COutputEvent m_OnLostPlayerLOS;
     COutputEvent m_OnLostEnemyLOS;
     COutputEvent m_OnLostEnemy;
+
 private:
     // Inputs
-    void InputSetHealth( inputdata_t &inputdata );
+    void InputSetHealth( inputdata_t& inputdata );
 
 private:
     float m_flLastDamageTime;

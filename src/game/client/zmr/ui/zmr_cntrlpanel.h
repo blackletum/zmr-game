@@ -4,20 +4,19 @@
 
 #include "zmr_bitmapbutton.h"
 
-
 class CZMHudControlPanel : public vgui::Panel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMHudControlPanel, vgui::Panel );
 
     CZMHudControlPanel( vgui::Panel* pParent );
-    
+
     virtual void ApplySchemeSettings( vgui::IScheme* pScheme ) override;
 
     virtual void PerformLayout() override;
     virtual void OnThink() override;
     virtual void OnCommand( const char* command ) override;
-    
+
     void SetBgColor( const Color& clr );
     void SetFgColor( const Color& clr );
     virtual void PaintBackground() override;
@@ -25,11 +24,9 @@ public:
     void PositionButtons();
     void PositionComboBox();
 
-
     void GroupsListUpdate();
     void CreateGroup();
     void SelectGroup();
-    
 
     void UpdateTabs( int activatedTab = -1 );
 
@@ -58,6 +55,7 @@ public:
 
         NUM_TABS
     };
+
 private:
     void CreateButtons();
 

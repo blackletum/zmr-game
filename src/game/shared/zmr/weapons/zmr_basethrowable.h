@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include "zmr_weaponconfig.h"
 #include "zmr_base.h"
+#include "zmr_weaponconfig.h"
 
 #ifndef CLIENT_DLL
 #include "zmr_baseprojectile.h"
@@ -12,11 +11,10 @@
 #define CZMBaseThrowableWeapon C_ZMBaseThrowableWeapon
 #endif
 
-
 enum ZMThrowState_t
 {
     THROWSTATE_IDLE = 0,
-    
+
     THROWSTATE_ARMING, // Igniting. DRAW_BACK needs to be called manually...
 
     THROWSTATE_DRAW_BACK, // Getting it ready to throw.
@@ -24,7 +22,6 @@ enum ZMThrowState_t
     THROWSTATE_READYTOTHROW, // Throwable!
 
     THROWSTATE_THROWN, // Thrown. Remove me.
-
 
     MOLOTOVSTATE_MAX,
 };
@@ -41,7 +38,7 @@ public:
 
     float flProjectileDamage;
     float flProjectileRadius;
-    
+
     float flThrowVelocity;
 
     Vector vecAngularVel_Min;
@@ -54,20 +51,17 @@ public:
     float flDetonationTime;
 };
 
-
 class CZMBaseThrowableWeapon : public CZMBaseWeapon
 {
 public:
-	DECLARE_CLASS( CZMBaseThrowableWeapon, CZMBaseWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMBaseThrowableWeapon, CZMBaseWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMBaseThrowableWeapon();
     ~CZMBaseThrowableWeapon();
 
-
     const CZMBaseThrowableConfig* GetBaseThrowableConfig() const;
-
 
     virtual void Precache() override;
 
@@ -93,7 +87,6 @@ public:
 
     float GetThrowVelocity() const;
     QAngle GetThrowAngularVelocity() const;
-
 
     ZMThrowState_t GetThrowState() const { return m_iThrowState; }
 

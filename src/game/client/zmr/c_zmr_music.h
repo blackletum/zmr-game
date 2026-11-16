@@ -1,9 +1,7 @@
 #pragma once
 
-
-#include "igamesystem.h"
 #include "c_zmr_fmod.h"
-
+#include "igamesystem.h"
 
 namespace ZMMusic
 {
@@ -16,14 +14,12 @@ namespace ZMMusic
         MUSICSTATE_INGAME = ( 1 << 2 )
     };
 
-
     //
     class CMusic
     {
     public:
         CMusic( MusicState_t musicStateFlags, FMODSoundHandle_t hndl );
         ~CMusic();
-
 
         bool IsPartOfMusicState( MusicState_t state ) const;
         bool IsReady() const;
@@ -34,11 +30,10 @@ namespace ZMMusic
         static const char* MusicStateToName( MusicState_t state );
 
     private:
-        MusicState_t        m_fMusicState;
-        FMODSoundHandle_t   m_SndHndl;
+        MusicState_t m_fMusicState;
+        FMODSoundHandle_t m_SndHndl;
     };
     //
-
 
     //
     class CActiveChannel
@@ -47,18 +42,16 @@ namespace ZMMusic
         CActiveChannel( MusicState_t musicState, CMusic* pMusic );
         ~CActiveChannel();
 
-
         void FadeOut( float fadeouttime );
         bool IsDone() const;
 
         MusicState_t GetMusicState() const;
 
     private:
-        MusicState_t            m_iMusicState;
-        FMODChannelHandle_t     m_ChannelHndl;
+        MusicState_t m_iMusicState;
+        FMODChannelHandle_t m_ChannelHndl;
     };
     //
-
 
     //
     class CZMMusicManager : public CAutoGameSystemPerFrame
@@ -67,25 +60,21 @@ namespace ZMMusic
         CZMMusicManager();
         ~CZMMusicManager();
 
-
         virtual void PostInit() override;
 
         void Release();
 
         virtual void Update( float frametime ) override;
 
-
         float GetVolume() const;
 
         MusicState_t GetMusicState() const;
         void SetMusicState( MusicState_t musicState );
 
-
     private:
         float m_flLastMusicVolume;
 
         void RegisterMusic();
-
 
         CUtlVector<CMusic*> m_vpMusic;
         CUtlVector<CActiveChannel*> m_vpChannels;

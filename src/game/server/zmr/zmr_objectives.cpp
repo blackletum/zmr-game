@@ -1,12 +1,11 @@
 #include "cbase.h"
 
 #include "zmr_gamerules.h"
-#include "zmr_team.h"
 #include "zmr_objectives.h"
+#include "zmr_team.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 void CObjLine::WriteEmptyDisplayUserMsg()
 {
@@ -19,11 +18,17 @@ void CObjLine::WriteArg() const
 {
     switch ( m_iTextArgType )
     {
-    case OBJARGTYPE_STRING : WRITE_STRING( m_szTextArg ); break;
-    case OBJARGTYPE_TIMER : WRITE_FLOAT( m_flTimerEnd - gpGlobals->curtime ); break;
-    case OBJARGTYPE_INT :
-    case OBJARGTYPE_FLOAT : 
-    default : WRITE_FLOAT( m_flTextArgNum ); break;
+    case OBJARGTYPE_STRING:
+        WRITE_STRING( m_szTextArg );
+        break;
+    case OBJARGTYPE_TIMER:
+        WRITE_FLOAT( m_flTimerEnd - gpGlobals->curtime );
+        break;
+    case OBJARGTYPE_INT:
+    case OBJARGTYPE_FLOAT:
+    default:
+        WRITE_FLOAT( m_flTextArgNum );
+        break;
     }
 }
 
@@ -56,7 +61,6 @@ void CObjLine::ParseArg( const char* psz )
         m_iTextArgType = OBJARGTYPE_NONE;
         return;
     }
-    
 
     if ( isdigit( psz[0] ) )
     {
@@ -92,7 +96,6 @@ void CObjLine::SetText( const char* psz )
 {
     Q_strncpy( m_szTexts, ( psz && *psz ) ? psz : "", sizeof( m_szTexts ) );
 }
-
 
 LINK_ENTITY_TO_CLASS( info_objectives, CZMEntObjectives );
 
@@ -180,7 +183,6 @@ void CZMEntObjectives::Spawn()
 {
     BaseClass::Spawn();
 
-
     if ( m_iRecipient <= OBJRECIPIENT_INVALID || m_iRecipient >= OBJRECIPIENT_MAX )
     {
         Warning( "Invalid objectives recipient!\n" );
@@ -205,7 +207,7 @@ void CZMEntObjectives::CheckDirtyThink()
         {
             CZMEntObjectivesManager::Update( this );
         }
-        
+
         m_iDirtyStatus = OBJDIRTY_NONE;
     }
 
@@ -228,14 +230,41 @@ void CZMEntObjectives::UpdateDirtyStatus( DirtyStatus_t dirtytype )
 
 void CZMEntObjectives::InputReset( inputdata_t& inputData ) { Reset(); }
 
-
-void CZMEntObjectives::InputSetMainText( inputdata_t& inputData ) { m_Lines[0].SetText( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
-void CZMEntObjectives::InputSetMainTextArg( inputdata_t& inputData ) { m_Lines[0].ParseArg( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputIncMainTextArg( inputdata_t& inputData ) { m_Lines[0].m_flTextArgNum += inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputMainArg( inputdata_t& inputData ) { m_Lines[0].m_flTextArgNum = inputData.value.Float();  UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputCompleteMain( inputdata_t& inputData ) { m_Lines[0].m_bComplete = true; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputInCompleteMain( inputdata_t& inputData ) { m_Lines[0].m_bComplete = false; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputResetMain( inputdata_t& inputData ) { m_Lines[0].Reset(); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
+void CZMEntObjectives::InputSetMainText( inputdata_t& inputData )
+{
+    m_Lines[0].SetText( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
+void CZMEntObjectives::InputSetMainTextArg( inputdata_t& inputData )
+{
+    m_Lines[0].ParseArg( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputIncMainTextArg( inputdata_t& inputData )
+{
+    m_Lines[0].m_flTextArgNum += inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputMainArg( inputdata_t& inputData )
+{
+    m_Lines[0].m_flTextArgNum = inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputCompleteMain( inputdata_t& inputData )
+{
+    m_Lines[0].m_bComplete = true;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputInCompleteMain( inputdata_t& inputData )
+{
+    m_Lines[0].m_bComplete = false;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputResetMain( inputdata_t& inputData )
+{
+    m_Lines[0].Reset();
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
 
 // DEPRECATED! Dirty checks will automatically do this for us.
 void CZMEntObjectives::InputUpdateMainText( inputdata_t& inputData )
@@ -247,13 +276,41 @@ void CZMEntObjectives::InputUpdateMainText( inputdata_t& inputData )
     m_iDirtyStatus = OBJDIRTY_NONE;
 }
 
-void CZMEntObjectives::InputSetChild1Text( inputdata_t& inputData ) { m_Lines[1].SetText( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
-void CZMEntObjectives::InputSetChild1TextArg( inputdata_t& inputData ) { m_Lines[1].ParseArg( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputIncChild1TextArg( inputdata_t& inputData ) { m_Lines[1].m_flTextArgNum += inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputChild1Arg( inputdata_t& inputData ) { m_Lines[1].m_flTextArgNum = inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputCompleteChild1( inputdata_t& inputData ) { m_Lines[1].m_bComplete = true; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputInCompleteChild1( inputdata_t& inputData ) { m_Lines[1].m_bComplete = false; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputResetChild1( inputdata_t& inputData ) { m_Lines[1].Reset(); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
+void CZMEntObjectives::InputSetChild1Text( inputdata_t& inputData )
+{
+    m_Lines[1].SetText( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
+void CZMEntObjectives::InputSetChild1TextArg( inputdata_t& inputData )
+{
+    m_Lines[1].ParseArg( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputIncChild1TextArg( inputdata_t& inputData )
+{
+    m_Lines[1].m_flTextArgNum += inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputChild1Arg( inputdata_t& inputData )
+{
+    m_Lines[1].m_flTextArgNum = inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputCompleteChild1( inputdata_t& inputData )
+{
+    m_Lines[1].m_bComplete = true;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputInCompleteChild1( inputdata_t& inputData )
+{
+    m_Lines[1].m_bComplete = false;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputResetChild1( inputdata_t& inputData )
+{
+    m_Lines[1].Reset();
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
 
 // DEPRECATED! Dirty checks will automatically do this for us.
 void CZMEntObjectives::InputUpdateChild1Text( inputdata_t& inputData )
@@ -265,13 +322,41 @@ void CZMEntObjectives::InputUpdateChild1Text( inputdata_t& inputData )
     m_iDirtyStatus = OBJDIRTY_NONE;
 }
 
-void CZMEntObjectives::InputSetChild2Text( inputdata_t& inputData ) { m_Lines[2].SetText( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
-void CZMEntObjectives::InputSetChild2TextArg( inputdata_t& inputData ) { m_Lines[2].ParseArg( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputIncChild2TextArg( inputdata_t& inputData ) { m_Lines[2].m_flTextArgNum += inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputChild2Arg( inputdata_t& inputData ) { m_Lines[2].m_flTextArgNum = inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputCompleteChild2( inputdata_t& inputData ) { m_Lines[2].m_bComplete = true; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputInCompleteChild2( inputdata_t& inputData ) { m_Lines[2].m_bComplete = false; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputResetChild2( inputdata_t& inputData ) { m_Lines[2].Reset(); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
+void CZMEntObjectives::InputSetChild2Text( inputdata_t& inputData )
+{
+    m_Lines[2].SetText( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
+void CZMEntObjectives::InputSetChild2TextArg( inputdata_t& inputData )
+{
+    m_Lines[2].ParseArg( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputIncChild2TextArg( inputdata_t& inputData )
+{
+    m_Lines[2].m_flTextArgNum += inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputChild2Arg( inputdata_t& inputData )
+{
+    m_Lines[2].m_flTextArgNum = inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputCompleteChild2( inputdata_t& inputData )
+{
+    m_Lines[2].m_bComplete = true;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputInCompleteChild2( inputdata_t& inputData )
+{
+    m_Lines[2].m_bComplete = false;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputResetChild2( inputdata_t& inputData )
+{
+    m_Lines[2].Reset();
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
 
 // DEPRECATED! Dirty checks will automatically do this for us.
 void CZMEntObjectives::InputUpdateChild2Text( inputdata_t& inputData )
@@ -283,13 +368,41 @@ void CZMEntObjectives::InputUpdateChild2Text( inputdata_t& inputData )
     m_iDirtyStatus = OBJDIRTY_NONE;
 }
 
-void CZMEntObjectives::InputSetChild3Text( inputdata_t& inputData ) { m_Lines[3].SetText( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
-void CZMEntObjectives::InputSetChild3TextArg( inputdata_t& inputData ) { m_Lines[3].ParseArg( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputIncChild3TextArg( inputdata_t& inputData ) { m_Lines[3].m_flTextArgNum += inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputChild3Arg( inputdata_t& inputData ) { m_Lines[3].m_flTextArgNum = inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputCompleteChild3( inputdata_t& inputData ) { m_Lines[3].m_bComplete = true; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputInCompleteChild3( inputdata_t& inputData ) { m_Lines[3].m_bComplete = false; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputResetChild3( inputdata_t& inputData ) { m_Lines[3].Reset(); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
+void CZMEntObjectives::InputSetChild3Text( inputdata_t& inputData )
+{
+    m_Lines[3].SetText( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
+void CZMEntObjectives::InputSetChild3TextArg( inputdata_t& inputData )
+{
+    m_Lines[3].ParseArg( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputIncChild3TextArg( inputdata_t& inputData )
+{
+    m_Lines[3].m_flTextArgNum += inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputChild3Arg( inputdata_t& inputData )
+{
+    m_Lines[3].m_flTextArgNum = inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputCompleteChild3( inputdata_t& inputData )
+{
+    m_Lines[3].m_bComplete = true;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputInCompleteChild3( inputdata_t& inputData )
+{
+    m_Lines[3].m_bComplete = false;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputResetChild3( inputdata_t& inputData )
+{
+    m_Lines[3].Reset();
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
 
 // DEPRECATED! Dirty checks will automatically do this for us.
 void CZMEntObjectives::InputUpdateChild3Text( inputdata_t& inputData )
@@ -301,13 +414,41 @@ void CZMEntObjectives::InputUpdateChild3Text( inputdata_t& inputData )
     m_iDirtyStatus = OBJDIRTY_NONE;
 }
 
-void CZMEntObjectives::InputSetChild4Text( inputdata_t& inputData ) { m_Lines[4].SetText( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
-void CZMEntObjectives::InputSetChild4TextArg( inputdata_t& inputData ) { m_Lines[4].ParseArg( inputData.value.String() ); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputIncChild4TextArg( inputdata_t& inputData ) { m_Lines[4].m_flTextArgNum += inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputChild4Arg( inputdata_t& inputData ) { m_Lines[4].m_flTextArgNum = inputData.value.Float(); UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputCompleteChild4( inputdata_t& inputData ) { m_Lines[4].m_bComplete = true; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputInCompleteChild4( inputdata_t& inputData ) { m_Lines[4].m_bComplete = false; UpdateDirtyStatus( OBJDIRTY_UPDATE ); }
-void CZMEntObjectives::InputResetChild4( inputdata_t& inputData ) { m_Lines[4].Reset(); UpdateDirtyStatus( OBJDIRTY_DISPLAY ); }
+void CZMEntObjectives::InputSetChild4Text( inputdata_t& inputData )
+{
+    m_Lines[4].SetText( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
+void CZMEntObjectives::InputSetChild4TextArg( inputdata_t& inputData )
+{
+    m_Lines[4].ParseArg( inputData.value.String() );
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputIncChild4TextArg( inputdata_t& inputData )
+{
+    m_Lines[4].m_flTextArgNum += inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputChild4Arg( inputdata_t& inputData )
+{
+    m_Lines[4].m_flTextArgNum = inputData.value.Float();
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputCompleteChild4( inputdata_t& inputData )
+{
+    m_Lines[4].m_bComplete = true;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputInCompleteChild4( inputdata_t& inputData )
+{
+    m_Lines[4].m_bComplete = false;
+    UpdateDirtyStatus( OBJDIRTY_UPDATE );
+}
+void CZMEntObjectives::InputResetChild4( inputdata_t& inputData )
+{
+    m_Lines[4].Reset();
+    UpdateDirtyStatus( OBJDIRTY_DISPLAY );
+}
 
 // DEPRECATED
 void CZMEntObjectives::InputUpdateChild4Text( inputdata_t& inputData )
@@ -348,7 +489,6 @@ void CZMEntObjectives::GetRecipientFilter( CBaseEntity* pActivator, CRecipientFi
     if ( rec != OBJRECIPIENT_INVALID )
         recipient = rec;
 
-
     RecipientToFilter( pActivator, filter, recipient );
 }
 
@@ -356,13 +496,13 @@ void CZMEntObjectives::RecipientToFilter( CBaseEntity* pActivator, CRecipientFil
 {
     switch ( rec )
     {
-    case OBJRECIPIENT_ALL :
+    case OBJRECIPIENT_ALL:
         filter.AddAllPlayers();
         break;
-    case OBJRECIPIENT_ZM :
+    case OBJRECIPIENT_ZM:
         filter.AddRecipientsByTeam( GetGlobalTeam( ZMTEAM_ZM ) );
         break;
-    case OBJRECIPIENT_ACTIVATOR :
+    case OBJRECIPIENT_ACTIVATOR:
     {
         CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>( pActivator );
 
@@ -371,11 +511,11 @@ void CZMEntObjectives::RecipientToFilter( CBaseEntity* pActivator, CRecipientFil
 
         break;
     }
-    case OBJRECIPIENT_HUMANS :
+    case OBJRECIPIENT_HUMANS:
         filter.AddRecipientsByTeam( GetGlobalTeam( ZMTEAM_HUMAN ) );
         filter.AddRecipientsByTeam( GetGlobalTeam( ZMTEAM_SPECTATOR ) );
         break;
-    default :
+    default:
         break;
     }
 }

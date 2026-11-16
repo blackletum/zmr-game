@@ -1,11 +1,9 @@
 #pragma once
 
-
 class CZMVision
 {
 public:
     CZMVision();
-
 
     void RenderSilhouette();
     void UpdateLight();

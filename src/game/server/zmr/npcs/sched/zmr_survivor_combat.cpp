@@ -1,14 +1,12 @@
 #include "cbase.h"
 
-#include "zmr_survivor_follow.h"
 #include "zmr_survivor_combat.h"
+#include "zmr_survivor_follow.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern ConVar zm_sv_debug_bot_lookat;
-
 
 CSurvivorCombatSchedule::CSurvivorCombatSchedule()
 {
@@ -25,7 +23,6 @@ CSurvivorCombatSchedule::~CSurvivorCombatSchedule()
     delete m_pAttackCloseRangeSched;
     delete m_pAttackLongRangeSched;
 }
-
 
 NPCR::CSchedule<CZMPlayerBot>* CSurvivorCombatSchedule::CreateFriendSchedule()
 {
@@ -61,12 +58,9 @@ void CSurvivorCombatSchedule::OnUpdate()
         return;
     }
 
-
-
     if ( !m_NextEnemyScan.HasStarted() || m_NextEnemyScan.IsElapsed() )
     {
         m_NextEnemyScan.Start( 0.2f );
-
 
         CBaseEntity* pClosestEnemy = pOuter->GetSenses()->GetClosestEntity();
 
@@ -103,12 +97,11 @@ void CSurvivorCombatSchedule::OnUpdate()
         }
     }
 
-
     SetSelfCall( true ); // Ignore our own IsBusy listener.
     bool bBusy = pOuter->IsBusy() == NPCR::RES_YES;
     SetSelfCall( false );
 
-    if ( !bBusy && (!m_NextRangeCheck.HasStarted() || m_NextRangeCheck.IsElapsed()) )
+    if ( !bBusy && ( !m_NextRangeCheck.HasStarted() || m_NextRangeCheck.IsElapsed() ) )
     {
         m_NextRangeCheck.Start( 0.5f );
 
@@ -118,9 +111,7 @@ void CSurvivorCombatSchedule::OnUpdate()
             if ( ShouldMoveBack( pEnemy ) )
                 MoveBackFromThreat( pEnemy );
         }
-            
     }
-
 
     if ( m_Path.IsValid() && !bBusy )
     {
@@ -155,13 +146,12 @@ void CSurvivorCombatSchedule::OnUpdate()
         }
     }
 
-
     bool bIsFacing = pOuter->GetMotor()->IsFacing( m_vecLookAt );
 
     if ( zm_sv_debug_bot_lookat.GetBool() )
     {
         Vector box( 4.0f, 4.0f, 4.0f );
-        NDebugOverlay::Box( m_vecLookAt, -box, box, (!bIsFacing) ? 255 : 0, bIsFacing ? 255 : 0, 0, 0, 0.1f );
+        NDebugOverlay::Box( m_vecLookAt, -box, box, ( !bIsFacing ) ? 255 : 0, bIsFacing ? 255 : 0, 0, 0, 0.1f );
     }
 
     if ( !bIsFacing )
@@ -177,11 +167,10 @@ void CSurvivorCombatSchedule::OnSpawn()
 
 void CSurvivorCombatSchedule::OnHeardSound( CSound* pSound )
 {
-    if ( !m_bMovingOutOfRange && (!m_NextHeardLook.HasStarted() || m_NextHeardLook.IsElapsed()) )
+    if ( !m_bMovingOutOfRange && ( !m_NextHeardLook.HasStarted() || m_NextHeardLook.IsElapsed() ) )
     {
         m_NextHeardLook.Start( 5.0f );
         m_NextLookAround.Start( 3.0f );
-
 
         auto* pOwner = pSound->m_hOwner.Get();
 
@@ -190,14 +179,13 @@ void CSurvivorCombatSchedule::OnHeardSound( CSound* pSound )
             // Face shooter's direction.
             Vector fwd;
             AngleVectors( pOwner->EyeAngles(), &fwd );
-                
+
             m_vecLookAt = pOwner->EyePosition() + fwd * 1024.0f;
         }
         else
         {
             m_vecLookAt = pSound->GetSoundOrigin();
         }
-            
     }
 }
 
@@ -218,9 +206,10 @@ void CSurvivorCombatSchedule::OnForcedMove( CNavArea* pArea )
 
 NPCR::QueryResult_t CSurvivorCombatSchedule::IsBusy() const
 {
-    return (m_Path.IsValid() &&
-            !IsSelfCall()) // Ignore if we're the one asking.
-        ? NPCR::RES_YES : NPCR::RES_NONE;
+    return ( m_Path.IsValid() &&
+               !IsSelfCall() ) // Ignore if we're the one asking.
+             ? NPCR::RES_YES
+             : NPCR::RES_NONE;
 }
 
 bool CSurvivorCombatSchedule::ShouldMoveBack( CBaseEntity* pEnemy ) const
@@ -228,9 +217,8 @@ bool CSurvivorCombatSchedule::ShouldMoveBack( CBaseEntity* pEnemy ) const
     float flDistSqr = pEnemy->GetAbsOrigin().DistToSqr( GetOuter()->GetPosition() );
 
     // ZMRTODO: Take into account velocity.
-    if ( flDistSqr > (128.0f*128.0f) )
+    if ( flDistSqr > ( 128.0f * 128.0f ) )
         return false;
-
 
     return true;
 }
@@ -242,7 +230,7 @@ void CSurvivorCombatSchedule::MoveBackFromThreat( CBaseEntity* pEnemy )
     const Vector vecEnemyPos = pEnemy->GetAbsOrigin();
     const Vector vecMyPos = pOuter->GetPosition();
 
-    Vector dir = (vecMyPos - vecEnemyPos);
+    Vector dir = ( vecMyPos - vecEnemyPos );
     dir.z = 0.0f;
     dir.NormalizeInPlace();
 
@@ -257,7 +245,7 @@ void CSurvivorCombatSchedule::MoveBackFromThreat( CBaseEntity* pEnemy )
         pGoal->GetClosestPointOnArea( vecTarget, &vecTarget );
 
         // We don't want to go forward!
-        if ( (vecTarget - vecMyPos).Normalized().Dot( dir ) < 0.0f )
+        if ( ( vecTarget - vecMyPos ).Normalized().Dot( dir ) < 0.0f )
         {
             vecTarget = vecOriginalTarget;
         }
@@ -267,7 +255,6 @@ void CSurvivorCombatSchedule::MoveBackFromThreat( CBaseEntity* pEnemy )
     m_PathCost.SetGoalPos( vecTarget, pGoal );
 
     m_Path.Compute( vecMyPos, vecTarget, pStart, pGoal, m_PathCost );
-
 
     m_bMovingOutOfRange = m_Path.IsValid();
 

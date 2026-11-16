@@ -1,9 +1,8 @@
-#include "cbase.h"
 #include "animation.h"
+#include "cbase.h"
 #include <tier0/vprof.h>
 
 #include "zmr_zombieanimstate.h"
-
 
 #ifdef CLIENT_DLL
 ConVar zm_debug_zombiehitboxes_client( "zm_debug_zombiehitboxes_client", "0", FCVAR_CHEAT );
@@ -13,8 +12,7 @@ ConVar zm_debug_zombiehitboxes_server( "zm_debug_zombiehitboxes_server", "0", FC
 
 ConVar zm_sv_debug_drawanimstateinfo( "zm_sv_debug_drawanimstateinfo", "-1", FCVAR_REPLICATED, "Entity index of the zombie to print anim state info of." );
 
-
-#define MOVELAYER_FADE_RATE         1.0f
+#define MOVELAYER_FADE_RATE 1.0f
 
 CZMZombieAnimState::CZMZombieAnimState( CZMBaseZombie* pZombie )
 #ifdef GAME_DLL
@@ -41,22 +39,24 @@ CZMZombieAnimState::CZMZombieAnimState( CZMBaseZombie* pZombie )
 
 CZMZombieAnimState::~CZMZombieAnimState()
 {
-
 }
 
 int CZMZombieAnimState::AnimEventToActivity( ZMZombieAnimEvent_t iEvent, int nData )
 {
     switch ( iEvent )
     {
-    case ZOMBIEANIMEVENT_ATTACK :
+    case ZOMBIEANIMEVENT_ATTACK:
     {
         if ( !Uses9WayAnim() )
             return ACT_MELEE_ATTACK1;
         break;
     }
-    case ZOMBIEANIMEVENT_SWAT : return nData;
-    case ZOMBIEANIMEVENT_BANSHEEANIM : return nData;
-    default : break;
+    case ZOMBIEANIMEVENT_SWAT:
+        return nData;
+    case ZOMBIEANIMEVENT_BANSHEEANIM:
+        return nData;
+    default:
+        break;
     }
 
     return ACT_INVALID;
@@ -66,27 +66,33 @@ ZMZombieAnimEvent_t CZMZombieAnimState::ActivityToAnimEvent( int iActivity, int&
 {
     switch ( iActivity )
     {
-    case ACT_IDLE : return ZOMBIEANIMEVENT_IDLE;
-    case ACT_MELEE_ATTACK1 : return ZOMBIEANIMEVENT_ATTACK;
-    case ACT_ZOM_SWATLEFTLOW :
-    case ACT_ZOM_SWATLEFTMID :
-    case ACT_ZOM_SWATRIGHTLOW :
-    case ACT_ZOM_SWATRIGHTMID :
-        nData = iActivity; return ZOMBIEANIMEVENT_SWAT;
-    case ACT_FASTZOMBIE_FRENZY :
-    case ACT_FASTZOMBIE_BIG_SLASH :
-    case ACT_FASTZOMBIE_LAND_RIGHT :
-    case ACT_FASTZOMBIE_LAND_LEFT :
-    case ACT_FASTZOMBIE_LEAP_STRIKE :
-    case ACT_RANGE_ATTACK1 :
-    case ACT_HOVER :
-    case ACT_HOP :
-        nData = iActivity; return ZOMBIEANIMEVENT_BANSHEEANIM;
-    case ACT_GESTURE_FLINCH_CHEST :
-    case ACT_GESTURE_FLINCH_LEFTARM :
-    case ACT_GESTURE_FLINCH_RIGHTARM :
-        nData = iActivity; return ZOMBIEANIMEVENT_GESTURE;
-    default : break;
+    case ACT_IDLE:
+        return ZOMBIEANIMEVENT_IDLE;
+    case ACT_MELEE_ATTACK1:
+        return ZOMBIEANIMEVENT_ATTACK;
+    case ACT_ZOM_SWATLEFTLOW:
+    case ACT_ZOM_SWATLEFTMID:
+    case ACT_ZOM_SWATRIGHTLOW:
+    case ACT_ZOM_SWATRIGHTMID:
+        nData = iActivity;
+        return ZOMBIEANIMEVENT_SWAT;
+    case ACT_FASTZOMBIE_FRENZY:
+    case ACT_FASTZOMBIE_BIG_SLASH:
+    case ACT_FASTZOMBIE_LAND_RIGHT:
+    case ACT_FASTZOMBIE_LAND_LEFT:
+    case ACT_FASTZOMBIE_LEAP_STRIKE:
+    case ACT_RANGE_ATTACK1:
+    case ACT_HOVER:
+    case ACT_HOP:
+        nData = iActivity;
+        return ZOMBIEANIMEVENT_BANSHEEANIM;
+    case ACT_GESTURE_FLINCH_CHEST:
+    case ACT_GESTURE_FLINCH_LEFTARM:
+    case ACT_GESTURE_FLINCH_RIGHTARM:
+        nData = iActivity;
+        return ZOMBIEANIMEVENT_GESTURE;
+    default:
+        break;
     }
 
     return ZOMBIEANIMEVENT_MAX;
@@ -96,7 +102,6 @@ bool CZMZombieAnimState::DoAnimationEvent( ZMZombieAnimEvent_t iEvent, int nData
 {
     CZMBaseZombie* pOuter = GetOuter();
     bool ret = false;
-
 
     int act = AnimEventToActivity( iEvent, nData );
     if ( act != ACT_INVALID )
@@ -115,11 +120,11 @@ bool CZMZombieAnimState::HandleAnimEvent( ZMZombieAnimEvent_t iEvent, int nData 
 {
     switch ( iEvent )
     {
-    case ZOMBIEANIMEVENT_IDLE :
+    case ZOMBIEANIMEVENT_IDLE:
         SetOuterActivity( ACT_IDLE );
         m_iMoveRandomSeed = nData; // Use the data as seed in the future.
         return true;
-    case ZOMBIEANIMEVENT_ATTACK :
+    case ZOMBIEANIMEVENT_ATTACK:
         Assert( Uses9WayAnim() ); // We should only get here if we use 9-way anims (so gesture attacks)
 
         AddLayeredSequence( GetOuterRandomSequence( ACT_MELEE_ATTACK1 ), ANIMOVERLAY_SLOT_GESTURE );
@@ -128,7 +133,7 @@ bool CZMZombieAnimState::HandleAnimEvent( ZMZombieAnimEvent_t iEvent, int nData 
         SetLayerWeight( ANIMOVERLAY_SLOT_GESTURE, 1.0f );
         return true;
     // We're burning, change idle & moving activities.
-    case ZOMBIEANIMEVENT_ON_BURN :
+    case ZOMBIEANIMEVENT_ON_BURN:
         if ( GetOuter()->HasActivity( ACT_IDLE_ON_FIRE ) )
             SetIdleActivity( ACT_IDLE_ON_FIRE );
 
@@ -136,17 +141,18 @@ bool CZMZombieAnimState::HandleAnimEvent( ZMZombieAnimEvent_t iEvent, int nData 
             SetMoveActivity( ACT_WALK_ON_FIRE );
         return true;
     // We were extinguished, play normal activities.
-    case ZOMBIEANIMEVENT_ON_EXTINGUISH :
+    case ZOMBIEANIMEVENT_ON_EXTINGUISH:
         SetIdleActivity( ACT_IDLE );
         SetMoveActivity( ACT_WALK );
         return true;
-    case ZOMBIEANIMEVENT_GESTURE :
+    case ZOMBIEANIMEVENT_GESTURE:
         AddLayeredSequence( GetOuterRandomSequence( (Activity)nData ), ANIMOVERLAY_SLOT_GESTURE );
         SetLayerLooping( ANIMOVERLAY_SLOT_GESTURE, false );
         SetLayerCycle( ANIMOVERLAY_SLOT_GESTURE, 0.0f );
         SetLayerWeight( ANIMOVERLAY_SLOT_GESTURE, 1.0f );
         return true;
-    default : break;
+    default:
+        break;
     }
 
     return false;
@@ -155,7 +161,6 @@ bool CZMZombieAnimState::HandleAnimEvent( ZMZombieAnimEvent_t iEvent, int nData 
 bool CZMZombieAnimState::InitParams()
 {
     if ( m_bModelParamsReady ) return true;
-
 
     CZMBaseZombie* pOuter = GetOuter();
     pOuter->SetNumAnimOverlays( ANIMOVERLAY_SLOT_MAX );
@@ -172,7 +177,6 @@ bool CZMZombieAnimState::InitParams()
 
     m_actIdle = ACT_IDLE;
 
-
     auto* pHdr = pOuter->GetModelPtr();
     if ( !pHdr )
     {
@@ -183,12 +187,10 @@ bool CZMZombieAnimState::InitParams()
     {
         pOuter->SetPoseParameter( pHdr, i, 0.0f );
     }
-    
 
     m_iPoseParamMoveX = pOuter->LookupPoseParameter( pHdr, "move_y" );
     m_iPoseParamMoveY = pOuter->LookupPoseParameter( pHdr, "move_x" );
     m_bIs9Way = ( m_iPoseParamMoveX >= 0 && m_iPoseParamMoveY >= 0 );
-
 
     m_bModelParamsReady = true;
     return true;
@@ -198,17 +200,14 @@ void CZMZombieAnimState::Update()
 {
     VPROF( "CZMZombieAnimState::Update" );
 
-
     if ( !ShouldUpdate() )
         return;
-
 
     if ( !InitParams() )
     {
         Warning( "Couldn't initialize animation parameters!\n" );
         return;
     }
-
 
     // Update the actual move animation
     UpdateMovement();
@@ -217,7 +216,6 @@ void CZMZombieAnimState::Update()
 
     // Finally, advance our animations
     UpdateOuterAnims();
-
 
     ShowDebugInfo();
 }
@@ -265,13 +263,12 @@ void CZMZombieAnimState::ShowDebugInfo()
 #endif
     }
 
-
     int index = zm_sv_debug_drawanimstateinfo.GetInt();
     if ( index > -1 && index == GetOuter()->entindex() )
         DrawAnimStateInfo();
 }
 
-extern void Anim_StatePrintf( int iLine, const char *pMsg, ... );
+extern void Anim_StatePrintf( int iLine, const char* pMsg, ... );
 
 void CZMZombieAnimState::DrawAnimStateInfo()
 {
@@ -296,14 +293,12 @@ void CZMZombieAnimState::DrawAnimStateInfo()
         GetOuter()->GetSequence(),
         GetOuter()->GetCycle() );
 
-
     for ( int i = 0; i < ARRAYSIZE( m_AnimOverlay ); i++ )
     {
         CZMAnimOverlay* pOverlay = &m_AnimOverlay[i];
 
         if ( !pOverlay->IsUsed() )
             continue;
-
 
         Anim_StatePrintf( iLine++, "%i | Sequence: %s (%i) | Weight: %.2f | Cycle: %.2f",
             pOverlay->GetLayerIndex(),
@@ -347,7 +342,7 @@ int CZMZombieAnimState::GetOuterRandomSequence( Activity act ) const
     CStudioHdr* hdr = pOuter->GetModelPtr();
 
     VerifySequenceIndex( hdr );
-    
+
     RandomSeed( pOuter->GetAnimationRandomSeed() ); // Don't use random->SetSeed, SelectWeightedSequence does not use it.
     int iSeq = hdr->SelectWeightedSequence( act, pOuter->GetSequence() );
 
@@ -358,15 +353,12 @@ void CZMZombieAnimState::UpdateLayers()
 {
     CZMBaseZombie* pOuter = GetOuter();
 
-
     CStudioHdr* hdr = pOuter->GetModelPtr();
     if ( !hdr )
         return;
 
-
 #ifdef CLIENT_DLL
     // We have to update layers manually on the client.
-
 
     // Update dying/unused overlays.
     for ( int i = 0; i < ARRAYSIZE( m_AnimOverlay ); i++ )
@@ -377,7 +369,6 @@ void CZMZombieAnimState::UpdateLayers()
         {
             continue;
         }
-
 
         if ( pOver->IsDying() )
         {
@@ -405,7 +396,6 @@ void CZMZombieAnimState::UpdateLayers()
     {
         C_AnimationLayer* animlayer = &pOuter->m_AnimOverlay[i];
 
-
         // Get the current cycle.
         float flCycle = animlayer->m_flCycle;
         flCycle += pOuter->GetSequenceCycleRate( hdr, animlayer->m_nSequence ) * gpGlobals->frametime * 1.0f * animlayer->m_flPlaybackRate;
@@ -413,17 +403,15 @@ void CZMZombieAnimState::UpdateLayers()
         animlayer->m_flPrevCycle = animlayer->m_flCycle;
         animlayer->m_flCycle = flCycle;
 
-        if( flCycle > 1.0f )
+        if ( flCycle > 1.0f )
         {
             animlayer->m_flCycle = 0.0f;
-
 
             ZMAnimLayerSlot_t slot = FindSlotByLayerIndex( i );
             if ( slot == ZMAnimLayerSlot_t::ANIMOVERLAY_SLOT_MAX )
             {
                 continue;
             }
-
 
             if ( !IsLayerLooping( slot ) )
             {
@@ -448,7 +436,6 @@ void CZMZombieAnimState::AddLayeredSequence( int iSeq, ZMAnimLayerSlot_t index )
     }
 
     m_AnimOverlay[index].Create( pOuter, iSeq, index );
-
 
     if ( oldcycle >= 0.0f )
     {
@@ -521,7 +508,6 @@ void CZMZombieAnimState::UpdateOldAnims()
 {
     // Update the idle <-> move animation layer transition to have the natural appearance of acceleration and deceleration.
 
-
     CZMBaseZombie* pOuter = GetOuter();
 
     Activity iCurAct = GetOuterActivity();
@@ -546,14 +532,11 @@ void CZMZombieAnimState::UpdateOldAnims()
         }
     }
 
-
     Vector vel = GetOuterVelocity();
     float spdSqr2d = vel.Length2DSqr();
     float spdSqr = vel.LengthSqr();
 
-
     bool bMoving = spdSqr2d > 8.0f; // Only consider XY velocity for moving.
-
 
     if ( bMoving && !m_bWasMoving ) // Just started moving
     {
@@ -561,9 +544,7 @@ void CZMZombieAnimState::UpdateOldAnims()
         if ( iSeq >= 0 )
             AddLayeredSequence( iSeq, ANIMOVERLAY_SLOT_IDLE );
 
-
         SetLayerLooping( ANIMOVERLAY_SLOT_IDLE, true );
-
 
         UpdateMoveActivity();
     }
@@ -582,7 +563,6 @@ void CZMZombieAnimState::UpdateOldAnims()
             UpdateMoveActivity();
     }
 
-
     // Update the layer depending how fast we're going.
     if ( HasLayeredSequence( ANIMOVERLAY_SLOT_IDLE ) && !IsLayerDying( ANIMOVERLAY_SLOT_IDLE ) )
     {
@@ -595,9 +575,8 @@ void CZMZombieAnimState::UpdateOldAnims()
             spdSqr = MIN( maxSpdSqr, spdSqr );
             spdSqr = MAX( 0.1f, spdSqr );
 
-
             float newWeight = 1.0f - spdSqr / maxSpdSqr;
-        
+
             m_flMoveWeight = clamp( newWeight, 0.0f, 1.0f );
 
             SetLayerWeight( ANIMOVERLAY_SLOT_IDLE, m_flMoveWeight );
@@ -621,23 +600,21 @@ float CZMZombieAnimState::GetMaxGroundSpeed() const
 
     int iSeq = pHdr->SelectWeightedSequence( GetMoveActivity(), pOuter->GetSequence() );
 
-
     if ( !Uses9WayAnim() )
     {
         return pOuter->GetSequenceGroundSpeed( iSeq );
     }
 
-  
-	float prevX = pOuter->GetPoseParameter( m_iPoseParamMoveX );
-	float prevY = pOuter->GetPoseParameter( m_iPoseParamMoveY );
+    float prevX = pOuter->GetPoseParameter( m_iPoseParamMoveX );
+    float prevY = pOuter->GetPoseParameter( m_iPoseParamMoveY );
 
-	pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveX, 1.0f );
-	pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveY, 0.0f );
+    pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveX, 1.0f );
+    pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveY, 0.0f );
 
-	float maxspeed = pOuter->GetSequenceGroundSpeed( iSeq );
+    float maxspeed = pOuter->GetSequenceGroundSpeed( iSeq );
 
-	pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveX, prevX );
-	pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveY, prevY );
+    pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveX, prevX );
+    pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveY, prevY );
 
     return maxspeed;
 }
@@ -661,7 +638,6 @@ float CZMZombieAnimState::CalcMovementPlaybackRate() const
         return 0.0f;
     }
 
-
     return curspeed / maxspeed;
 }
 
@@ -674,7 +650,6 @@ void CZMZombieAnimState::Update9wayAnims()
     float speed = dir.NormalizeInPlace();
 
     bool bIsMoving = speed > 0.01f;
-    
 
     Vector2D vecCurrentMoveYaw( 0.0f, 0.0f );
     if ( bIsMoving )
@@ -689,7 +664,6 @@ void CZMZombieAnimState::Update9wayAnims()
         vecCurrentMoveYaw.x = cos( flRelativeYaw ) * flPlaybackRate;
         vecCurrentMoveYaw.y = sin( flRelativeYaw ) * flPlaybackRate;
 
-
         SetOuterActivity( GetMoveActivity() );
 
         //Msg( "Speed: %.2f\n", speed );
@@ -697,7 +671,6 @@ void CZMZombieAnimState::Update9wayAnims()
 
     pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveX, vecCurrentMoveYaw.x );
     pOuter->SetPoseParameter( pHdr, m_iPoseParamMoveY, vecCurrentMoveYaw.y );
-
 }
 
 void CZMZombieAnimState::OnNewModel()
@@ -712,10 +685,8 @@ void CZMZombieAnimState::UpdateMoveActivity()
     if ( GetOuterActivity() == m_actMove )
         return;
 
-
     if ( !SetOuterActivity( m_actMove ) )
         return;
-
 
     // Set a random cycle, so we don't look too synchronized
     // with other zombies.
@@ -724,10 +695,7 @@ void CZMZombieAnimState::UpdateMoveActivity()
 
     SetOuterCycle( randomcycle );
 
-
-
     m_iMoveSeq = pOuter->GetSequence();
-
 
     m_flMoveActSpeed = pOuter->GetSequenceGroundSpeed( pOuter->GetSequence() );
 }
@@ -743,11 +711,9 @@ void CZMZombieAnimState::SetMoveActivity( Activity act )
         return;
     }
 
-
     Activity oldAct = m_actMove;
 
     m_actMove = act;
-
 
     if ( GetOuterActivity() == oldAct )
         UpdateMoveActivity();
@@ -757,14 +723,12 @@ void CZMZombieAnimState::SetIdleActivity( Activity act )
 {
     if ( act == m_actIdle ) return;
 
-
     CZMBaseZombie* pOuter = GetOuter();
     if ( !pOuter->HasActivity( act ) )
     {
         DevWarning( "Attempted to set invalid idle activity (%i)\n", act );
         return;
     }
-
 
     if ( GetOuterActivity() == m_actIdle )
     {
@@ -787,7 +751,6 @@ ZMAnimLayerSlot_t CZMZombieAnimState::FindSlotByLayerIndex( int index )
 
     return ANIMOVERLAY_SLOT_MAX;
 }
-
 
 CZMAnimOverlay::CZMAnimOverlay()
 {
@@ -937,5 +900,4 @@ void CZMAnimOverlay::SetLayerLooping( bool bLoop )
 #ifdef GAME_DLL
     m_pOuter->SetLayerLooping( m_iLayerIndex, bLoop );
 #endif
-    
 }

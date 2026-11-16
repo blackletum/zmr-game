@@ -5,10 +5,9 @@
 #include "zmr_bot_main.h"
 #include "zmr_survivor_attack.h"
 
-#include "npcr_schedule.h"
 #include "npcr_path_cost.h"
 #include "npcr_path_follow.h"
-
+#include "npcr_schedule.h"
 
 //
 // Close range version of an attack.
@@ -24,9 +23,7 @@ public:
     void SetMeleeing( bool value ) { m_bAllowMelee = value; }
     bool IsMeleeing() const { return m_bAllowMelee; }
 
-
     virtual const char* GetName() const override { return "SurvivorAttackCloseRange"; }
-
 
     virtual void OnStart() override;
 
@@ -48,7 +45,6 @@ private:
     void MoveToShootingRange( CBaseEntity* pEnemy );
 
     void MoveBackFromThreat( CBaseEntity* pEnemy );
-
 
     NPCR::CFollowNavPath m_Path;
     NPCR::CPathCostGroundOnly m_PathCost;

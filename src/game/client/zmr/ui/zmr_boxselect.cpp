@@ -8,14 +8,10 @@
 #include "input.h"
 #include "view.h"
 
-
-
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Frame.h>
-
-
 
 #include "zmr_player_shared.h"
 
@@ -24,9 +20,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
 
 CZMBoxSelect::CZMBoxSelect( Panel* pParent ) : Panel( g_pClientMode->GetViewport(), "ZMBoxSelect" )
 {
@@ -50,7 +44,6 @@ void CZMBoxSelect::Paint()
     int lefttop_x, lefttop_y;
     int rightbot_x, rightbot_y;
 
-
     if ( start_x < end_x )
     {
         lefttop_x = start_x;
@@ -62,7 +55,6 @@ void CZMBoxSelect::Paint()
         rightbot_x = start_x;
     }
 
-
     if ( start_y < end_y )
     {
         lefttop_y = start_y;
@@ -73,7 +65,6 @@ void CZMBoxSelect::Paint()
         lefttop_y = end_y;
         rightbot_y = start_y;
     }
-
 
     surface()->DrawSetColor( 150, 0, 0, 40 );
     surface()->DrawFilledRect( lefttop_x, lefttop_y, rightbot_x, rightbot_y );

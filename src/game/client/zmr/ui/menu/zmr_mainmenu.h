@@ -1,15 +1,12 @@
 #pragma once
 
-
-#include <vgui_controls/EditablePanel.h>
 #include <GameUI/IGameUI.h>
+#include <vgui_controls/EditablePanel.h>
 #include <video/ivideoservices.h>
 
 #include "ui/zmr_int.h"
 
-
 class CZMMainMenuButton;
-
 
 class CZMMainMenu : public vgui::EditablePanel
 {
@@ -27,17 +24,14 @@ public:
     virtual void OnKeyCodePressed( vgui::KeyCode code ) override;
     virtual void OnMousePressed( vgui::KeyCode code ) override;
 
-
     virtual void Repaint() override;
 
     virtual void PaintBackground() override;
 
     virtual bool IsVisible() override;
 
-
     MESSAGE_FUNC( OnLoadingScreenStart, "loadingstart" );
     MESSAGE_FUNC( OnLoadingScreenEnd, "loadingend" );
-
 
     void HideSubButtons( CZMMainMenuButton* pIgnore = nullptr );
 
@@ -58,16 +52,15 @@ private:
     void CheckInGameButtons( bool bInGame );
     static bool s_bWasInGame;
 
-
     IGameUI* m_pGameUI;
 
     //
-    IVideoMaterial*     m_pVideoMaterial;
-    IMaterial*          m_pMaterial;
-    int                 m_nVideoWidth;
-    int                 m_nVideoHeight;
-    float               m_flVideoU;
-    float               m_flVideoV;
+    IVideoMaterial* m_pVideoMaterial;
+    IMaterial* m_pMaterial;
+    int m_nVideoWidth;
+    int m_nVideoHeight;
+    float m_flVideoU;
+    float m_flVideoV;
     //
 
     int m_nTexBgId;
@@ -81,8 +74,6 @@ private:
 
     CUtlVector<CZMMainMenuButton*> m_vBtns;
 };
-
-
 
 extern IZMUi* g_pZMMainMenu;
 

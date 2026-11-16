@@ -6,7 +6,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CON_COMMAND( zm_hudchat, "Prints a message to chat." )
 {
     C_ZMPlayer* pLocal = C_ZMPlayer::GetLocalPlayer();

@@ -1,8 +1,8 @@
 #include "cbase.h"
-#include "movevars_shared.h"
-#include "in_buttons.h"
-#include "convar.h"
 #include "collisionutils.h"
+#include "convar.h"
+#include "in_buttons.h"
+#include "movevars_shared.h"
 
 #ifndef CLIENT_DLL
 #include "player.h"
@@ -12,7 +12,6 @@
 #include "c_baseplayer.h"
 #endif
 
-
 #include "zmr_gamerules.h"
 
 #ifndef CLIENT_DLL
@@ -21,31 +20,23 @@
 #include "c_zmr_player.h"
 #endif
 
-#include "zmr_softcollisions.h"
 #include "zmr_gamemovement.h"
-
-
+#include "zmr_softcollisions.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_maxbunnyhopspeed( "zm_sv_maxbunnyhopspeed", "300", FCVAR_REPLICATED | FCVAR_NOTIFY );
 
-
-#define LADDER_AUTOMOUNT_DIST       32.0f
-#define LADDER_AUTOMOUNT_DOT        0.4f
-#define LADDER_DISMOUNT_DOT         0.8f
-#define LADDER_DISMOUNT_MAX_DIST    100.0f
-#define LADDER_MAX_DIST             64.0f
-
+#define LADDER_AUTOMOUNT_DIST    32.0f
+#define LADDER_AUTOMOUNT_DOT     0.4f
+#define LADDER_DISMOUNT_DOT      0.8f
+#define LADDER_DISMOUNT_MAX_DIST 100.0f
+#define LADDER_MAX_DIST          64.0f
 
 extern bool g_bMovementOptimizations;
 
-
-
 extern ConVar zm_sv_playercollision;
-
 
 // Custom move filter to implement soft collisions.
 class CPlayerMoveFilter : public CTraceFilterSimple
@@ -64,20 +55,18 @@ public:
         if ( pHandleEntity == GetPassEntity() )
             return false;
 
-
-        
         CBaseEntity* pEnt = EntityFromEntityHandle( pHandleEntity );
         if ( pEnt && pEnt->IsPlayer() )
         {
 #ifdef CLIENT_DLL
             C_ZMPlayer* pLocal = C_ZMPlayer::GetLocalPlayer();
 #endif
-            if (zm_sv_playercollision.GetInt() == 1
+            if ( zm_sv_playercollision.GetInt() == 1
 #ifdef CLIENT_DLL
-                // Only for local player. Prediction is nice.
-            &&  (m_pMe == pLocal || pEnt == pLocal || (pLocal && pLocal->GetObserverTarget() == m_pMe))
+                 // Only for local player. Prediction is nice.
+                 && ( m_pMe == pLocal || pEnt == pLocal || ( pLocal && pLocal->GetObserverTarget() == m_pMe ) )
 #endif
-                )
+            )
             {
 #ifdef CLIENT_DLL
                 // Pass our hit player to soft collisions.
@@ -92,14 +81,12 @@ public:
                 return !IsBoxIntersectingBox( m_vecMins, m_vecMaxs, otmins, otmaxs );
             }
 
-
             return false;
         }
 
-
-
         return CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask );
     }
+
 private:
     CBasePlayer* m_pMe;
     Vector m_vecMins;
@@ -110,15 +97,12 @@ void CZMGameMovement::TracePlayerBBox( const Vector& start, const Vector& end, u
 {
     // Do our own bbox trace to account for soft collisions and stuckness
 
-
     VPROF( "CGameMovement::TracePlayerBBox" );
-
 
     CBasePlayer* pMe = static_cast<CBasePlayer*>( EntityFromEntityHandle( mv->m_nPlayerHandle.Get() ) );
     CPlayerMoveFilter filter( pMe, collisionGroup );
     Ray_t ray;
     ray.Init( start, end, GetPlayerMins(), GetPlayerMaxs() );
-
 
     enginetrace->TraceRay( ray, fMask, &filter, &pm );
 }
@@ -132,15 +116,14 @@ CBaseHandle CZMGameMovement::TestPlayerPosition( const Vector& pos, int collisio
     Ray_t ray;
     ray.Init( pos, pos, GetPlayerMins(), GetPlayerMaxs() );
 
-
     enginetrace->TraceRay( ray, PlayerSolidMask(), &filter, &pm );
 
-    if ( (pm.contents & PlayerSolidMask()) && pm.m_pEnt )
+    if ( ( pm.contents & PlayerSolidMask() ) && pm.m_pEnt )
     {
         return pm.m_pEnt->GetRefEHandle();
     }
     else
-    {	
+    {
         return INVALID_EHANDLE;
     }
 }
@@ -149,15 +132,12 @@ void CZMGameMovement::TryTouchGround( const Vector& start, const Vector& end, co
 {
     // Do our own bbox trace to account for soft collisions and stuckness
 
-
     VPROF( "CGameMovement::TryTouchGround" );
-
 
     CBasePlayer* pMe = static_cast<CBasePlayer*>( EntityFromEntityHandle( mv->m_nPlayerHandle.Get() ) );
     CPlayerMoveFilter filter( pMe, collisionGroup );
     Ray_t ray;
     ray.Init( start, end, mins, maxs );
-
 
     enginetrace->TraceRay( ray, fMask, &filter, &pm );
 }
@@ -167,22 +147,22 @@ void CZMGameMovement::PlayerMove( void )
     VPROF( "CGameMovement::PlayerMove" );
 
     CheckParameters();
-    
+
     // clear output applied velocity
     mv->m_outWishVel.Init();
     mv->m_outJumpVel.Init();
 
-    MoveHelper( )->ResetTouchList();                    // Assume we don't touch anything
+    MoveHelper()->ResetTouchList();                    // Assume we don't touch anything
 
     ReduceTimers();
 
-    AngleVectors (mv->m_vecViewAngles, &m_vecForward, &m_vecRight, &m_vecUp );  // Determine movement angles
+    AngleVectors( mv->m_vecViewAngles, &m_vecForward, &m_vecRight, &m_vecUp );  // Determine movement angles
 
     // Always try and unstick us unless we are using a couple of the movement modes
-    if ( player->GetMoveType() != MOVETYPE_NOCLIP && 
-         player->GetMoveType() != MOVETYPE_NONE && 		 
-         player->GetMoveType() != MOVETYPE_ISOMETRIC && 
-         player->GetMoveType() != MOVETYPE_OBSERVER && 
+    if ( player->GetMoveType() != MOVETYPE_NOCLIP &&
+         player->GetMoveType() != MOVETYPE_NONE &&
+         player->GetMoveType() != MOVETYPE_ISOMETRIC &&
+         player->GetMoveType() != MOVETYPE_OBSERVER &&
          !player->pl.deadflag )
     {
         if ( CheckInterval( STUCK ) )
@@ -190,15 +170,15 @@ void CZMGameMovement::PlayerMove( void )
             if ( CheckStuck() )
             {
                 // Can't move, we're stuck
-                return;  
+                return;
             }
         }
     }
 
     // Now that we are "unstuck", see where we are (player->GetWaterLevel() and type, player->GetGroundEntity()).
     if ( player->GetMoveType() != MOVETYPE_WALK ||
-        mv->m_bGameCodeMovedPlayer || 
-        !g_bMovementOptimizations  )
+         mv->m_bGameCodeMovedPlayer ||
+         !g_bMovementOptimizations )
     {
         CategorizePosition();
     }
@@ -216,9 +196,8 @@ void CZMGameMovement::PlayerMove( void )
     // If we are not on ground, store off how fast we are moving down
     if ( !player->GetGroundEntity() )
     {
-        player->m_Local.m_flFallVelocity = -mv->m_vecVelocity[ 2 ];
+        player->m_Local.m_flFallVelocity = -mv->m_vecVelocity[2];
     }
-
 
     // player->m_pSurfaceData had to replaced by GetSurfaceData... really valve...
     player->UpdateStepSound( player->GetSurfaceData(), mv->GetAbsOrigin(), mv->m_vecVelocity );
@@ -227,17 +206,17 @@ void CZMGameMovement::PlayerMove( void )
     Duck();
 
     // Don't run ladder code if dead on on a train
-    if ( !player->pl.deadflag && !(player->GetFlags() & FL_ONTRAIN) )
+    if ( !player->pl.deadflag && !( player->GetFlags() & FL_ONTRAIN ) )
     {
-        // If was not on a ladder now, but was on one before, 
+        // If was not on a ladder now, but was on one before,
         //  get off of the ladder
-        
+
         // TODO: this causes lots of weirdness.
         //bool bCheckLadder = CheckInterval( LADDER );
         //if ( bCheckLadder || player->GetMoveType() == MOVETYPE_LADDER )
         {
-            if ( !LadderMove() && 
-                ( player->GetMoveType() == MOVETYPE_LADDER ) )
+            if ( !LadderMove() &&
+                 ( player->GetMoveType() == MOVETYPE_LADDER ) )
             {
                 // Clear ladder stuff unless player is dead or riding a train
                 // It will be reset immediately again next frame if necessary
@@ -248,52 +227,51 @@ void CZMGameMovement::PlayerMove( void )
     }
 
     // Handle movement modes.
-    switch (player->GetMoveType())
+    switch ( player->GetMoveType() )
     {
-        case MOVETYPE_NONE:
-            break;
+    case MOVETYPE_NONE:
+        break;
 
-        case MOVETYPE_NOCLIP:
-            // ZMRTODO: Use our own move values.
-            if ( ToZMPlayer( player )->IsZM() )
-            {
-                FullZMMove();
-            }
-            else
-            {
-                FullNoClipMove( sv_noclipspeed.GetFloat(), sv_noclipaccelerate.GetFloat() );
-            }
+    case MOVETYPE_NOCLIP:
+        // ZMRTODO: Use our own move values.
+        if ( ToZMPlayer( player )->IsZM() )
+        {
+            FullZMMove();
+        }
+        else
+        {
+            FullNoClipMove( sv_noclipspeed.GetFloat(), sv_noclipaccelerate.GetFloat() );
+        }
 
-            break;
+        break;
 
-        case MOVETYPE_FLY:
-        case MOVETYPE_FLYGRAVITY:
-            FullTossMove();
-            break;
+    case MOVETYPE_FLY:
+    case MOVETYPE_FLYGRAVITY:
+        FullTossMove();
+        break;
 
-        case MOVETYPE_LADDER:
-            FullLadderMove();
-            break;
+    case MOVETYPE_LADDER:
+        FullLadderMove();
+        break;
 
-        case MOVETYPE_WALK:
-            FullWalkMove();
-            break;
+    case MOVETYPE_WALK:
+        FullWalkMove();
+        break;
 
-        case MOVETYPE_ISOMETRIC:
-            //IsometricMove();
-            // Could also try:  FullTossMove();
-            FullWalkMove();
-            break;
-            
-        case MOVETYPE_OBSERVER:
-            FullObserverMove(); // clips against world&players
-            break;
+    case MOVETYPE_ISOMETRIC:
+        //IsometricMove();
+        // Could also try:  FullTossMove();
+        FullWalkMove();
+        break;
 
-        default:
-            DevMsg( 1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer());
-            break;
+    case MOVETYPE_OBSERVER:
+        FullObserverMove(); // clips against world&players
+        break;
+
+    default:
+        DevMsg( 1, "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", player->GetMoveType(), player->IsServer() );
+        break;
     }
-
 
     //
     // Check for view clearance.
@@ -307,18 +285,17 @@ void CZMGameMovement::PlayerMove( void )
 
         Vector viewoff = GetPlayerViewOffset( pPlayer->IsDucked() );
         Vector vecStartPos = pPlayer->GetAbsOrigin() + viewoff;
-        
+
         Vector vecEndPos = vecStartPos;
         vecEndPos.z += flClearance;
 
         vecStartPos.z -= 2.0f; // Lower the start a bit for startsolid check.
 
-
         CTraceFilterSimple filter( pPlayer, COLLISION_GROUP_PLAYER );
         trace_t tr;
 
-        Vector mins(-flHalfHullSize, -flHalfHullSize, 0 );
-        Vector maxs( flHalfHullSize,  flHalfHullSize, 0 );
+        Vector mins( -flHalfHullSize, -flHalfHullSize, 0 );
+        Vector maxs( flHalfHullSize, flHalfHullSize, 0 );
 
         UTIL_TraceHull( vecStartPos, vecEndPos, mins, maxs, PlayerSolidMask(), &filter, &tr );
 
@@ -426,8 +403,8 @@ void CZMGameMovement::CategorizePosition()
 
     // if the player hull point one unit down is solid, the player
     // is on ground
-    
-    // see if standing on something solid	
+
+    // see if standing on something solid
 
     // Doing this before we move may introduce a potential latency in water detection, but
     // doing it after can get us stuck on the bottom in water if the amount we move up
@@ -465,12 +442,12 @@ void CZMGameMovement::CategorizePosition()
     if ( bMovingUpRapidly )
     {
         // Tracker 73219, 75878:  ywb 8/2/07
-        // After save/restore (and maybe at other times), we can get a case where we were saved on a lift and 
-        //  after restore we'll have a high local velocity due to the lift making our abs velocity appear high.  
-        // We need to account for standing on a moving ground object in that case in order to determine if we really 
+        // After save/restore (and maybe at other times), we can get a case where we were saved on a lift and
+        //  after restore we'll have a high local velocity due to the lift making our abs velocity appear high.
+        // We need to account for standing on a moving ground object in that case in order to determine if we really
         //  are moving away from the object we are standing on at too rapid a speed.  Note that CheckJump already sets
         //  ground entity to NULL, so this wouldn't have any effect unless we are moving up rapidly not from the jump button.
-        CBaseEntity *ground = player->GetGroundEntity();
+        CBaseEntity* ground = player->GetGroundEntity();
         if ( ground )
         {
             flGroundEntityVelZ = ground->GetAbsVelocity().z;
@@ -479,8 +456,8 @@ void CZMGameMovement::CategorizePosition()
     }
 
     // Was on ground, but now suddenly am not
-    if ( bMovingUpRapidly || 
-        ( bMovingUp && player->GetMoveType() == MOVETYPE_LADDER ) )   
+    if ( bMovingUpRapidly ||
+         ( bMovingUp && player->GetMoveType() == MOVETYPE_LADDER ) )
     {
         SetGroundEntity( nullptr );
     }
@@ -488,7 +465,7 @@ void CZMGameMovement::CategorizePosition()
     {
         // Try and move down.
         TryTouchGround( bumpOrigin, point, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pm );
-        
+
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground
         if ( !pm.m_pEnt || pm.plane.normal[2] < 0.7 )
         {
@@ -499,8 +476,8 @@ void CZMGameMovement::CategorizePosition()
             {
                 SetGroundEntity( nullptr );
                 // probably want to add a check for a +z velocity too!
-                if ( ( mv->m_vecVelocity.z > 0.0f ) && 
-                    ( player->GetMoveType() != MOVETYPE_NOCLIP ) )
+                if ( ( mv->m_vecVelocity.z > 0.0f ) &&
+                     ( player->GetMoveType() != MOVETYPE_NOCLIP ) )
                 {
                     player->m_surfaceFriction = 0.25f;
                 }
@@ -516,13 +493,13 @@ void CZMGameMovement::CategorizePosition()
         }
 
 #ifndef CLIENT_DLL
-        
+
         //Adrian: vehicle code handles for us.
         if ( player->IsInAVehicle() == false )
         {
             // If our gamematerial has changed, tell any player surface triggers that are watching
-            IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
-            surfacedata_t *pSurfaceProp = physprops->GetSurfaceData( pm.surface.surfaceProps );
+            IPhysicsSurfaceProps* physprops = MoveHelper()->GetSurfaceProps();
+            surfacedata_t* pSurfaceProp = physprops->GetSurfaceData( pm.surface.surfaceProps );
             char cCurrGameMaterial = pSurfaceProp->game.material;
             if ( !player->GetGroundEntity() )
             {
@@ -558,7 +535,6 @@ void CZMGameMovement::Accelerate( Vector& wishdir, float wishspeed, float accel 
         accel = 8.0f;
     }
 
-
     // See if we are changing direction a bit
 
     // Stops wall-strafing/pre-strafing.
@@ -584,11 +560,11 @@ void CZMGameMovement::Accelerate( Vector& wishdir, float wishspeed, float accel 
     // Cap at addspeed
     if ( accelspeed > addspeed )
         accelspeed = addspeed;
-    
+
     // Adjust velocity.
     for ( i = 0; i < 3; i++ )
     {
-        mv->m_vecVelocity[i] += accelspeed * wishdir[i];	
+        mv->m_vecVelocity[i] += accelspeed * wishdir[i];
     }
 }
 
@@ -606,20 +582,17 @@ void CZMGameMovement::FullZMMove()
     float accel;
     float decel;
 
-
     GetZMPlayer()->GetZMMovementVars( maxspeed, accel, decel );
 
     AngleVectors( mv->m_vecViewAngles, &forward, &right, &up );  // Determine movement angles
-    
 
-    
     // Copy movement amounts
     // The real wanted movement speed is scaled down, so here we scale it back up.
     float fmove = mv->m_flForwardMove * 100.0f;
     float smove = mv->m_flSideMove * 100.0f;
     float umove = mv->m_flUpMove * 100.0f;
-    
-    if ( !(mv->m_nButtons & IN_ZM_OBSERVERMODE) )
+
+    if ( !( mv->m_nButtons & IN_ZM_OBSERVERMODE ) )
     {
         forward[2] = 0;
         right[2] = 0;
@@ -628,22 +601,18 @@ void CZMGameMovement::FullZMMove()
     VectorNormalize( forward );
     VectorNormalize( right );
 
-
     for ( int i = 0; i < 3; i++ )
-        wishvel[i] = forward[i]*fmove + right[i]*smove;
+        wishvel[i] = forward[i] * fmove + right[i] * smove;
     wishvel[2] += umove;
-
 
     VectorCopy( wishvel, wishdir );   // Determine maginitude of speed of move
     wishspeed = VectorNormalize( wishdir );
 
     if ( wishspeed > maxspeed )
     {
-        VectorScale( wishvel, maxspeed/wishspeed, wishvel );
+        VectorScale( wishvel, maxspeed / wishspeed, wishvel );
         wishspeed = maxspeed;
     }
-    
-
 
     Accelerate( wishdir, wishspeed, accel );
 
@@ -654,12 +623,10 @@ void CZMGameMovement::FullZMMove()
         return;
     }
 
-
-        
     // Bleed off some speed, but if we have less than the bleed
     //  threshhold, bleed the theshold amount.
-    float control = (spd < maxspeed/4.0) ? maxspeed/4.0 : spd;
-    
+    float control = ( spd < maxspeed / 4.0 ) ? maxspeed / 4.0 : spd;
+
     float friction = decel;
 
     // Add the amount to the drop amount.
@@ -674,10 +641,7 @@ void CZMGameMovement::FullZMMove()
     newspeed /= spd;
     VectorScale( mv->m_vecVelocity, newspeed, mv->m_vecVelocity );
 
-
-
     // Do the actual moving
-
 
     Vector out;
     VectorMA( mv->GetAbsOrigin(), gpGlobals->frametime, mv->m_vecVelocity, out );
@@ -736,7 +700,7 @@ void CZMGameMovement::FinishDuck()
         for ( int i = 0; i < 3; i++ )
         {
             Vector org = mv->GetAbsOrigin();
-            org[ i ]-= ( VEC_DUCK_HULL_MIN_SCALED( player )[i] - VEC_HULL_MIN_SCALED( player )[i] );
+            org[i] -= ( VEC_DUCK_HULL_MIN_SCALED( player )[i] - VEC_HULL_MIN_SCALED( player )[i] );
             mv->SetAbsOrigin( org );
         }
     }
@@ -770,33 +734,33 @@ void CZMGameMovement::FinishDuck()
 
 bool CZMGameMovement::CheckJumpButton( void )
 {
-    if (player->pl.deadflag)
+    if ( player->pl.deadflag )
     {
-        mv->m_nOldButtons |= IN_JUMP ;	// don't jump again until released
+        mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
         return false;
     }
 
     // See if we are waterjumping.  If so, decrement count and return.
-    if (player->m_flWaterJumpTime)
+    if ( player->m_flWaterJumpTime )
     {
         player->m_flWaterJumpTime -= gpGlobals->frametime;
-        if (player->m_flWaterJumpTime < 0)
+        if ( player->m_flWaterJumpTime < 0 )
             player->m_flWaterJumpTime = 0;
-        
+
         return false;
     }
 
     // If we are in the water most of the way...
     if ( player->GetWaterLevel() >= 2 )
-    {	
+    {
         // swimming, not jumping
         SetGroundEntity( nullptr );
 
-        if(player->GetWaterType() == CONTENTS_WATER)    // We move up a certain amount
+        if ( player->GetWaterType() == CONTENTS_WATER )    // We move up a certain amount
             mv->m_vecVelocity[2] = 100;
-        else if (player->GetWaterType() == CONTENTS_SLIME)
+        else if ( player->GetWaterType() == CONTENTS_SLIME )
             mv->m_vecVelocity[2] = 80;
-        
+
         // play swiming sound
         if ( player->m_flSwimSoundTime <= 0 )
         {
@@ -812,7 +776,7 @@ bool CZMGameMovement::CheckJumpButton( void )
     if ( !player->GetGroundEntity() )
     {
         mv->m_nOldButtons |= IN_JUMP;
-        return false;		// in air, so no effect
+        return false;  // in air, so no effect
     }
 
     // Don't allow jumping when the player is in a stasis field.
@@ -822,32 +786,30 @@ bool CZMGameMovement::CheckJumpButton( void )
 #endif
 
     if ( mv->m_nOldButtons & IN_JUMP )
-        return false;		// don't pogo stick
+        return false;  // don't pogo stick
 
     // Cannot jump will in the unduck transition.
-    if ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) )
+    if ( player->m_Local.m_bDucking && ( player->GetFlags() & FL_DUCKING ) )
         return false;
 
     // Still updating the eye position.
     if ( player->m_Local.m_flDuckJumpTime > 0.0f )
         return false;
 
-
     // In the air now.
     SetGroundEntity( nullptr );
-    
-    player->PlayStepSound( (Vector &)mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
-    
+
+    player->PlayStepSound( (Vector&)mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
+
     //MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );
     // ZMRCHANGE
     GetZMPlayer()->DoAnimationEvent( PLAYERANIMEVENT_JUMP );
 
     float flGroundFactor = 1.0f;
-    if (player->m_pSurfaceData)
+    if ( player->m_pSurfaceData )
     {
-        flGroundFactor = player->m_pSurfaceData->game.jumpFactor; 
+        flGroundFactor = player->m_pSurfaceData->game.jumpFactor;
     }
-
 
     //
     // IMPORTANT:
@@ -858,13 +820,12 @@ bool CZMGameMovement::CheckJumpButton( void )
     // 21.333... is the normal intended jump height.
     //
     Assert( GetCurrentGravity() == 600.0f );
-    float flMul = sqrtf( 2.0f * GetCurrentGravity() * (21.333333f + 7) );
-
+    float flMul = sqrtf( 2.0f * GetCurrentGravity() * ( 21.333333f + 7 ) );
 
     // Acclerate upward
     // If we are ducking...
     float startz = mv->m_vecVelocity[2];
-    if ( (  player->m_Local.m_bDucking ) || (  player->GetFlags() & FL_DUCKING ) )
+    if ( ( player->m_Local.m_bDucking ) || ( player->GetFlags() & FL_DUCKING ) )
     {
         // d = 0.5 * g * t^2		- distance traveled with linear accel
         // t = sqrt(2.0 * 45 / g)	- how long to fall 45 units
@@ -879,16 +840,12 @@ bool CZMGameMovement::CheckJumpButton( void )
         mv->m_vecVelocity[2] += flGroundFactor * flMul;  // 2 * gravity * height
     }
 
-
-
     FinishGravity();
 
     mv->m_outJumpVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.15f;
 
-    OnJump(mv->m_outJumpVel.z);
-
-
+    OnJump( mv->m_outJumpVel.z );
 
     // Restrict bunnyhopping speed
 
@@ -909,9 +866,8 @@ bool CZMGameMovement::CheckJumpButton( void )
         }
     }
 
-
     // Flag that we jumped.
-    mv->m_nOldButtons |= IN_JUMP;	// don't jump again until released
+    mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
     return true;
 }
 
@@ -931,7 +887,6 @@ LadderMoveRet_t CZMGameMovement::LadderMove_Brush()
     if ( player->GetMoveType() == MOVETYPE_NOCLIP )
         return LADDERMOVERET_NO_LADDER;
 
-
     // If I'm already moving on a ladder, use the previous ladder direction
     if ( player->GetMoveType() == MOVETYPE_LADDER )
     {
@@ -942,8 +897,8 @@ LadderMoveRet_t CZMGameMovement::LadderMove_Brush()
         // otherwise, use the direction player is attempting to move
         if ( mv->m_flForwardMove || mv->m_flSideMove )
         {
-            for (int i=0 ; i<3 ; i++)       // Determine x and y parts of velocity
-                wishdir[i] = m_vecForward[i]*mv->m_flForwardMove + m_vecRight[i]*mv->m_flSideMove;
+            for ( int i = 0; i < 3; i++ )       // Determine x and y parts of velocity
+                wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
 
             wishdir.NormalizeInPlace();
         }
@@ -973,7 +928,7 @@ LadderMoveRet_t CZMGameMovement::LadderMove_Brush()
     floor = mv->GetAbsOrigin();
     floor[2] += GetPlayerMins()[2] - 1;
 
-    if( enginetrace->GetPointContents( floor ) == CONTENTS_SOLID || player->GetGroundEntity() )
+    if ( enginetrace->GetPointContents( floor ) == CONTENTS_SOLID || player->GetGroundEntity() )
     {
         onFloor = true;
     }
@@ -982,19 +937,18 @@ LadderMoveRet_t CZMGameMovement::LadderMove_Brush()
         onFloor = false;
     }
 
-
     float climbSpeed = ClimbSpeed();
 
     float forwardSpeed = 0, rightSpeed = 0;
     if ( mv->m_nButtons & IN_BACK )
         forwardSpeed -= climbSpeed;
-    
+
     if ( mv->m_nButtons & IN_FORWARD )
         forwardSpeed += climbSpeed;
-    
+
     if ( mv->m_nButtons & IN_MOVELEFT )
         rightSpeed -= climbSpeed;
-    
+
     if ( mv->m_nButtons & IN_MOVERIGHT )
         rightSpeed += climbSpeed;
 
@@ -1042,10 +996,9 @@ LadderMoveRet_t CZMGameMovement::LadderMove_Brush()
         // velocity through the face of the ladder -- by design.
         tmp = pm.plane.normal.Cross( perp );
 
-
         VectorMA( lateral, -normal, tmp, mv->m_vecVelocity );
 
-        if ( onFloor && normal > 0 )	// On ground moving away from the ladder
+        if ( onFloor && normal > 0 ) // On ground moving away from the ladder
         {
             mv->m_vecVelocity += pm.plane.normal * climbSpeed;
         }
@@ -1069,9 +1022,8 @@ CFuncLadder* CZMGameMovement::FindLadder( Vector& ladderOrigin, const CFuncLadde
 
     float maxdistSqr = LADDER_MAX_DIST * LADDER_MAX_DIST;
 
-
     int c = CFuncLadder::GetLadderCount();
-    for ( int i = 0 ; i < c; i++ )
+    for ( int i = 0; i < c; i++ )
     {
         auto* pLadder = CFuncLadder::GetLadder( i );
 
@@ -1101,7 +1053,7 @@ CFuncLadder* CZMGameMovement::FindLadder( Vector& ladderOrigin, const CFuncLadde
         // Need to trace to see if it's clear
         trace_t tr;
 
-        UTIL_TraceLine( mv->GetAbsOrigin(), closest, 
+        UTIL_TraceLine( mv->GetAbsOrigin(), closest,
             MASK_PLAYERSOLID,
             player,
             COLLISION_GROUP_NONE,
@@ -1114,7 +1066,7 @@ CFuncLadder* CZMGameMovement::FindLadder( Vector& ladderOrigin, const CFuncLadde
             // Try a trace stepped up from the ground a bit, in case there's something at ground level blocking us.
             float sizez = GetPlayerMaxs().z - GetPlayerMins().z;
 
-            UTIL_TraceLine( mv->GetAbsOrigin() + Vector( 0, 0, sizez * 0.5f ), closest, 
+            UTIL_TraceLine( mv->GetAbsOrigin() + Vector( 0, 0, sizez * 0.5f ), closest,
                 MASK_PLAYERSOLID,
                 player,
                 COLLISION_GROUP_NONE,
@@ -1138,11 +1090,9 @@ CFuncLadder* CZMGameMovement::FindLadder( Vector& ladderOrigin, const CFuncLadde
         }
     }
 
-
     ladderOrigin = bestOrigin;
 
     return bestLadder;
-
 }
 
 bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos )
@@ -1153,14 +1103,12 @@ bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos
     pLadder->GetTopPosition( top );
     pLadder->GetBottomPosition( bottom );
 
-
-    int buttonsChanged	= ( mv->m_nOldButtons ^ mv->m_nButtons );
+    int buttonsChanged = ( mv->m_nOldButtons ^ mv->m_nButtons );
     int buttonsPressed = buttonsChanged & mv->m_nButtons;
-    
+
     bool bPressedUse = ( buttonsPressed & IN_USE ) ? true : false;
 
     bool bOnGround = GetZMPlayer()->GetGroundEntity() != nullptr;
-
 
     Vector dirToTop = top - mv->GetAbsOrigin();
 
@@ -1168,12 +1116,10 @@ bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos
     dirToTop.z = 0.0f;
     dirToTop.NormalizeInPlace();
 
-
     Vector dirToBottom = bottom - mv->GetAbsOrigin();
     float distToBottom = dirToBottom.NormalizeInPlace();
     dirToBottom.z = 0.0f;
     dirToBottom.NormalizeInPlace();
-
 
     bool bBottomCloser = distToTop > distToBottom;
 
@@ -1189,7 +1135,6 @@ bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos
 
         flMoveTowardsLadderDot = bBottomCloser ? dirToBottom.Dot( wishdir ) : dirToTop.Dot( wishdir );
 
-
         Vector fwd = m_vecForward;
         fwd.z = 0.0f;
         fwd.NormalizeInPlace();
@@ -1197,9 +1142,7 @@ bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos
         flLookTowardsLadderDot = bBottomCloser ? dirToBottom.Dot( fwd ) : dirToTop.Dot( fwd );
     }
 
-
     bool bMovingTowardsLadder = flMoveTowardsLadderDot > 0.7f;
-
 
     if ( bOnGround && bMovingTowardsLadder )
     {
@@ -1209,7 +1152,6 @@ bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos
         if ( distToTop < LADDER_AUTOMOUNT_DIST || distToBottom < LADDER_AUTOMOUNT_DIST )
         {
             Vector ladderNormal;
-
 
             if ( !bBottomCloser )
             {
@@ -1231,8 +1173,7 @@ bool CZMGameMovement::CheckLadderMount( CFuncLadder* pLadder, Vector& vecBestPos
         }
     }
 
-
-    if ( bPressedUse || (!bOnGround && bMovingTowardsLadder) )
+    if ( bPressedUse || ( !bOnGround && bMovingTowardsLadder ) )
     {
         if ( flLookTowardsLadderDot > LADDER_AUTOMOUNT_DOT )
         {
@@ -1264,7 +1205,7 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
 
     // Something 1) deactivated the ladder...  or 2) something external applied
     //  a force to us.  In either case  make the player fall, etc.
-    if ( (pLadder && !pLadder->IsEnabled()) || player->GetBaseVelocity().LengthSqr() > 1.0f )
+    if ( ( pLadder && !pLadder->IsEnabled() ) || player->GetBaseVelocity().LengthSqr() > 1.0f )
     {
         ExitLadder();
 
@@ -1276,7 +1217,6 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
         pNewLadder = FindLadder( bestOrigin, nullptr );
     }
 
-
     if ( !pLadder && pNewLadder )
     {
         if ( CheckLadderMount( pNewLadder, bestOrigin ) )
@@ -1286,7 +1226,6 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
             return LADDERMOVERET_ONLADDER;
         }
     }
-
 
     pLadder = GetLadder();
     if ( !pLadder )
@@ -1303,10 +1242,8 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
     pLadder->GetTopPosition( top );
     pLadder->GetBottomPosition( bottom );
 
-
-    int buttonsChanged	= ( mv->m_nOldButtons ^ mv->m_nButtons );	// These buttons have changed this frame
+    int buttonsChanged = ( mv->m_nOldButtons ^ mv->m_nButtons ); // These buttons have changed this frame
     int buttonsPressed = buttonsChanged & mv->m_nButtons;
-
 
     float distTopSqr = ( top - mv->GetAbsOrigin() ).LengthSqr();
     float distBottomSqr = ( bottom - mv->GetAbsOrigin() ).LengthSqr();
@@ -1314,8 +1251,8 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
     bool bPressedJump = buttonsPressed & IN_JUMP;
     bool bPressedUse = buttonsPressed & IN_USE;
 
-    bool bNearMountPoints = distTopSqr < (LADDER_AUTOMOUNT_DIST*LADDER_AUTOMOUNT_DIST) || distBottomSqr < (LADDER_AUTOMOUNT_DIST*LADDER_AUTOMOUNT_DIST);
-    
+    bool bNearMountPoints = distTopSqr < ( LADDER_AUTOMOUNT_DIST * LADDER_AUTOMOUNT_DIST ) || distBottomSqr < ( LADDER_AUTOMOUNT_DIST * LADDER_AUTOMOUNT_DIST );
+
     //
     // Player wants to leave the ladder.
     //
@@ -1331,7 +1268,6 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
         if ( forcedismount )
         {
             ExitLadder();
-
 
             // Jump in view direction
             if ( bPressedJump )
@@ -1359,13 +1295,12 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
         }
     }
 
-
-#define MAX_DIST_FROM_LADDER_PATH		4.0f
+#define MAX_DIST_FROM_LADDER_PATH 4.0f
 
     // Check to see if we've mounted the ladder in a bogus spot and, if so, just fall off the ladder...
     float t;
     float distFromLadderSqr = CalcDistanceSqrToLine( mv->GetAbsOrigin(), bottom, top, &t );
-    if ( distFromLadderSqr > (MAX_DIST_FROM_LADDER_PATH*MAX_DIST_FROM_LADDER_PATH) )
+    if ( distFromLadderSqr > ( MAX_DIST_FROM_LADDER_PATH * MAX_DIST_FROM_LADDER_PATH ) )
     {
         ExitLadder();
         return LADDERMOVERET_DISMOUNTED;
@@ -1382,13 +1317,11 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
         mv->SetAbsOrigin( top );
     }
 
-
     // Make sure we are on the ladder
     player->SetMoveType( MOVETYPE_LADDER );
     player->SetMoveCollide( MOVECOLLIDE_DEFAULT );
-    
-    player->SetGroundEntity( nullptr );
 
+    player->SetGroundEntity( nullptr );
 
     float forwardSpeed = 0.0f;
     float rightSpeed = 0.0f;
@@ -1399,17 +1332,17 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
     {
         forwardSpeed -= speed;
     }
-    
+
     if ( mv->m_nButtons & IN_FORWARD )
     {
         forwardSpeed += speed;
     }
-    
+
     if ( mv->m_nButtons & IN_MOVELEFT )
     {
         rightSpeed -= speed;
     }
-    
+
     if ( mv->m_nButtons & IN_MOVERIGHT )
     {
         rightSpeed += speed;
@@ -1428,7 +1361,6 @@ LadderMoveRet_t CZMGameMovement::LadderMove_HL2()
         Vector ladderUp;
         pLadder->ComputeLadderDir( ladderUp );
         ladderUp.NormalizeInPlace();
-
 
         bool ishorizontal = fabsf( top.z - bottom.z ) < 64.0f ? true : false;
 
@@ -1486,14 +1418,14 @@ void CZMGameMovement::StartForcedMove( bool mounting, float transit_speed, const
 #endif
 
     // Use current player origin as start and new origin as dest
-    lm->m_vecGoalPosition	= goalpos;
-    lm->m_vecStartPosition	= mv->GetAbsOrigin();
+    lm->m_vecGoalPosition = goalpos;
+    lm->m_vecStartPosition = mv->GetAbsOrigin();
 
     // Figure out how long it will take to make the gap based on transit_speed
     Vector delta = lm->m_vecGoalPosition - lm->m_vecStartPosition;
 
     float distance = delta.Length();
-    
+
     Assert( transit_speed > 0.001f );
 
     // Compute time required to move that distance
@@ -1503,11 +1435,11 @@ void CZMGameMovement::StartForcedMove( bool mounting, float transit_speed, const
         transit_time = 0.001f;
     }
 
-    lm->m_bForceLadderMove	= true;
-    lm->m_bForceMount		= mounting;
+    lm->m_bForceLadderMove = true;
+    lm->m_bForceMount = mounting;
 
-    lm->m_flStartTime		= gpGlobals->curtime;
-    lm->m_flArrivalTime		= lm->m_flStartTime + transit_time;
+    lm->m_flStartTime = gpGlobals->curtime;
+    lm->m_flArrivalTime = lm->m_flStartTime + transit_time;
 
     lm->m_hForceLadder.Set( pLadder );
 
@@ -1539,7 +1471,10 @@ bool CZMGameMovement::ContinueForcedMove()
         lm->m_bForceLadderMove = false;
     }
 
-    auto smoothstep = []( float x ) { return x * x * (3 - 2 * x); };
+    auto smoothstep = []( float x )
+    {
+        return x * x * ( 3 - 2 * x );
+    };
 
     frac = clamp( frac, 0.0f, 1.0f );
 
@@ -1590,7 +1525,6 @@ bool CZMGameMovement::ExitLadderViaDismountNode( CFuncLadder* pLadder, bool stri
     Vector bestDest;
     bool found = false;
 
-
     bool bFoundBackup = false;
     Vector backupDest;
     float backupDist = FLT_MAX;
@@ -1599,15 +1533,12 @@ bool CZMGameMovement::ExitLadderViaDismountNode( CFuncLadder* pLadder, bool stri
     fwdXY.z = 0.0f;
     fwdXY.NormalizeInPlace();
 
-
     Vector wishdir;
     for ( int i = 0; i < 2; i++ )
         wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
     wishdir[2] = 0.0f;
 
     wishdir.NormalizeInPlace();
-
-
 
     int nDismounts = pLadder->GetDismountCount();
 
@@ -1623,16 +1554,15 @@ bool CZMGameMovement::ExitLadderViaDismountNode( CFuncLadder* pLadder, bool stri
         Vector org = spot->GetAbsOrigin() + Vector( 0, 0, 1 );
 
         // Too far away.
-        if ( org.DistToSqr( mv->GetAbsOrigin() ) > (LADDER_DISMOUNT_MAX_DIST*LADDER_DISMOUNT_MAX_DIST) )
+        if ( org.DistToSqr( mv->GetAbsOrigin() ) > ( LADDER_DISMOUNT_MAX_DIST * LADDER_DISMOUNT_MAX_DIST ) )
         {
             continue;
         }
 
-
         trace_t tr;
         UTIL_TraceHull(
-            org, 
-            org, 
+            org,
+            org,
             GetPlayerMins( ( player->GetFlags() & FL_DUCKING ) ? true : false ),
             GetPlayerMaxs( ( player->GetFlags() & FL_DUCKING ) ? true : false ),
             MASK_PLAYERSOLID,
@@ -1661,8 +1591,7 @@ bool CZMGameMovement::ExitLadderViaDismountNode( CFuncLadder* pLadder, bool stri
         //
         // We must be looking or moving that way to use that spot.
         //
-        if ((lookdot > bestDot && lookdot > LADDER_DISMOUNT_DOT)
-        ||	(movedot > bestDot && movedot > LADDER_DISMOUNT_DOT))
+        if ( ( lookdot > bestDot && lookdot > LADDER_DISMOUNT_DOT ) || ( movedot > bestDot && movedot > LADDER_DISMOUNT_DOT ) )
         {
             bestDest = org;
             bestDistance = dist;
@@ -1684,8 +1613,7 @@ bool CZMGameMovement::ExitLadderViaDismountNode( CFuncLadder* pLadder, bool stri
         return true;
     }
 
-
-    if( bFoundBackup && strict )
+    if ( bFoundBackup && strict )
     {
         StartForcedMove( false, player->MaxSpeed(), backupDest, nullptr );
         return true;
@@ -1739,7 +1667,6 @@ bool CZMGameMovement::LadderMove()
 
     bool bInHL2LadderMove = IsForceMoveActive() || GetZMPlayer()->m_ZMLocal.m_hLadder.Get();
 
-
     bool valid = GetZMPlayer()->IsHuman() && GetZMPlayer()->IsAlive();
 
     if ( !valid )
@@ -1760,7 +1687,6 @@ bool CZMGameMovement::LadderMove()
         // HL2 specific, func_ladder point entity one.
         ret = LadderMove_HL2();
     }
-
 
     if ( ret != LADDERMOVERET_ONLADDER )
     {

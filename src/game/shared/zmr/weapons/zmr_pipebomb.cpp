@@ -1,12 +1,11 @@
 #include "cbase.h"
 #include "in_buttons.h"
 
-#include "zmr_shareddefs.h"
 #include "zmr_basethrowable.h"
+#include "zmr_shareddefs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 #ifdef CLIENT_DLL
 #define CZMWeaponPipebomb C_ZMWeaponPipebomb
@@ -16,12 +15,11 @@ class CZMWeaponPipebomb : public CZMBaseThrowableWeapon
 {
 public:
     DECLARE_CLASS( CZMWeaponPipebomb, CZMBaseThrowableWeapon );
-    DECLARE_NETWORKCLASS(); 
+    DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
     CZMWeaponPipebomb();
     ~CZMWeaponPipebomb();
-
 
     virtual void PrimaryAttack() override;
 

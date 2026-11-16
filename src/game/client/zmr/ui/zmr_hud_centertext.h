@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vgui_controls/AnimationController.h>
 #include "hudelement.h"
-
+#include <vgui_controls/AnimationController.h>
 
 class CZMHudCenterText : public CHudElement, public vgui::Panel
 {
@@ -12,7 +11,6 @@ public:
     CZMHudCenterText( const char* pElementName );
     ~CZMHudCenterText();
 
-
     virtual void Init( void ) override;
     virtual void VidInit( void ) override;
     virtual void Reset() override;
@@ -21,18 +19,16 @@ public:
 
     virtual void FireGameEvent( IGameEvent* pEvent ) override;
 
-
     void ShowRoundStart( const char* smalltxt = nullptr );
     void ShowRoundEnd( ZMRoundEndReason_t reason );
 
     void ShowText( const char* bigtxt = nullptr, const char* smalltxt = nullptr, float smalldelay = 0.0f, float displaytime = 5.0f );
     void ShowText( const wchar_t* bigtxt = nullptr, const wchar_t* smalltxt = nullptr, float smalldelay = 0.0f, float displaytime = 5.0f );
 
-    void MsgFunc_ZMCenterText( bf_read &msg );
+    void MsgFunc_ZMCenterText( bf_read& msg );
 
 private:
     void PaintString( const vgui::HFont, const vgui::HFont, const Color&, int x, int y, const wchar_t* );
-
 
     float m_flShowSmall;
     float m_flNextHide;

@@ -2,9 +2,8 @@
 
 #include "npcr/npcr_senses.h"
 
-#include "zmr_player.h"
 #include "npcr/npcr_player.h"
-
+#include "zmr_player.h"
 
 enum ZMBotWeaponTypeRange_t
 {
@@ -23,18 +22,21 @@ class CZMPlayerBot : public NPCR::CPlayer<CZMPlayer>
 public:
     DECLARE_CLASS( CZMPlayerBot, CZMPlayer );
 
-
     CZMPlayerBot();
     ~CZMPlayerBot();
 
     //
-    virtual NPCR::CScheduleInterface*   CreateScheduleInterface() override;
-    virtual NPCR::CBaseSenses*          CreateSenses() override;
+    virtual NPCR::CScheduleInterface* CreateScheduleInterface() override;
+    virtual NPCR::CBaseSenses* CreateSenses() override;
 
     // HACK
-    virtual void SetEyeAngles( const QAngle& ang ) override { SetAngles( ang ); pl.v_angle = ang; }
-    
-    virtual bool ShouldUpdate() const override;    
+    virtual void SetEyeAngles( const QAngle& ang ) override
+    {
+        SetAngles( ang );
+        pl.v_angle = ang;
+    }
+
+    virtual bool ShouldUpdate() const override;
     //
 
     virtual void Spawn() override;
@@ -45,35 +47,34 @@ public:
     static CBasePlayer* BotPutInServer( edict_t* pEdict, const char* playername );
     //
 
-
     virtual bool OverrideUserCmd( CUserCmd& cmd ) override;
-    
 
     //
-    CZMBaseWeapon*  GetActiveWeapon() const { return ToZMBaseWeapon( m_hActiveWeapon.Get() ); }
+    CZMBaseWeapon* GetActiveWeapon() const { return ToZMBaseWeapon( m_hActiveWeapon.Get() ); }
 
     static ZMBotWeaponTypeRange_t GetWeaponType( CZMBaseWeapon* pWeapon );
     static ZMBotWeaponTypeRange_t GetWeaponType( const char* classname );
-    bool            HasWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const;
-    bool            HasEquippedWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const;
-    bool            EquipWeaponOfType( ZMBotWeaponTypeRange_t wepType );
+    bool HasWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const;
+    bool HasEquippedWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const;
+    bool EquipWeaponOfType( ZMBotWeaponTypeRange_t wepType );
     ZMBotWeaponTypeRange_t GetCurrentWeaponType() const;
-    bool            WeaponHasAmmo( CZMBaseWeapon* pWeapon ) const;
-    bool            ShouldReload() const;
-    bool            HasAnyEffectiveRangeWeapons() const;
-    bool            CanReload() const;
-    bool            CanAttack() const;
-    bool            MustStopToShoot() const;
-    float           GetOptimalAttackDistance() const;
-    float           GetMaxAttackDistance() const;
+    bool WeaponHasAmmo( CZMBaseWeapon* pWeapon ) const;
+    bool ShouldReload() const;
+    bool HasAnyEffectiveRangeWeapons() const;
+    bool CanReload() const;
+    bool CanAttack() const;
+    bool MustStopToShoot() const;
+    float GetOptimalAttackDistance() const;
+    float GetMaxAttackDistance() const;
+
 protected:
-    CZMBaseWeapon*  FindWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const;
+    CZMBaseWeapon* FindWeaponOfType( ZMBotWeaponTypeRange_t wepType ) const;
+
 public:
     //
 
-
-    CBasePlayer*    GetFollowTarget() const { return m_hFollowTarget.Get(); }
-    void            SetFollowTarget( CBasePlayer* pPlayer ) { m_hFollowTarget.Set( pPlayer ); }
+    CBasePlayer* GetFollowTarget() const { return m_hFollowTarget.Get(); }
+    void SetFollowTarget( CBasePlayer* pPlayer ) { m_hFollowTarget.Set( pPlayer ); }
 
 private:
     CHandle<CBasePlayer> m_hFollowTarget;

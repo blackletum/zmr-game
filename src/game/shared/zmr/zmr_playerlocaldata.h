@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "networkvar.h"
 
 #include "func_ladder.h"
@@ -19,17 +18,15 @@ public:
 
     CZMPlayerLocalData();
 
-
     CNetworkVar( int, m_fWeaponSlotFlags );
     CNetworkVar( int, m_nResources );
     CNetworkVar( float, m_flFlashlightBattery );
     CNetworkVar( float, m_flAccuracyRatio );
     //float m_flAccuracyRatio;
 
-
-	// Ladder related data
-	CNetworkHandle( CFuncLadder, m_hLadder );
-	LadderMove_t m_LadderMove;
+    // Ladder related data
+    CNetworkHandle( CFuncLadder, m_hLadder );
+    LadderMove_t m_LadderMove;
 };
 
 #ifdef CLIENT_DLL

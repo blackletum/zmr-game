@@ -1,35 +1,29 @@
 #include "cbase.h"
-#include "gameinterface.h"
 #include "eventqueue.h"
+#include "gameinterface.h"
 
 #include "zmr_mapentities.h"
 #include "zmr_mapitemaction.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
 ConVar zm_sv_debug_mapentities( "zm_sv_debug_mapentities", "0" );
-
 
 bool FindInList( const char** pStrings, const char* pToFind )
 {
-	int i = 0;
-	while ( pStrings[i][0] != 0 )
-	{
-		if ( Q_stricmp( pStrings[i], pToFind ) == 0 )
-			return true;
-		i++;
-	}
+    int i = 0;
+    while ( pStrings[i][0] != 0 )
+    {
+        if ( Q_stricmp( pStrings[i], pToFind ) == 0 )
+            return true;
+        i++;
+    }
 
-	return false;
+    return false;
 }
 
-
-static const char* g_PreserveEnts[] =
-{
+static const char* g_PreserveEnts[] = {
     "ai_network",
     "ai_hint",
     "team_manager",
@@ -84,14 +78,11 @@ static const char* g_PreserveEnts[] =
     "", // END Marker
 };
 
-
-#define g_MapEntityRefs     ERROR USE g_ZMMapEntityRefs
+#define g_MapEntityRefs ERROR USE g_ZMMapEntityRefs
 
 static CUtlLinkedList<CMapEntityRef, unsigned short> g_ZMMapEntityRefs;
 
 CZMMapEntitiesSystem g_ZMMapEntities;
-
-
 
 //
 // Add any special cases here.
@@ -111,8 +102,6 @@ static bool ShouldMapSystemCreateEntity( const char* pszClassname, CEntityMapDat
 //
 //
 
-
-
 CZMMapEntitiesSystem::CZMMapEntitiesSystem()
 {
     m_bBuildRefList = false;
@@ -131,7 +120,6 @@ bool CZMMapEntitiesSystem::ShouldCreateEntity( const char* pszClassname, CEntity
         return m_bBuildRefList;
     }
 
-
     return ShouldMapSystemCreateEntity( pszClassname, entData );
 }
 
@@ -142,7 +130,6 @@ CBaseEntity* CZMMapEntitiesSystem::CreateEntity( const char* pszClassname )
     {
         return BuildListCreate( pszClassname );
     }
-
 
     //
     // Okay, all entities that got here should:
@@ -163,10 +150,8 @@ CBaseEntity* CZMMapEntitiesSystem::CreateEntity( const char* pszClassname )
     {
         CMapEntityRef& ref = g_ZMMapEntityRefs[m_iIterator];
 
-
         // Step to next ent.
         m_iIterator = g_ZMMapEntityRefs.Next( m_iIterator );
-
 
         if ( ref.m_iEdict <= 0 || engine->PEntityOfEntIndex( ref.m_iEdict ) )
         {
@@ -183,7 +168,7 @@ CBaseEntity* CZMMapEntitiesSystem::CreateEntity( const char* pszClassname )
         }
         else
         {
-            // Cool, the slot where this entity was is free again (most likely, the entity was 
+            // Cool, the slot where this entity was is free again (most likely, the entity was
             // freed above). Now create an entity with this specific index.
             return CreateEntityByName( pszClassname, ref.m_iEdict );
         }
@@ -194,13 +179,11 @@ CBaseEntity* CZMMapEntitiesSystem::BuildListCreate( const char* pszClassname )
 {
     auto* pEnt = CreateEntityByName( pszClassname );
 
-
     // Don't save preserved entities to the list.
     if ( IsPreservedClassname( pszClassname ) )
     {
         return pEnt;
     }
-
 
     CMapEntityRef ref;
     ref.m_iEdict = -1;
@@ -213,9 +196,7 @@ CBaseEntity* CZMMapEntitiesSystem::BuildListCreate( const char* pszClassname )
             ref.m_iSerialNumber = pEnt->edict()->m_NetworkSerialNumber;
     }
 
-
     g_ZMMapEntityRefs.AddToTail( ref );
-
 
     if ( IsDebugging() )
     {
@@ -247,7 +228,6 @@ void CZMMapEntitiesSystem::InitialSpawn( const char* pMapEntities )
 {
     g_ZMMapEntityRefs.Purge();
 
-
     m_bBuildRefList = true;
     MapEntity_ParseAllEntities( pMapEntities, reinterpret_cast<IMapEntityFilter*>( &g_ZMMapEntities ) ); // This reinterpret cast is a super hack.
     m_bBuildRefList = false;
@@ -275,7 +255,6 @@ void CZMMapEntitiesSystem::Restore()
     // Really remove the entities so we can have access to their slots below.
     gEntList.CleanupDeleteList();
 
-
     //
     // NOTE: THIS IS IMPORTANT!
     //
@@ -289,13 +268,9 @@ void CZMMapEntitiesSystem::Restore()
     //
     engine->AllowImmediateEdictReuse();
 
-
-
     m_iIterator = g_ZMMapEntityRefs.Head();
     MapEntity_ParseAllEntities( engine->GetMapEntitiesString(), reinterpret_cast<IMapEntityFilter*>( &g_ZMMapEntities ), true ); // This reinterpret cast is a super hack.
     m_iIterator = g_ZMMapEntityRefs.InvalidIndex();
-
-
 
     ZMItemAction::g_ZMMapItemSystem.SpawnItems();
 }

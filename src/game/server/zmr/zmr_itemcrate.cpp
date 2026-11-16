@@ -1,16 +1,14 @@
-#include "cbase.h"
-#include "props.h"
-#include "items.h"
 #include "TemplateEntities.h"
+#include "cbase.h"
+#include "items.h"
 #include "mapentities.h"
-
+#include "props.h"
 
 #include "weapons/zmr_base.h"
 #include "zmr_mapitemaction.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 enum CrateModelType_t
 {
@@ -32,7 +30,6 @@ struct CrateItemData_t
     int iSubModel;
     int iSkin;
 };
-
 
 const char* g_szCrateModels[] = {
     "models/items/crates/crate_ammo.mdl",
@@ -65,7 +62,7 @@ const CrateItemData_t CrateItemData[] = {
     { "weapon_zm_pipebomb", CRATEMODEL_THROWABLE, 0, 0, 0 },
 };
 
-#define CRATE_MODEL_OLD                     "models/items/item_item_crate.mdl"
+#define CRATE_MODEL_OLD "models/items/item_item_crate.mdl"
 
 class CZMEntItemCrate : public CPhysicsProp
 {
@@ -78,38 +75,32 @@ public:
     void Precache();
     void Spawn();
 
-
     static CrateModelType_t TranslateItemClassNameToType( const char* pszItemClassName );
-    static int              TranslateItemClassToSkin( const char* pszItemClassName, int& iBodyGroup, int& iSubModel );
+    static int TranslateItemClassToSkin( const char* pszItemClassName, int& iBodyGroup, int& iSubModel );
 
-    inline const char*  GetItemClass() const { return STRING( m_iszItemClass ); };
-    inline int          GetItemCount() const { return m_nItemCount; };
+    inline const char* GetItemClass() const { return STRING( m_iszItemClass ); };
+    inline int GetItemCount() const { return m_nItemCount; };
 
 private:
-    virtual int     ObjectCaps() override { return BaseClass::ObjectCaps() | FCAP_WCEDIT_POSITION; };
+    virtual int ObjectCaps() override { return BaseClass::ObjectCaps() | FCAP_WCEDIT_POSITION; };
 
-    virtual void    OnPhysGunPickup( CBasePlayer* pPhysGunUser, PhysGunPickup_t reason ) override;
-    virtual void    OnBreak( const Vector& vecVelocity, const AngularImpulse& angVel, CBaseEntity* pBreaker ) override;
+    virtual void OnPhysGunPickup( CBasePlayer* pPhysGunUser, PhysGunPickup_t reason ) override;
+    virtual void OnBreak( const Vector& vecVelocity, const AngularImpulse& angVel, CBaseEntity* pBreaker ) override;
 
-    CBaseEntity*    CreateItem() const;
-    CZMBaseWeapon*  CreateTemplateItem() const;
+    CBaseEntity* CreateItem() const;
+    CZMBaseWeapon* CreateTemplateItem() const;
 
+    string_t m_iszItemClass;
+    int m_nItemCount;
 
+    string_t m_iszTemplateName;
+    string_t m_iszTemplateData;
 
-    string_t        m_iszItemClass;
-    int             m_nItemCount;
-
-    string_t        m_iszTemplateName;
-    string_t        m_iszTemplateData;
-
-
-    COutputEvent    m_OnCacheInteraction;
+    COutputEvent m_OnCacheInteraction;
 };
-
 
 LINK_ENTITY_TO_CLASS( item_item_crate, CZMEntItemCrate );
 PRECACHE_REGISTER( item_item_crate );
-
 
 BEGIN_DATADESC( CZMEntItemCrate )
     DEFINE_KEYFIELD( m_iszItemClass, FIELD_STRING, "ItemClass" ),
@@ -117,10 +108,8 @@ BEGIN_DATADESC( CZMEntItemCrate )
 
     DEFINE_KEYFIELD( m_iszTemplateName, FIELD_STRING, "ItemTemplate" ),
 
-
     DEFINE_OUTPUT( m_OnCacheInteraction, "OnCacheInteraction" ),
 END_DATADESC()
-
 
 CZMEntItemCrate::CZMEntItemCrate()
 {
@@ -136,21 +125,18 @@ void CZMEntItemCrate::Precache()
     for ( int i = 0; i < ARRAYSIZE( g_szCrateModels ); i++ )
     {
         PrecacheModel( g_szCrateModels[i] );
-        
     }
 
     BaseClass::Precache();
 
-    
     if ( m_iszItemClass != NULL_STRING )
     {
         UTIL_PrecacheOther( STRING( m_iszItemClass ) );
     }
 
-
     // We have template data, precache our template entity.
-	if ( m_iszTemplateData != NULL_STRING )
-	{
+    if ( m_iszTemplateData != NULL_STRING )
+    {
         CBaseEntity* pEntity = CreateTemplateItem();
 
         if ( pEntity )
@@ -158,14 +144,14 @@ void CZMEntItemCrate::Precache()
             pEntity->Precache();
             UTIL_RemoveImmediate( pEntity );
         }
-	}
+    }
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CZMEntItemCrate::Spawn()
-{ 
+{
     if ( !g_pGameRules->IsAllowedToSpawn( this ) )
     {
         UTIL_Remove( this );
@@ -179,7 +165,6 @@ void CZMEntItemCrate::Spawn()
         return;
     }
 
-
     // Attempt to use template first.
     if ( m_iszTemplateName != NULL_STRING )
     {
@@ -187,30 +172,26 @@ void CZMEntItemCrate::Spawn()
 
         bool bFailed = false;
 
-
-        if ((m_iszTemplateData = Templates_FindByTargetName( STRING( m_iszTemplateName ) )) == NULL_STRING // Is it a template?
-        ||  (pTestEntity = CreateTemplateItem()) == nullptr) // Attempt to create the template.
+        if ( ( m_iszTemplateData = Templates_FindByTargetName( STRING( m_iszTemplateName ) ) ) == NULL_STRING // Is it a template?
+             || ( pTestEntity = CreateTemplateItem() ) == nullptr ) // Attempt to create the template.
         {
             Warning( "Invalid or no item template defined for item crate! (%i | item template: '%s')\n", entindex(), STRING( m_iszTemplateName ) );
             UTIL_Remove( this );
-            
+
             bFailed = true;
         }
 
         if ( pTestEntity )
             UTIL_RemoveImmediate( pTestEntity );
 
-
         if ( bFailed ) return;
     }
-    else if (NULL_STRING == m_iszItemClass
-    ||  EntityFactoryDictionary()->FindFactory( STRING( m_iszItemClass ) ) == nullptr ) // Is this an invalid classname?
+    else if ( NULL_STRING == m_iszItemClass || EntityFactoryDictionary()->FindFactory( STRING( m_iszItemClass ) ) == nullptr ) // Is this an invalid classname?
     {
         Warning( "Invalid or no item class defined for item crate! (%i | item class: '%s')\n", entindex(), STRING( m_iszItemClass ) );
         UTIL_Remove( this );
         return;
     }
-
 
     int iBodyGroup = 0;
     int iSubModel = 0;
@@ -239,14 +220,13 @@ void CZMEntItemCrate::Spawn()
     SetModel( pszModelName );
     AddEFlags( EFL_NO_ROTORWASH_PUSH );
 
-    // Unfortunately, due to the model changes, we need to wake em up 
+    // Unfortunately, due to the model changes, we need to wake em up
     // to settle them to the ground.
     auto* pPhys = VPhysicsGetObject();
     if ( pPhys && pPhys->IsAsleep() )
     {
         pPhys->Wake();
     }
-
 
     // Set skin based on item we house.
     auto* pHdr = GetModelPtr();
@@ -256,7 +236,6 @@ void CZMEntItemCrate::Spawn()
         {
             SetBodygroup( iBodyGroup, iSubModel );
         }
-        
 
         if ( iSkin >= 0 && iSkin < pHdr->numskinfamilies() )
         {
@@ -266,11 +245,11 @@ void CZMEntItemCrate::Spawn()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CZMEntItemCrate::OnBreak( const Vector& vecVelocity, const AngularImpulse& angImpulse, CBaseEntity* pBreaker )
 {
-    // FIXME: We could simply store the name of an entity to put into the crate 
+    // FIXME: We could simply store the name of an entity to put into the crate
     // as a string entered in by worldcraft. Should we?	I'd do it for sure
     // if it was easy to get a dropdown with all entity types in it.
 
@@ -283,10 +262,9 @@ void CZMEntItemCrate::OnBreak( const Vector& vecVelocity, const AngularImpulse& 
         if ( !pSpawn )
             return;
 
-
         // Give a little randomness...
         Vector vecOrigin;
-        CollisionProp()->RandomPointInBounds( Vector(0.25, 0.25, 0.25), Vector( 0.75, 0.75, 0.75 ), &vecOrigin );
+        CollisionProp()->RandomPointInBounds( Vector( 0.25, 0.25, 0.25 ), Vector( 0.75, 0.75, 0.75 ), &vecOrigin );
         pSpawn->SetAbsOrigin( vecOrigin );
 
         QAngle vecAngles;
@@ -307,8 +285,10 @@ void CZMEntItemCrate::OnBreak( const Vector& vecVelocity, const AngularImpulse& 
         // ZMRCHANGE: Fixes not being able to pickup items from item_item_crate.
         CItem* pItem = dynamic_cast<CItem*>( pSpawn );
 
-        if ( pItem ) pItem->Spawn();
-        else pSpawn->Spawn();
+        if ( pItem )
+            pItem->Spawn();
+        else
+            pSpawn->Spawn();
     }
 }
 
@@ -319,13 +299,12 @@ CBaseEntity* CZMEntItemCrate::CreateItem() const
     {
         return CreateTemplateItem();
     }
-    
+
     //
     // Check if we should spawn other types of this item.
     // Eg. weapon_zm_shotgun and weapon_zm_shotgun_sporting
     //
     auto* classname = STRING( m_iszItemClass );
-
 
     auto flags = ZMItemAction::g_ZMMapItemSystem.GetItemFlags( classname );
 
@@ -334,10 +313,11 @@ CBaseEntity* CZMEntItemCrate::CreateItem() const
     {
         // Collect the possible weapons we could give.
         CUtlVector<const ZMItemAction::ItemBaseData_t*> items;
-        ZMItemAction::CZMMapItemSystem::GetMapItems( [ flags ]( const ZMItemAction::ItemBaseData_t& itemdata )
-        {
-            return itemdata.m_fClassFlags == flags;
-        }, items );
+        ZMItemAction::CZMMapItemSystem::GetMapItems( [flags]( const ZMItemAction::ItemBaseData_t& itemdata )
+            {
+                return itemdata.m_fClassFlags == flags;
+            },
+            items );
 
         if ( items.Count() > 1 )
         {
@@ -381,11 +361,10 @@ void CZMEntItemCrate::OnPhysGunPickup( CBasePlayer* pPhysGunUser, PhysGunPickup_
 }
 
 // strncmp for ammo since some of them use *_large classnames.
-#define AMMO_EQU(str,classname)             ( Q_strncmp( str, classname, sizeof( classname ) - 1 ) == 0 )
+#define AMMO_EQU( str, classname ) ( Q_strncmp( str, classname, sizeof( classname ) - 1 ) == 0 )
 
 // Strict compare for weapon classnames.
-#define WEAPON_EQU(str,classname)           ( Q_strcmp( str, classname ) == 0 )
-
+#define WEAPON_EQU( str, classname ) ( Q_strcmp( str, classname ) == 0 )
 
 CrateModelType_t CZMEntItemCrate::TranslateItemClassNameToType( const char* pszItemClassName )
 {
@@ -403,7 +382,7 @@ CrateModelType_t CZMEntItemCrate::TranslateItemClassNameToType( const char* pszI
 }
 
 // Return -1 for invalid
-int CZMEntItemCrate::TranslateItemClassToSkin( const char* pszItemClassName, int& iBodyGroup, int &iSubModel )
+int CZMEntItemCrate::TranslateItemClassToSkin( const char* pszItemClassName, int& iBodyGroup, int& iSubModel )
 {
     iBodyGroup = 0;
     iSubModel = 0;

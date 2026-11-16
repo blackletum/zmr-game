@@ -4,7 +4,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sk_default_hitmult_head( "zm_sk_default_hitmult_head", "2" );
 ConVar zm_sk_default_hitmult_head_buckshot( "zm_sk_default_hitmult_head_buckshot", "3" );
 ConVar zm_sk_default_hitmult_head_buckshot_dist( "zm_sk_default_hitmult_head_buckshot_dist", "96" );
@@ -32,7 +31,6 @@ ConVar zm_sk_hulk_hitmult_head( "zm_sk_hulk_hitmult_head", "1.2" );
 ConVar zm_sk_hulk_hitmult_stomach( "zm_sk_hulk_hitmult_stomach", "0.8" );
 ConVar zm_sk_hulk_hitmult_chest( "zm_sk_hulk_hitmult_chest", "0.7" );
 ConVar zm_sk_hulk_hitmult_arms( "zm_sk_hulk_hitmult_arms", "0.2" );
-
 
 ConVar zm_sk_dragzombie_health( "zm_sk_dragzombie_health", "50" );
 ConVar zm_sk_dragzombie_dmg( "zm_sk_dragzombie_dmg", "3" );

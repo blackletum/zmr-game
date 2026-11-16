@@ -1,47 +1,37 @@
 #include "cbase.h"
 
-#include "filesystem.h"
 #include "IGameUIFuncs.h"
+#include "filesystem.h"
 
-#include <vgui/ILocalize.h>
 #include <igameresources.h>
+#include <vgui/ILocalize.h>
 #include <vgui_controls/Panel.h>
 
-
 #include "c_zmr_tips.h"
-
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-
 extern IGameUIFuncs* gameuifuncs; // for key binding details
 
-
-#define DEF_TIP_TEAM            0
-#define DEF_TIP_TIME            5.0f
-#define DEF_TIP_PRIORITY        0
-
-
-
+#define DEF_TIP_TEAM     0
+#define DEF_TIP_TIME     5.0f
+#define DEF_TIP_PRIORITY 0
 
 CON_COMMAND( zm_hudtooltipsaveshown, "Saves shown tool-tips to a file." )
 {
     g_ZMTipSystem.SaveUsed();
 }
 
-
 //
 CZMTip::CZMTip( KeyValues* kv, int index )
 {
     m_iIndex = index;
 
-
     m_pszName = nullptr;
     m_pszMessage = nullptr;
     m_pszIcon = nullptr;
     Reset();
-
 
     m_iTeam = kv->GetInt( "team", DEF_TIP_TEAM );
     m_flTime = kv->GetFloat( "time", DEF_TIP_TIME );
@@ -55,8 +45,7 @@ CZMTip::CZMTip( KeyValues* kv, int index )
     SetName( kv->GetName() );
     SetMessage( kv->GetString( "msg" ) );
     SetIcon( kv->GetString( "icon" ) );
-    
-    
+
     char key[32];
     for ( int i = 1;; i++ )
     {
@@ -78,7 +67,6 @@ void CZMTip::WriteUsed( KeyValues* kv )
 {
     if ( m_nLimit < 1 ) return;
 
-
     KeyValues* pKey = kv->FindKey( m_pszName, true );
 
     pKey->SetInt( "shown", m_nShown );
@@ -94,7 +82,7 @@ CZMTip::~CZMTip()
     delete[] m_pszName;
     delete[] m_pszMessage;
     delete[] m_pszIcon;
-    
+
     m_vParams.PurgeAndDeleteElements();
 }
 
@@ -117,7 +105,6 @@ bool CZMTip::ShouldShow() const
     if ( m_nLimit > 0 && m_nShown >= m_nLimit ) return false;
 
     if ( m_nLimitPerGame > 0 && m_nShownPerGame >= m_nLimitPerGame ) return false;
-    
 
     C_BasePlayer* pLocal = C_BasePlayer::GetLocalPlayer();
 
@@ -126,7 +113,6 @@ bool CZMTip::ShouldShow() const
         if ( !pLocal || pLocal->GetTeamNumber() != m_iTeam )
             return false;
     }
-
 
     return true;
 }
@@ -142,7 +128,6 @@ void CZMTip::SetName( const char* name )
 
     if ( !name ) return;
 
-
     int len = strlen( name ) + 1;
     m_pszName = new char[len];
     Q_strncpy( m_pszName, name, len );
@@ -151,7 +136,6 @@ void CZMTip::SetName( const char* name )
 void CZMTip::FormatMessage( char* buffer, int len ) const
 {
     if ( !m_pszMessage ) return;
-
 
     char szParam[128];
     char format[1024];
@@ -164,7 +148,7 @@ void CZMTip::FormatMessage( char* buffer, int len ) const
         pFormat = g_pVGuiLocalize->FindAsUTF8( m_pszMessage );
     }
 
-    if ( !pFormat || !(*pFormat) )
+    if ( !pFormat || !( *pFormat ) )
         pFormat = m_pszMessage;
 
     Q_strncpy( format, pFormat, sizeof( format ) );
@@ -182,7 +166,7 @@ void CZMTip::FormatMessage( char* buffer, int len ) const
 
         switch ( param->iParamType )
         {
-        case TIPPARAMTYPE_KEY :
+        case TIPPARAMTYPE_KEY:
         {
             const char* key = vgui::Panel::KeyCodeToString( gameuifuncs->GetButtonCodeForBind( param->pszParam ) );
 
@@ -190,7 +174,7 @@ void CZMTip::FormatMessage( char* buffer, int len ) const
 
             break;
         }
-        case TIPPARAMTYPE_CVAR :
+        case TIPPARAMTYPE_CVAR:
         {
             ConVar* pCon = cvar->FindVar( param->pszParam );
 
@@ -199,7 +183,8 @@ void CZMTip::FormatMessage( char* buffer, int len ) const
 
             break;
         }
-        default : break;
+        default:
+            break;
         }
 
         if ( *szParam )
@@ -212,7 +197,7 @@ void CZMTip::FormatMessage( char* buffer, int len ) const
 
             // Hide '%' past the first one with '@' character.
             int iParam = 0;
-            for ( c = format; (c = strchr( c, '%' )) != nullptr; ++c, ++iParam )
+            for ( c = format; ( c = strchr( c, '%' ) ) != nullptr; ++c, ++iParam )
             {
                 if ( iParam == 0 )
                     continue;
@@ -221,20 +206,17 @@ void CZMTip::FormatMessage( char* buffer, int len ) const
                 bPerformedSafety = true;
             }
 
-            
             Q_snprintf( buffer, len, format, szParam );
             Q_strncpy( format, buffer, sizeof( format ) );
-
 
             if ( bPerformedSafety )
             {
                 // Reset the '@' back to '%'
-                for ( c = format; (c = strchr( c, '@' )) != nullptr; ++c )
+                for ( c = format; ( c = strchr( c, '@' ) ) != nullptr; ++c )
                 {
                     *c = '%';
                 }
             }
-
 
             formatted = true;
         }
@@ -255,7 +237,6 @@ void CZMTip::SetMessage( const char* msg )
 
     if ( !msg ) return;
 
-
     int len = strlen( msg ) + 1;
     m_pszMessage = new char[len];
     Q_strncpy( m_pszMessage, msg, len );
@@ -272,7 +253,6 @@ void CZMTip::SetIcon( const char* icon )
 
     if ( !icon ) return;
 
-
     int len = strlen( icon ) + 1;
     m_pszIcon = new char[len];
     Q_strncpy( m_pszIcon, icon, len );
@@ -285,16 +265,13 @@ void CZMTip::AddParam( const char* invalue )
     char buffer[128];
     Q_strncpy( buffer, invalue, sizeof( buffer ) );
 
-
     char* del = strchr( buffer, '@' );
 
     if ( !del ) return;
 
-
     *del = '\0';
 
     char* paramvalue = del + 1;
-
 
     param->iParamType = TipNameToType( buffer );
 
@@ -332,13 +309,10 @@ void CZMTip::OnShownInLoadingScreen()
 }
 //
 
-
-
 //
 CZMTipManager::CZMTipManager( const char* name )
 {
     m_pszName = name;
-
 
     LoadTips();
     LoadUsed();
@@ -362,7 +336,6 @@ void CZMTipManager::AddTip( KeyValues* kv )
 
     m_vTips.AddToTail( pTip );
 
-
     ++index;
 }
 
@@ -370,14 +343,11 @@ void CZMTipManager::LoadTips()
 {
     m_vTips.PurgeAndDeleteElements();
 
-
     char filepath[128];
     FormatFilePath( filepath, sizeof( filepath ) );
 
-
     KeyValuesAD kv( "Tips" );
     kv->UsesEscapeSequences( true );
-
 
     if ( kv->LoadFromFile( filesystem, filepath, "MOD" ) )
     {
@@ -396,10 +366,8 @@ void CZMTipManager::LoadUsed()
 {
     DevMsg( "Loading used tips...\n" );
 
-
     char filepath[128];
     FormatFilePathUsed( filepath, sizeof( filepath ) );
-
 
     KeyValuesAD kv( "Tips" );
 
@@ -421,19 +389,15 @@ void CZMTipManager::SaveUsed() const
 {
     DevMsg( "Saving used tips...\n" );
 
-
     KeyValuesAD kv( "Tips" );
-
 
     for ( int i = 0; i < m_vTips.Count(); i++ )
     {
         m_vTips[i]->WriteUsed( kv );
     }
 
-
     char filepath[128];
     FormatFilePathUsed( filepath, sizeof( filepath ) );
-
 
     if ( m_vTips.Count() )
     {
@@ -479,8 +443,6 @@ CZMTip* CZMTipManager::FindTipByIndex( int index ) const
     return nullptr;
 }
 //
-
-
 
 //
 CZMTipSystem::CZMTipSystem()

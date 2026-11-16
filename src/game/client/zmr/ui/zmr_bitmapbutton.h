@@ -5,7 +5,6 @@
 #include "c_zmr_util.h"
 #include "zmr_hud_tooltips.h"
 
-
 class CZMBitMapButton : public CBitmapButton
 {
 public:
@@ -15,7 +14,7 @@ public:
     ~CZMBitMapButton();
 
     virtual void OnCursorEntered() override;
-    
+
     virtual void OnCursorExited() override;
 
     const char* GetTooltipName() const;

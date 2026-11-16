@@ -4,63 +4,56 @@
 
 #include "player_pickup.h"
 
-#include "predicted_viewmodel.h"
-#include "filesystem.h"
 #include "EntityFlame.h"
-#include "in_buttons.h"
-#include "trains.h"
-#include "info_camera_link.h"
-#include <vphysics/player_controller.h>
 #include "effect_dispatch_data.h"
-#include "te_effect_dispatch.h"
-#include "soundenvelope.h"
 #include "eventqueue.h"
+#include "filesystem.h"
+#include "in_buttons.h"
+#include "info_camera_link.h"
+#include "predicted_viewmodel.h"
+#include "soundenvelope.h"
+#include "te_effect_dispatch.h"
+#include "trains.h"
+#include <vphysics/player_controller.h>
 
-#include "zmr_rejoindata.h"
 #include "npcs/zmr_zombiebase.h"
-#include "zmr_player_ragdoll.h"
-#include "zmr_viewmodel.h"
-#include "zmr_entities.h"
-#include "zmr_gamerules.h"
-#include "zmr_playermodels.h"
 #include "weapons/zmr_fistscarry.h"
 #include "zmr_ammodef.h"
-#include "zmr_resource_system.h"
+#include "zmr_entities.h"
+#include "zmr_gamerules.h"
 #include "zmr_player.h"
+#include "zmr_player_ragdoll.h"
+#include "zmr_playermodels.h"
+#include "zmr_rejoindata.h"
+#include "zmr_resource_system.h"
+#include "zmr_viewmodel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define VMARMS_FALLBACKMODEL "models/weapons/c_arms_citizen.mdl"
 
-#define VMARMS_FALLBACKMODEL   "models/weapons/c_arms_citizen.mdl"
-
-#define RAT_MODEL               "models/rat/horatio.mdl"
-
-
+#define RAT_MODEL "models/rat/horatio.mdl"
 
 extern int TrainSpeed( int iSpeed, int iMax );
-
 
 static ConVar zm_sv_modelchangedelay( "zm_sv_modelchangedelay", "6", FCVAR_NOTIFY | FCVAR_ARCHIVE, "", true, 0.0f, false, 0.0f );
 
 ConVar zm_sv_antiafk( "zm_sv_antiafk", "90", FCVAR_NOTIFY | FCVAR_ARCHIVE, "If the player is AFK for this many seconds, put them into spectator mode. 0 = disable" );
-
 
 static ConVar zm_sv_npcheadpushoff( "zm_sv_npcheadpushoff", "200", FCVAR_NOTIFY | FCVAR_ARCHIVE, "How much force is applied to the player when standing on an NPC." );
 
 // This is for maps that use the OnBreak trick to name the ZM. This does not work in ZMR anymore.
 static ConVar zm_sv_comp_zmtargetname( "zm_sv_comp_zmtargetname", "", 0, "Gives the ZM a targetname on spawn. This is for compatibility with old maps!!!" );
 
-
 extern ConVar zm_sv_antiafk_punish;
 
 ConVar zm_sv_flashlightdrainrate( "zm_sv_flashlightdrainrate", "0.6", FCVAR_NOTIFY, "How fast the flashlight battery drains per second. (out of 100)" ); // Originally 0.4
 ConVar zm_sv_flashlightrechargerate( "zm_sv_flashlightrechargerate", "2.5", FCVAR_NOTIFY, "How fast the flashlight battery recharges per second. (out of 100)" ); // Originally 0.1
 
-
 BEGIN_SEND_TABLE_NOBASE( CZMPlayer, DT_ZMLocalPlayerExclusive )
     // Send high-resolution for local
-    SendPropVector( SENDINFO( m_vecOrigin ), -1,  SPROP_NOSCALE | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
+    SendPropVector( SENDINFO( m_vecOrigin ), -1, SPROP_NOSCALE | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
 
     // Is there any point to sending pitch to local and not yaw?
     //SendPropFloat( SENDINFO_VECTORELEM( m_angEyeAngles, 0 ), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f ),
@@ -87,21 +80,19 @@ IMPLEMENT_SERVERCLASS_ST( CZMPlayer, DT_ZM_Player )
     SendPropEHandle( SENDINFO( m_hRagdoll ) ),
 
     // Data that only gets sent to the local player.
-    SendPropDataTable( "zmlocaldata", 0, &REFERENCE_SEND_TABLE(DT_ZMLocalPlayerExclusive), SendProxy_SendLocalDataTable ),
+    SendPropDataTable( "zmlocaldata", 0, &REFERENCE_SEND_TABLE( DT_ZMLocalPlayerExclusive ), SendProxy_SendLocalDataTable ),
     // Data that gets sent to all other players
-    SendPropDataTable( "zmnonlocaldata", 0, &REFERENCE_SEND_TABLE(DT_ZMNonLocalPlayerExclusive), SendProxy_SendNonLocalDataTable ),
-
+    SendPropDataTable( "zmnonlocaldata", 0, &REFERENCE_SEND_TABLE( DT_ZMNonLocalPlayerExclusive ), SendProxy_SendNonLocalDataTable ),
 
     // Other players' water level is networked for animations.
     SendPropInt( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
     SendPropExclude( "DT_LocalPlayerExclusive", "m_nWaterLevel" ),
-    
+
     // We only want to send it to other players.
     SendPropExclude( "DT_BaseAnimating", "m_nMuzzleFlashParity" ),
 
-    
     SendPropExclude( "DT_BaseAnimating", "m_flPoseParameter" ),
-    SendPropExclude( "DT_BaseAnimating", "m_flPlaybackRate" ),	
+    SendPropExclude( "DT_BaseAnimating", "m_flPlaybackRate" ),
     SendPropExclude( "DT_BaseAnimating", "m_nSequence" ),
     SendPropExclude( "DT_BaseEntity", "m_angRotation" ),
     SendPropExclude( "DT_BaseAnimatingOverlay", "overlay_vars" ),
@@ -109,14 +100,13 @@ IMPLEMENT_SERVERCLASS_ST( CZMPlayer, DT_ZM_Player )
     SendPropExclude( "DT_BaseEntity", "m_vecOrigin" ),
 
     // playeranimstate and clientside animation takes care of these on the client
-    SendPropExclude( "DT_ServerAnimationData" , "m_flCycle" ),	
-    SendPropExclude( "DT_AnimTimeMustBeFirst" , "m_flAnimTime" ),
+    SendPropExclude( "DT_ServerAnimationData", "m_flCycle" ),
+    SendPropExclude( "DT_AnimTimeMustBeFirst", "m_flAnimTime" ),
 
     SendPropExclude( "DT_BaseFlex", "m_flexWeight" ),
     SendPropExclude( "DT_BaseFlex", "m_blinktoggle" ),
     SendPropExclude( "DT_BaseFlex", "m_viewtarget" ),
 END_SEND_TABLE()
-
 
 BEGIN_DATADESC( CZMPlayer )
     DEFINE_INPUTFUNC( FIELD_VOID, "ForceDropPhysObjects", InputForceDropPhysObjects ),
@@ -125,10 +115,8 @@ BEGIN_DATADESC( CZMPlayer )
     DEFINE_INPUTFUNC( FIELD_FLOAT, "IgnoreFallDamageWithoutReset", InputIgnoreFallDamageWithoutReset ),
 END_DATADESC()
 
-
 LINK_ENTITY_TO_CLASS( player, CZMPlayer );
 PRECACHE_REGISTER( player );
-
 
 CZMPlayerAnimState* CreateZMPlayerAnimState( CZMPlayer* pPlayer );
 
@@ -145,9 +133,7 @@ CZMPlayer::CZMPlayer()
     m_ServerWepData.Reset();
     m_hContinuousUseEntity.Set( nullptr );
 
-
     BaseClass::ChangeTeam( 0 );
-
 
     m_pPlayerAnimState = CreateZMPlayerAnimState( this );
     UseClientSideAnimation();
@@ -157,14 +143,11 @@ CZMPlayer::CZMPlayer()
     m_flLastActivity = gpGlobals->curtime;
     m_flLastActivityWarning = 0.0f;
 
-    
     SetWeaponSlotFlags( 0 );
-
 
     m_flZMMoveSpeed = 1600.0f;
     m_flZMMoveAccel = 5.0f;
     m_flZMMoveDecel = 4.0f;
-
 
     m_flTimeIgnoreFallDamage = 0.0f;
     m_bIgnoreFallDamageResetAfterImpact = true;
@@ -180,11 +163,10 @@ void CZMPlayer::Precache()
     // Precache register makes sure we are already precached.
     if ( !IsPrecacheAllowed() ) return;
 
-
     BaseClass::Precache();
 
     // Needs to be precached for thirdperson flashlight beam.
-    PrecacheModel ( "sprites/glow01.vmt" );
+    PrecacheModel( "sprites/glow01.vmt" );
 
     PrecacheModel( VMARMS_FALLBACKMODEL );
 
@@ -193,19 +175,18 @@ void CZMPlayer::Precache()
     PrecacheScriptSound( "ZMPlayer.PickupWeapon" );
     PrecacheScriptSound( "ZMPlayer.PickupAmmo" );
 
-	PrecacheScriptSound( "ZMPlayer.FlashLightOn" );
-	PrecacheScriptSound( "ZMPlayer.FlashLightOff" );
-	PrecacheScriptSound( "ZMPlayer.ZMVisionOn" );
-	PrecacheScriptSound( "ZMPlayer.ZMVisionOff" );
+    PrecacheScriptSound( "ZMPlayer.FlashLightOn" );
+    PrecacheScriptSound( "ZMPlayer.FlashLightOff" );
+    PrecacheScriptSound( "ZMPlayer.ZMVisionOn" );
+    PrecacheScriptSound( "ZMPlayer.ZMVisionOff" );
 
-	PrecacheScriptSound( "HL2Player.SprintNoPower" );
-	PrecacheScriptSound( "HL2Player.SprintStart" );
-	PrecacheScriptSound( "HL2Player.UseDeny" );
-	PrecacheScriptSound( "HL2Player.PickupWeapon" );
-	PrecacheScriptSound( "HL2Player.TrainUse" );
-	PrecacheScriptSound( "HL2Player.Use" );
-	PrecacheScriptSound( "HL2Player.BurnPain" );
-
+    PrecacheScriptSound( "HL2Player.SprintNoPower" );
+    PrecacheScriptSound( "HL2Player.SprintStart" );
+    PrecacheScriptSound( "HL2Player.UseDeny" );
+    PrecacheScriptSound( "HL2Player.PickupWeapon" );
+    PrecacheScriptSound( "HL2Player.TrainUse" );
+    PrecacheScriptSound( "HL2Player.Use" );
+    PrecacheScriptSound( "HL2Player.BurnPain" );
 
     ZMGetPlayerModels()->LoadModelsFromFile();
 
@@ -240,12 +221,10 @@ void CZMPlayer::PreThink()
     // Erase our denied ammo.
     m_vAmmoDenied.Purge();
 
-
     if ( m_afButtonLast != m_nButtons )
     {
         m_flLastActivity = gpGlobals->curtime;
     }
-
 
     if ( IsCloseToAFK() && ZMRules()->CanInactivityPunish( this ) )
     {
@@ -253,14 +232,13 @@ void CZMPlayer::PreThink()
         {
             ZMRules()->PunishInactivity( this );
         }
-        else if ( (m_flLastActivityWarning + 1.0f) < gpGlobals->curtime )
+        else if ( ( m_flLastActivityWarning + 1.0f ) < gpGlobals->curtime )
         {
             ClientPrint( this, HUD_PRINTCENTER, "You are about to get punished for being AFK!" );
 
             m_flLastActivityWarning = gpGlobals->curtime;
         }
     }
-
 
     if ( IsZM() )
     {
@@ -285,16 +263,12 @@ void CZMPlayer::PreThink()
         }
     }
 
-
     // Fixes player not changing target after the first target has died.
     if ( GetObserverMode() > OBS_MODE_FREEZECAM )
         CheckObserverSettings();
 
-
     // Baseclass think
     PreThink_HL2();
-
-
 
     if ( IsObserver() )
     {
@@ -314,43 +288,42 @@ void CZMPlayer::PreThink()
 //
 void CZMPlayer::PreThink_HL2()
 {
-	// Riding a vehicle?
-	if ( IsInAVehicle() )	
-	{
-		VPROF( "CZMPlayer::PreThink-Vehicle" );
-		// make sure we update the client, check for timed damage and update suit even if we are in a vehicle
-		UpdateClientData();		
-		CheckTimeBasedDamage();
+    // Riding a vehicle?
+    if ( IsInAVehicle() )
+    {
+        VPROF( "CZMPlayer::PreThink-Vehicle" );
+        // make sure we update the client, check for timed damage and update suit even if we are in a vehicle
+        UpdateClientData();
+        CheckTimeBasedDamage();
 
-		WaterMove();	
-		return;
-	}
+        WaterMove();
+        return;
+    }
 
-	ItemPreFrame();
+    ItemPreFrame();
 
-	WaterMove();
+    WaterMove();
 
-	// checks if new client data (for HUD and view control) needs to be sent to the client
-	UpdateClientData();
-	
-	CheckTimeBasedDamage();
+    // checks if new client data (for HUD and view control) needs to be sent to the client
+    UpdateClientData();
 
-	if ( m_lifeState >= LIFE_DYING )
-	{
-		PlayerDeathThink();
-		return;
-	}
+    CheckTimeBasedDamage();
 
+    if ( m_lifeState >= LIFE_DYING )
+    {
+        PlayerDeathThink();
+        return;
+    }
 
     UpdateControllableTrain();
 
-	//
-	// If we're not on the ground, we're falling. Update our falling velocity.
-	//
-	if ( !( GetFlags() & FL_ONGROUND ) )
-	{
-		m_Local.m_flFallVelocity = -GetAbsVelocity().z;
-	}
+    //
+    // If we're not on the ground, we're falling. Update our falling velocity.
+    //
+    if ( !( GetFlags() & FL_ONGROUND ) )
+    {
+        m_Local.m_flFallVelocity = -GetAbsVelocity().z;
+    }
 }
 
 //
@@ -364,69 +337,61 @@ void CZMPlayer::UpdateControllableTrain()
 
     int trainFlags = 0;
 
+    // Train speed control
+    if ( bOnTrain )
+    {
+        auto* pTrain = dynamic_cast<CFuncTrackTrain*>( GetGroundEntity() );
+        float vel = 0.0f;
 
-	// Train speed control
-	if ( bOnTrain )
-	{
-		auto* pTrain = dynamic_cast<CFuncTrackTrain*>( GetGroundEntity() );
-		float vel = 0.0f;
-
-
-		if ( !pTrain )
-		{
+        if ( !pTrain )
+        {
             // Trace to find the train
-			trace_t trainTrace;
-			UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + Vector( 0, 0, -38 ), 
-				MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &trainTrace );
+            trace_t trainTrace;
+            UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + Vector( 0, 0, -38 ),
+                MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &trainTrace );
 
-			if ( trainTrace.fraction != 1.0 && trainTrace.m_pEnt )
-				pTrain = dynamic_cast<CFuncTrackTrain*>( trainTrace.m_pEnt );
-
+            if ( trainTrace.fraction != 1.0 && trainTrace.m_pEnt )
+                pTrain = dynamic_cast<CFuncTrackTrain*>( trainTrace.m_pEnt );
 
             // No controllable train found.
-			if ( !pTrain || !pTrain->OnControls( this ) )
-			{
+            if ( !pTrain || !pTrain->OnControls( this ) )
+            {
                 bOnTrain = false;
 
                 trainFlags |= TRAIN_OFF;
-			}
-		}
+            }
+        }
 
         // Turn off the train if you jump, strafe, or the train controls go dead
-		if (    !pTrain
-            ||  pTrain->HasSpawnFlags( SF_TRACKTRAIN_NOCONTROL )
-            ||  !(pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE)
-            ||  !( GetFlags() & FL_ONGROUND )
-            ||  (m_nButtons & (IN_MOVELEFT|IN_MOVERIGHT|IN_JUMP) ) )
-		{
+        if ( !pTrain || pTrain->HasSpawnFlags( SF_TRACKTRAIN_NOCONTROL ) || !( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) || !( GetFlags() & FL_ONGROUND ) || ( m_nButtons & ( IN_MOVELEFT | IN_MOVERIGHT | IN_JUMP ) ) )
+        {
             bOnTrain = false;
 
             trainFlags |= TRAIN_OFF;
-		}
+        }
 
         if ( pTrain && bOnTrain )
         {
-		    SetAbsVelocity( vec3_origin );
+            SetAbsVelocity( vec3_origin );
 
-		    if ( m_afButtonPressed & IN_FORWARD )
-		    {
-			    vel = 1;
-			    pTrain->Use( this, this, USE_SET, vel );
-		    }
-		    else if ( m_afButtonPressed & IN_BACK )
-		    {
-			    vel = -1;
-			    pTrain->Use( this, this, USE_SET, vel );
-		    }
+            if ( m_afButtonPressed & IN_FORWARD )
+            {
+                vel = 1;
+                pTrain->Use( this, this, USE_SET, vel );
+            }
+            else if ( m_afButtonPressed & IN_BACK )
+            {
+                vel = -1;
+                pTrain->Use( this, this, USE_SET, vel );
+            }
 
-		    if ( vel )
-		    {
-			    m_iTrain = TrainSpeed( pTrain->m_flSpeed, pTrain->GetMaxSpeed() );
-			    m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
-		    }
+            if ( vel )
+            {
+                m_iTrain = TrainSpeed( pTrain->m_flSpeed, pTrain->GetMaxSpeed() );
+                m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
+            }
         }
-	} 
-
+    }
 
     if ( bOnTrain != bWasOnTrain )
     {
@@ -445,19 +410,18 @@ void CZMPlayer::UpdateControllableTrain()
         m_iTrain |= TRAIN_NEW | trainFlags;
     }
 
-
     //
-	// So the correct flags get sent to client asap.
-	//
-	if ( m_afPhysicsFlags & PFLAG_DIROVERRIDE )
-		AddFlag( FL_ONTRAIN );
-	else 
-		RemoveFlag( FL_ONTRAIN );
+    // So the correct flags get sent to client asap.
+    //
+    if ( m_afPhysicsFlags & PFLAG_DIROVERRIDE )
+        AddFlag( FL_ONTRAIN );
+    else
+        RemoveFlag( FL_ONTRAIN );
 }
 
 void CZMPlayer::CheckTrainUpdate()
 {
-    if ( (m_iTrain & TRAIN_NEW) != 0 )
+    if ( ( m_iTrain & TRAIN_NEW ) != 0 )
     {
         // We don't need this.
 
@@ -478,7 +442,6 @@ void CZMPlayer::PostThink()
     HandleDamagesFromUserCmd();
 
     BaseClass::PostThink();
-    
 
     // I have yet to see what the point of this is. (originates from HL2MP)
     //
@@ -491,7 +454,6 @@ void CZMPlayer::PostThink()
     //{
     //    SetCollisionBounds( VEC_CROUCH_TRACE_MIN, VEC_CROUCH_TRACE_MAX );
     //}
-
 
     QAngle angles = GetLocalAngles();
     angles[PITCH] = 0;
@@ -516,7 +478,7 @@ void CZMPlayer::UpdateFlashlight()
     else
     {
         SetFlashlightBattery( GetFlashlightBattery() + gpGlobals->frametime * zm_sv_flashlightrechargerate.GetFloat() );
-            
+
         if ( GetFlashlightBattery() > 100.0f )
         {
             SetFlashlightBattery( 100.0f );
@@ -561,9 +523,7 @@ void CZMPlayer::HandleDamagesFromUserCmd()
     if ( !pCmd || !pCmd->zmHitData.Count() )
         return;
 
-
     g_ZMUserCmdSystem.ApplyDamage( this, m_ServerWepData, pCmd->zmHitData );
-
 
     m_ServerWepData.Reset();
 }
@@ -586,7 +546,6 @@ void CZMPlayer::PhysicsSimulate()
         // This can fuck up some logic.
         //
 
-
         // This fixes continuous use buttons (momentary_rot_button) changing directions.
         // Their logic is run every 0.1s, so we need call Use within that time frame.
         UpdatePlayerUseEntity();
@@ -595,7 +554,7 @@ void CZMPlayer::PhysicsSimulate()
 
 void CZMPlayer::PlayerDeathThink()
 {
-    if( !IsObserver() )
+    if ( !IsObserver() )
     {
         BaseClass::PlayerDeathThink();
     }
@@ -604,43 +563,43 @@ void CZMPlayer::PlayerDeathThink()
 class CPhysicsPlayerCallback : public IPhysicsPlayerControllerEvent
 {
 public:
-	virtual int ShouldMoveTo( IPhysicsObject* pObject, const Vector& position ) override
-	{
-		auto* pPlayer = ToZMPlayer( (CBaseEntity*)pObject->GetGameData() );
-		if ( pPlayer )
-		{
-			if ( pPlayer->TouchedPhysics() )
-			{
-				return 0;
-			}
-		}
-		return 1;
-	}
+    virtual int ShouldMoveTo( IPhysicsObject* pObject, const Vector& position ) override
+    {
+        auto* pPlayer = ToZMPlayer( (CBaseEntity*)pObject->GetGameData() );
+        if ( pPlayer )
+        {
+            if ( pPlayer->TouchedPhysics() )
+            {
+                return 0;
+            }
+        }
+        return 1;
+    }
 };
 
 static CPhysicsPlayerCallback playerCallback;
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CZMPlayer::InitVCollision( const Vector& vecAbsOrigin, const Vector& vecAbsVelocity )
 {
-	BaseClass::InitVCollision( vecAbsOrigin, vecAbsVelocity );
+    BaseClass::InitVCollision( vecAbsOrigin, vecAbsVelocity );
 
-	// Setup the HL2 specific callback.
-	IPhysicsPlayerController *pPlayerController = GetPhysicsController();
-	if ( pPlayerController )
-	{
-		pPlayerController->SetEventHandler( &playerCallback );
-	}
+    // Setup the HL2 specific callback.
+    IPhysicsPlayerController* pPlayerController = GetPhysicsController();
+    if ( pPlayerController )
+    {
+        pPlayerController->SetEventHandler( &playerCallback );
+    }
 }
 
 void CZMPlayer::SetupVisibility( CBaseEntity* pViewEntity, unsigned char* pvs, int pvssize )
 {
-	BaseClass::SetupVisibility( pViewEntity, pvs, pvssize );
+    BaseClass::SetupVisibility( pViewEntity, pvs, pvssize );
 
-	int area = pViewEntity ? pViewEntity->NetworkProp()->AreaNum() : NetworkProp()->AreaNum();
-	PointCameraSetupVisibility( this, area, pvs, pvssize );
+    int area = pViewEntity ? pViewEntity->NetworkProp()->AreaNum() : NetworkProp()->AreaNum();
+    PointCameraSetupVisibility( this, area, pvs, pvssize );
 }
 
 void CZMPlayer::PushAway( const Vector& pos, float force )
@@ -650,14 +609,13 @@ void CZMPlayer::PushAway( const Vector& pos, float force )
 
     VectorNormalize( fwd );
 
-
     Vector vel = force * fwd;
     vel.z = GetAbsVelocity().z; // Make sure we have our z-velocity the same in case we need to apply fall damage or something.
 
     SetAbsVelocity( vel );
 }
 
-bool CZMPlayer::ClientCommand( const CCommand &args )
+bool CZMPlayer::ClientCommand( const CCommand& args )
 {
     return CBasePlayer::ClientCommand( args );
 }
@@ -673,7 +631,6 @@ void CZMPlayer::ChangeTeam( int iTeam )
     // Remove it.
     UnlinkAndRemoveChildren();
 
-
     if ( oldteam != ZMTEAM_UNASSIGNED && ShouldSpawn() )
     {
         Spawn();
@@ -683,12 +640,11 @@ void CZMPlayer::ChangeTeam( int iTeam )
         SetTeamSpecificProps();
     }
 
-
     CZMRules* pRules = ZMRules();
     Assert( pRules );
-    
-    // If we changed teams in the middle of the round (late-joining, etc.) send objectives. 
-    if ( iTeam != oldteam && !pRules->IsInRoundEnd() && !(oldteam == ZMTEAM_HUMAN && iTeam != ZMTEAM_SPECTATOR) )
+
+    // If we changed teams in the middle of the round (late-joining, etc.) send objectives.
+    if ( iTeam != oldteam && !pRules->IsInRoundEnd() && !( oldteam == ZMTEAM_HUMAN && iTeam != ZMTEAM_SPECTATOR ) )
     {
         if ( pRules->GetObjManager() )
         {
@@ -699,9 +655,7 @@ void CZMPlayer::ChangeTeam( int iTeam )
     // See if we need to restart the round.
     // HACK: Don't check for it if our new team isn't spectator.
     // This makes sure we can test stuff while being the only survivor.
-    if (!pRules->IsInRoundEnd()
-    &&  oldteam > ZMTEAM_SPECTATOR
-    &&  iTeam <= ZMTEAM_SPECTATOR)
+    if ( !pRules->IsInRoundEnd() && oldteam > ZMTEAM_SPECTATOR && iTeam <= ZMTEAM_SPECTATOR )
     {
         CTeam* team = GetGlobalTeam( oldteam );
         if ( team && team->GetNumPlayers() <= 0 )
@@ -717,7 +671,6 @@ bool CZMPlayer::ShouldSpawn()
 
     if ( team == ZMTEAM_SPECTATOR )
         return false;
-
 
     return true;
 }
@@ -737,7 +690,6 @@ bool CZMPlayer::IsValidObserverTarget( CBaseEntity* pEnt )
         return false;
     }
 
-
     CZMPlayer* pPlayer = ToZMPlayer( pEnt );
 
     if ( !pPlayer )
@@ -747,7 +699,7 @@ bool CZMPlayer::IsValidObserverTarget( CBaseEntity* pEnt )
     if ( pPlayer->IsObserver() )
         return false;
 
-    if( pPlayer == this )
+    if ( pPlayer == this )
         return false; // We can't observe ourselves.
 
     if ( pPlayer->m_lifeState == LIFE_RESPAWNABLE ) // target is dead, waiting for respawn
@@ -755,12 +707,11 @@ bool CZMPlayer::IsValidObserverTarget( CBaseEntity* pEnt )
 
     if ( pPlayer->m_lifeState == LIFE_DEAD || pPlayer->m_lifeState == LIFE_DYING )
     {
-        if ( (pPlayer->GetDeathTime() + DEATH_ANIMATION_TIME ) < gpGlobals->curtime )
+        if ( ( pPlayer->GetDeathTime() + DEATH_ANIMATION_TIME ) < gpGlobals->curtime )
         {
             return false; // allow watching until 3 seconds after death to see death animation
         }
     }
-        
 
     if ( zm_mp_forcecamera.GetBool() )
     {
@@ -775,25 +726,23 @@ CBaseEntity* CZMPlayer::FindNextObserverTarget( bool bReverse )
 {
     // If we were spectating a zombie, find next zombie.
     CZMBaseZombie* pZombie;
-    if (GetObserverTarget()
-    &&  GetObserverMode() != OBS_MODE_ROAMING
-    &&  (pZombie = dynamic_cast<CZMBaseZombie*>( GetObserverTarget() )) != nullptr )
+    if ( GetObserverTarget() && GetObserverMode() != OBS_MODE_ROAMING && ( pZombie = dynamic_cast<CZMBaseZombie*>( GetObserverTarget() ) ) != nullptr )
     {
         CZMBaseZombie* pLoop;
 
         int origin = -1;
         int len = g_ZombieManager.GetNumZombies();
-        
-        g_ZombieManager.ForEachZombieRet( [ &origin, pZombie ]( int index, CZMBaseZombie* pLoopZombie )
-        {
-            if ( pZombie == pLoopZombie )
-            {
-                origin = index;
-                return true;
-            }
 
-            return false;
-        } );
+        g_ZombieManager.ForEachZombieRet( [&origin, pZombie]( int index, CZMBaseZombie* pLoopZombie )
+            {
+                if ( pZombie == pLoopZombie )
+                {
+                    origin = index;
+                    return true;
+                }
+
+                return false;
+            } );
 
         if ( origin != -1 )
         {
@@ -811,7 +760,6 @@ CBaseEntity* CZMPlayer::FindNextObserverTarget( bool bReverse )
                 if ( i == origin )
                     break;
 
-                
                 pLoop = g_ZombieManager.GetZombieByIndex( i );
                 if ( pLoop && pLoop->IsAlive() )
                 {
@@ -820,7 +768,6 @@ CBaseEntity* CZMPlayer::FindNextObserverTarget( bool bReverse )
             }
         }
     }
-
 
     return BaseClass::FindNextObserverTarget( bReverse );
 }
@@ -848,16 +795,14 @@ void CZMPlayer::SetTeamSpecificProps()
 {
     State_Enter_ACTIVE();
 
-
     RemoveFlag( FL_NOTARGET );
 
     // Walk speed
     SetMaxSpeed( ZM_WALK_SPEED );
 
-
     switch ( GetTeamNumber() )
     {
-    case ZMTEAM_ZM :
+    case ZMTEAM_ZM:
     {
         m_Local.m_iHideHUD |= HIDEHUD_HEALTH;
 
@@ -867,9 +812,8 @@ void CZMPlayer::SetTeamSpecificProps()
         {
             SetName( AllocPooledString( targetname ) );
         }
-
     }
-    case ZMTEAM_SPECTATOR :
+    case ZMTEAM_SPECTATOR:
         RemoveAllItems( true );
 
         // HACK: UpdatePlayerSound will make NPCs hear our "footsteps" even as a ZM when we're "on the ground".
@@ -899,12 +843,12 @@ void CZMPlayer::SetTeamSpecificProps()
             State_Enter_OBSERVER_MODE();
         }
 
-
         if ( FlashlightIsOn() )
             FlashlightTurnOff();
 
         break;
-    default : break;
+    default:
+        break;
     }
 }
 
@@ -916,7 +860,7 @@ void CZMPlayer::StartRatMode()
     }
 
     StopObserverMode();
-    
+
     SetModel( RAT_MODEL );
     SetHealth( 10 );
 
@@ -983,13 +927,11 @@ int CZMPlayer::GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound )
     if ( nAmmoIndex < 0 || nAmmoIndex >= MAX_AMMO_SLOTS )
         return 0;
 
-
     bool bCheckAutoSwitch = false;
     if ( !HasAnyAmmoOfType( nAmmoIndex ) )
     {
         bCheckAutoSwitch = true;
     }
-
 
     // Game rules say I can't have any more of this ammo type.
     if ( !g_pGameRules->CanHaveAmmo( this, nAmmoIndex ) )
@@ -997,11 +939,9 @@ int CZMPlayer::GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound )
         return 0;
     }
 
-
     int nRoom = GetAmmoRoom( nAmmoIndex ) - GetTotalAmmoAmount( nAmmoIndex );
     int nAdd = MIN( nCount, nRoom );
     nAdd = MAX( 0, nAdd );
-
 
     if ( nAdd )
     {
@@ -1016,9 +956,6 @@ int CZMPlayer::GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound )
 
         m_iAmmo.Set( nAmmoIndex, m_iAmmo[nAmmoIndex] + nAdd );
     }
-    
-
-
 
     // We've been denied the pickup, display a hud icon to show that.
     // Make sure we don't send this usermessage multiple times a frame.
@@ -1027,9 +964,8 @@ int CZMPlayer::GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound )
         CSingleUserRecipientFilter user( this );
         user.MakeReliable();
         UserMessageBegin( user, "AmmoDenied" );
-            WRITE_SHORT( nAmmoIndex );
+        WRITE_SHORT( nAmmoIndex );
         MessageEnd();
-
 
         m_vAmmoDenied.AddToTail( nAmmoIndex );
     }
@@ -1053,8 +989,8 @@ int CZMPlayer::GiveAmmo( int nCount, int nAmmoIndex, bool bSuppressSound )
         CSingleUserRecipientFilter user( this );
         user.MakeReliable();
         UserMessageBegin( user, "ZMAmmoPickup" );
-            WRITE_SHORT( nAmmoIndex );
-            WRITE_SHORT( nAdd );
+        WRITE_SHORT( nAmmoIndex );
+        WRITE_SHORT( nAdd );
         MessageEnd();
     }
 
@@ -1065,13 +1001,10 @@ void CZMPlayer::GiveDefaultItems()
 {
     RemoveAllItems( false );
 
-
     if ( !IsSuitEquipped() )
         EquipSuit( false ); // Don't play "effects" (hand showcase anim)
-    
 
     GiveNamedItem( "weapon_zm_fistscarry" );
-
 
     CZMRules* pRules = ZMRules();
 
@@ -1085,10 +1018,9 @@ void CZMPlayer::GiveDefaultItems()
         }
     }
 
-
     // Change weapon to best we have.
     CBaseCombatWeapon* pWep = GetWeaponOfHighestSlot();
-    
+
     if ( pWep )
     {
         Weapon_Switch( pWep );
@@ -1100,14 +1032,15 @@ void CZMPlayer::ImpulseCommands()
     int iImpulse = GetImpulse();
     switch ( iImpulse )
     {
-    case 201 : // Spraying
+    case 201: // Spraying
     {
         // Don't allow ZM to spray...
         if ( IsZM() ) return;
 
         break;
     }
-    default : break;
+    default:
+        break;
     }
 
     BaseClass::ImpulseCommands();
@@ -1117,11 +1050,10 @@ void CZMPlayer::CheatImpulseCommands( int iImpulse )
 {
     switch ( iImpulse )
     {
-    case 101 :
+    case 101:
     {
         if ( !sv_cheats->GetBool() ) return;
 
-        
         GiveNamedItem( "weapon_zm_pistol" );
         GiveNamedItem( "weapon_zm_revolver" );
         GiveNamedItem( "weapon_zm_improvised" );
@@ -1137,11 +1069,12 @@ void CZMPlayer::CheatImpulseCommands( int iImpulse )
         CBasePlayer::GiveAmmo( 11, "357" );
         CBasePlayer::GiveAmmo( 60, "SMG1" );
 
-
         break;
     }
     // HL2 class has some stuff we don't want or need.
-    default : CBasePlayer::CheatImpulseCommands( iImpulse ); break;
+    default:
+        CBasePlayer::CheatImpulseCommands( iImpulse );
+        break;
     }
 }
 
@@ -1204,26 +1137,21 @@ bool CZMPlayer::SetPlayerModel()
 {
     bool changed = false;
 
-
     const char* pszFallback = ZMGetPlayerModels()->GetRandomPlayerModel()->GetModelName();
 
     const char* szModelName = nullptr;
     const char* pszCurrentModelName = modelinfo->GetModelName( GetModel() );
 
-
     szModelName = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_playermodel" );
-
 
     int modelIndexCurrent = modelinfo->GetModelIndex( pszCurrentModelName );
     int modelIndex = modelinfo->GetModelIndex( szModelName );
-
 
     // The model player wanted is invalid?
     if ( modelIndex == -1 || ZMGetPlayerModels()->GetPlayerModelData( szModelName ) == nullptr )
     {
         // The current model is also fucked, fallback.
-        if (modelIndexCurrent == -1
-        ||  ZMGetPlayerModels()->GetPlayerModelData( pszCurrentModelName ) == nullptr)
+        if ( modelIndexCurrent == -1 || ZMGetPlayerModels()->GetPlayerModelData( pszCurrentModelName ) == nullptr )
         {
             pszCurrentModelName = pszFallback;
             modelIndexCurrent = -1;
@@ -1246,7 +1174,6 @@ bool CZMPlayer::SetPlayerModel()
         changed = true;
     }
 
-
     if ( changed )
     {
         SetArmsData( ZMGetPlayerModels()->GetPlayerModelData( szModelName ) );
@@ -1261,11 +1188,9 @@ void CZMPlayer::UpdatePlayerFOV()
 {
     const char* szFov = engine->GetClientConVarValue( entindex(), "zm_cl_fov" );
 
-
     int newFov = szFov ? atoi( szFov ) : 0;
 
     newFov = clamp( newFov > 0 ? newFov : g_pGameRules->DefaultFOV(), ZM_MIN_FOV, MAX_FOV );
-
 
     if ( newFov != GetDefaultFOV() )
     {
@@ -1288,7 +1213,6 @@ void CZMPlayer::SafelyClampZMValue( float& value, float min, float max )
     bool valid = value <= max && value >= min;
     if ( valid )
         return;
-
 
     if ( value > max )
     {
@@ -1334,9 +1258,7 @@ void CZMPlayer::InitZMFog()
     if ( pFog->IsGameCreated() && !CZMEntFogController::IsEnabled() )
         return;
 
-
     m_Local.m_PlayerFog.m_hCtrl.Set( pFog );
-
 
     // Skybox data is separate.
     {
@@ -1356,11 +1278,10 @@ void CZMPlayer::InitZMFog()
 
 void CZMPlayer::Spawn()
 {
-    m_iSpawnInterpCounter = (m_iSpawnInterpCounter + 1) % 8;
-
+    m_iSpawnInterpCounter = ( m_iSpawnInterpCounter + 1 ) % 8;
 
     PickDefaultSpawnTeam();
-    
+
     // Must set player model before calling base class spawn...
     SetPlayerModel();
     // Collision group must be set before base class spawn.
@@ -1368,7 +1289,6 @@ void CZMPlayer::Spawn()
     SetCollisionGroup( COLLISION_GROUP_PLAYER );
 
     CBasePlayer::Spawn();
-
 
     if ( GetTeamNumber() == ZMTEAM_ZM )
     {
@@ -1385,14 +1305,11 @@ void CZMPlayer::Spawn()
         m_Local.m_skybox3d.fog.enable = false;
     }
 
-
     SetTeamSpecificProps();
-
 
     if ( !IsObserver() )
     {
         pl.deadflag = false;
-
 
         if ( IsHuman() )
         {
@@ -1406,9 +1323,7 @@ void CZMPlayer::Spawn()
         RemoveEffects( EF_NODRAW );
     }
 
-
     m_nRenderFX = kRenderNormal;
-
 
     if ( IsHuman() )
         AddFlag( FL_ONGROUND );
@@ -1426,32 +1341,26 @@ void CZMPlayer::Spawn()
 
     //m_bReady = false;
 
-
     // Set in BasePlayer
     //m_Local.m_bDucked = false;
     //SetPlayerUnderwater( false );
 
-
     // Take 4x more damage when impacted by physics. (Same as HL2DM)
     m_impactEnergyScale = 4.0f;
 
-
     // Reset our base velocity so we don't go flying. RIP Muob
     SetBaseVelocity( vec3_origin );
-
 
     // Reset activity. Makes sure we don't get insta-punished when spawning after spectating somebody, etc.
     m_flLastActivity = gpGlobals->curtime;
 
     SetFlashlightBattery( 100.0f );
 
-
     // Don't display crosshair if the map is a background.
     if ( gpGlobals->eLoadType == MapLoad_Background )
     {
         ShowCrosshair( false );
     }
-
 
     DoAnimationEvent( PLAYERANIMEVENT_SPAWN );
 }
@@ -1476,7 +1385,7 @@ void CZMPlayer::CreateRagdollEntity()
 
     // If we already have a ragdoll, don't make another one.
     CZMRagdoll* pRagdoll = dynamic_cast<CZMRagdoll*>( m_hRagdoll.Get() );
-    
+
     if ( !pRagdoll )
     {
         // create a new one
@@ -1516,11 +1425,11 @@ bool CZMPlayer::WantsLagCompensationOnNPC( const CZMBaseZombie* pZombie, const C
     if ( pEntityTransmitBits && !pEntityTransmitBits->Get( pZombie->entindex() ) )
         return false;
 
-#define NPC_MAXSPEED        100.0f
-    const Vector &vMyOrigin = GetAbsOrigin();
-    const Vector &vHisOrigin = pZombie->GetAbsOrigin();
+#define NPC_MAXSPEED 100.0f
+    const Vector& vMyOrigin = GetAbsOrigin();
+    const Vector& vHisOrigin = pZombie->GetAbsOrigin();
 
-    // get max distance player could have moved within max lag compensation time, 
+    // get max distance player could have moved within max lag compensation time,
     // multiply by 1.5 to to avoid "dead zones"  (sqrt(2) would be the exact value)
     float maxDistance = 1.5f * NPC_MAXSPEED * sv_maxunlag.GetFloat();
 
@@ -1531,10 +1440,10 @@ bool CZMPlayer::WantsLagCompensationOnNPC( const CZMBaseZombie* pZombie, const C
     // If their origin is not within a 45 degree cone in front of us, no need to lag compensate.
     Vector vForward;
     AngleVectors( pCmd->viewangles, &vForward );
-    
+
     Vector vDiff = vHisOrigin - vMyOrigin;
     VectorNormalize( vDiff );
-    
+
     float flCosAngle = DOT_45DEGREE;
     if ( vForward.Dot( vDiff ) < flCosAngle )
         return false;
@@ -1542,12 +1451,11 @@ bool CZMPlayer::WantsLagCompensationOnNPC( const CZMBaseZombie* pZombie, const C
     return true;
 }
 
-void CZMPlayer::Event_Killed( const CTakeDamageInfo &info )
+void CZMPlayer::Event_Killed( const CTakeDamageInfo& info )
 {
     //update damage info with our accumulated physics force
     CTakeDamageInfo subinfo = info;
     subinfo.SetDamageForce( m_vecTotalBulletForce );
-
 
     // Note: since we're dead, it won't draw us on the client, but we don't set EF_NODRAW
     // because we still want to transmit to the clients in our PVS.
@@ -1563,7 +1471,6 @@ void CZMPlayer::Event_Killed( const CTakeDamageInfo &info )
         SetEffectEntity( nullptr );
     }
 
-
     BaseClass::Event_Killed( subinfo );
 
     if ( info.GetDamageType() & DMG_DISSOLVE )
@@ -1574,8 +1481,7 @@ void CZMPlayer::Event_Killed( const CTakeDamageInfo &info )
         }
     }
 
-
-    CBaseEntity *pAttacker = info.GetAttacker();
+    CBaseEntity* pAttacker = info.GetAttacker();
 
     if ( pAttacker )
     {
@@ -1589,12 +1495,11 @@ void CZMPlayer::Event_Killed( const CTakeDamageInfo &info )
         GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
     }
 
-
     FlashlightTurnOff();
 
     m_lifeState = LIFE_DEAD;
 
-    RemoveEffects( EF_NODRAW );	// still draw player body
+    RemoveEffects( EF_NODRAW ); // still draw player body
 
     // ZMRTODO: Figure out how to call EndTouch for all entities on death.
     StopWaterDeathSounds();
@@ -1609,7 +1514,7 @@ extern ConVar friendlyfire;
 int CZMPlayer::OnTakeDamage( const CTakeDamageInfo& inputInfo )
 {
     // Ignore fall damage
-    if ( inputInfo.GetDamageType() & DMG_FALL && m_flTimeIgnoreFallDamage  > gpGlobals->curtime )
+    if ( inputInfo.GetDamageType() & DMG_FALL && m_flTimeIgnoreFallDamage > gpGlobals->curtime )
     {
         // Stop ignoring after first impact.
         if ( m_bIgnoreFallDamageResetAfterImpact )
@@ -1643,61 +1548,58 @@ int CZMPlayer::OnTakeDamage( const CTakeDamageInfo& inputInfo )
 
 int CZMPlayer::OnTakeDamage_Alive( const CTakeDamageInfo& info )
 {
-	// Drown
-	if( info.GetDamageType() & DMG_DROWN )
-	{
-		if( m_idrowndmg == m_idrownrestored )
-		{
-			EmitSound( "Player.DrownStart" );
-		}
-		else
-		{
-			EmitSound( "Player.DrownContinue" );
-		}
-	}
+    // Drown
+    if ( info.GetDamageType() & DMG_DROWN )
+    {
+        if ( m_idrowndmg == m_idrownrestored )
+        {
+            EmitSound( "Player.DrownStart" );
+        }
+        else
+        {
+            EmitSound( "Player.DrownContinue" );
+        }
+    }
 
-	// Burnt
-	if ( info.GetDamageType() & DMG_BURN )
-	{
-		EmitSound( "HL2Player.BurnPain" );
-	}
+    // Burnt
+    if ( info.GetDamageType() & DMG_BURN )
+    {
+        EmitSound( "HL2Player.BurnPain" );
+    }
 
-	// Call the base class implementation
-	return BaseClass::OnTakeDamage_Alive( info );
+    // Call the base class implementation
+    return BaseClass::OnTakeDamage_Alive( info );
 }
 
 void CZMPlayer::CommitSuicide( bool bExplode, bool bForce )
 {
     if ( !IsHuman() ) return;
 
-    
     BaseClass::CommitSuicide( bExplode, bForce );
 }
 
-void CZMPlayer::CommitSuicide( const Vector &vecForce, bool bExplode, bool bForce )
+void CZMPlayer::CommitSuicide( const Vector& vecForce, bool bExplode, bool bForce )
 {
     if ( !IsHuman() ) return;
 
-    
     BaseClass::CommitSuicide( vecForce, bExplode, bForce );
 }
 
-void CZMPlayer::DeathSound( const CTakeDamageInfo &info )
+void CZMPlayer::DeathSound( const CTakeDamageInfo& info )
 {
     if ( m_hRagdoll.Get() && m_hRagdoll.Get()->GetBaseAnimating()->IsDissolving() )
-         return;
-
+        return;
 
     const char* szStepSound = "NPC_Citizen.Die";
 
-    const char *pModelName = STRING( GetModelName() );
+    const char* pModelName = STRING( GetModelName() );
 
     CSoundParameters params;
     if ( GetParametersForSound( szStepSound, params, pModelName ) == false )
         return;
 
     Vector vecOrigin = GetAbsOrigin();
-    
+
     CRecipientFilter filter;
     filter.AddRecipientsByPAS( vecOrigin );
 
@@ -1723,10 +1625,9 @@ void CZMPlayer::Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, bool
 
 extern ConVar physcannon_maxmass;
 
-void CZMPlayer::PickupObject( CBaseEntity *pObject, bool bLimitMassAndSize )
+void CZMPlayer::PickupObject( CBaseEntity* pObject, bool bLimitMassAndSize )
 {
     if ( !IsHuman() || !IsAlive() ) return;
-
 
     PlayerAttemptPickup( this, pObject );
 }
@@ -1738,7 +1639,7 @@ void CZMPlayer::PickupObject( CBaseEntity *pObject, bool bLimitMassAndSize )
 //    return pWeapon ? pWeapon->IsCarryingObject( pEnt ) : false;
 //}
 
-float CZMPlayer::GetHeldObjectMass( IPhysicsObject *pHeldObject )
+float CZMPlayer::GetHeldObjectMass( IPhysicsObject* pHeldObject )
 {
     // Ask our carrying weapon
     CZMWeaponHands* pWeapon = static_cast<CZMWeaponHands*>( Weapon_OwnsThisType( "weapon_zm_fistscarry" ) );
@@ -1746,25 +1647,25 @@ float CZMPlayer::GetHeldObjectMass( IPhysicsObject *pHeldObject )
     return pWeapon ? pWeapon->GetHeldObjectMass() : 0.0f;
 }
 
-void CZMPlayer::ForceDropOfCarriedPhysObjects( CBaseEntity *pOnlyIfHoldingThis )
+void CZMPlayer::ForceDropOfCarriedPhysObjects( CBaseEntity* pOnlyIfHoldingThis )
 {
-	if ( PhysIsInCallback() )
-	{
-		variant_t value;
-		g_EventQueue.AddEvent( this, "ForceDropPhysObjects", value, 0.01f, pOnlyIfHoldingThis, this );
-		return;
-	}
+    if ( PhysIsInCallback() )
+    {
+        variant_t value;
+        g_EventQueue.AddEvent( this, "ForceDropPhysObjects", value, 0.01f, pOnlyIfHoldingThis, this );
+        return;
+    }
 
-	// Let go of func_tanks.
-	ClearUseEntity();
+    // Let go of func_tanks.
+    ClearUseEntity();
 
-	// Do the actual dropping.
-	PhysCannonForceDrop( GetActiveWeapon(), nullptr );
+    // Do the actual dropping.
+    PhysCannonForceDrop( GetActiveWeapon(), nullptr );
 }
 
-void CZMPlayer::InputForceDropPhysObjects( inputdata_t &data )
+void CZMPlayer::InputForceDropPhysObjects( inputdata_t& data )
 {
-	ForceDropOfCarriedPhysObjects( data.pActivator );
+    ForceDropOfCarriedPhysObjects( data.pActivator );
 }
 
 void CZMPlayer::InputIgnoreFallDamage( inputdata_t& data )
@@ -1878,7 +1779,6 @@ void CZMPlayer::CreateViewModel( int index )
     // We should never create more than the first index.
     Assert( index == 0 );
 
-
     if ( GetViewModel( VMINDEX_WEP ) != nullptr )
     {
         if ( GetViewModel( VMINDEX_ARMS ) == nullptr )
@@ -1889,9 +1789,8 @@ void CZMPlayer::CreateViewModel( int index )
         return;
     }
 
-
     CZMViewModel* vm = static_cast<CZMViewModel*>( CreateEntityByName( "zm_viewmodel" ) );
-    
+
     if ( vm )
     {
         vm->SetAbsOrigin( GetAbsOrigin() );
@@ -1901,9 +1800,8 @@ void CZMPlayer::CreateViewModel( int index )
         vm->FollowEntity( this, false );
         m_hViewModel.Set( VMINDEX_WEP, vm );
 
-
         CZMViewModel* vmarms = static_cast<CZMViewModel*>( CreateEntityByName( "zm_viewmodel" ) );
-    
+
         if ( vmarms )
         {
             vmarms->SetAbsOrigin( GetAbsOrigin() );
@@ -1918,7 +1816,7 @@ void CZMPlayer::CreateViewModel( int index )
     SetArmsData( ZMGetPlayerModels()->GetPlayerModelData( STRING( GetModelName() ) ) );
 }
 
-bool CZMPlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
+bool CZMPlayer::BumpWeapon( CBaseCombatWeapon* pWeapon )
 {
     // The visibility check was causing problems. (probably due to shitty collision boxes for the weapons...)
 
@@ -1927,26 +1825,22 @@ bool CZMPlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
     // How would this even be possible?
     if ( pWeapon->GetOwner() ) return false;
 
-
     if ( !IsAllowedToPickupWeapons() )
         return false;
 
-    
     if ( /*!Weapon_CanUse( pWeapon ) ||*/ !g_pGameRules->CanHavePlayerItem( this, pWeapon ) )
     {
         return false;
     }
-    
-    
+
     // Apparently, the reason why this wasn't working was because the center was in solid.
     trace_t tr;
     CTraceFilterSkipTwoEntities filter( this, pWeapon, COLLISION_GROUP_NONE );
     UTIL_TraceLine( pWeapon->WorldSpaceCenter(), EyePosition(), MASK_OPAQUE, &filter, &tr );
 
     if ( tr.fraction != 1.0f && !tr.startsolid ) return false;
-    
 
-    if ( Weapon_OwnsThisType( pWeapon->GetClassname(), pWeapon->GetSubType() ) ) 
+    if ( Weapon_OwnsThisType( pWeapon->GetClassname(), pWeapon->GetSubType() ) )
     {
         return false;
     }
@@ -1960,18 +1854,15 @@ bool CZMPlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
 
 CBaseEntity* CZMPlayer::EntSelectSpawnPoint( void )
 {
-    const char *pszFallback = "info_player_deathmatch";
-    const char *pszSpawn = IsZM() ? "info_player_zombiemaster" : "info_player_survivor";
-
+    const char* pszFallback = "info_player_deathmatch";
+    const char* pszSpawn = IsZM() ? "info_player_zombiemaster" : "info_player_survivor";
 
     CUtlVector<CBaseEntity*> vValidSpots;
     vValidSpots.Purge();
 
-
-
     bool bCheckEnabled = true;
     CBaseEntity* pEnt;
-    
+
     // Find all valid spawn points.
     for ( int i = 0; i < 2; i++ )
     {
@@ -1979,9 +1870,9 @@ CBaseEntity* CZMPlayer::EntSelectSpawnPoint( void )
         for ( int j = 0; j < 2; j++ )
         {
             pEnt = nullptr;
-            while ( (pEnt = gEntList.FindEntityByClassname( pEnt, pszSpawn )) != nullptr )
+            while ( ( pEnt = gEntList.FindEntityByClassname( pEnt, pszSpawn ) ) != nullptr )
             {
-                if ( (!bCheckEnabled || static_cast<CZMEntSpawnPoint*>( pEnt )->IsEnabled()) && g_pGameRules->IsSpawnPointValid( pEnt, this ) )
+                if ( ( !bCheckEnabled || static_cast<CZMEntSpawnPoint*>( pEnt )->IsEnabled() ) && g_pGameRules->IsSpawnPointValid( pEnt, this ) )
                 {
                     if ( vValidSpots.Find( pEnt ) == -1 )
                         vValidSpots.AddToTail( pEnt );
@@ -2006,9 +1897,7 @@ CBaseEntity* CZMPlayer::EntSelectSpawnPoint( void )
         return vValidSpots[random->RandomInt( 0, vValidSpots.Count() - 1 )];
     }
 
-
     Warning( "Couldn't find a valid spawnpoint for %i, using first fallback...\n", entindex() );
-
 
     // Didn't work, now just find any spot.
     pEnt = gEntList.FindEntityByClassname( nullptr, pszSpawn );
@@ -2020,7 +1909,6 @@ CBaseEntity* CZMPlayer::EntSelectSpawnPoint( void )
     pEnt = gEntList.FindEntityByClassname( nullptr, "info_player_start" );
     if ( pEnt ) return pEnt;
 
-
     Warning( "Map has no spawnpoints! Returning world...\n" );
 
     return GetContainingEntity( INDEXENT( 0 ) );
@@ -2029,9 +1917,9 @@ CBaseEntity* CZMPlayer::EntSelectSpawnPoint( void )
 void CZMPlayer::DeselectAllZombies()
 {
     g_ZombieManager.ForEachSelectedZombie( this, []( CZMBaseZombie* pZombie )
-    {
-        pZombie->SetSelector( 0 );
-    } );
+        {
+            pZombie->SetSelector( 0 );
+        } );
 }
 
 //
@@ -2042,18 +1930,17 @@ void CZMPlayer::UpdatePlayerUseEntity()
 {
     auto* pUseEntity = m_hContinuousUseEntity.Get();
 
-	if ( pUseEntity && (pUseEntity->ObjectCaps() & FCAP_CONTINUOUS_USE) != 0 )
-	{
+    if ( pUseEntity && ( pUseEntity->ObjectCaps() & FCAP_CONTINUOUS_USE ) != 0 )
+    {
         variant_t emptyVariant;
         pUseEntity->AcceptInput( "Use", this, this, emptyVariant, USE_TOGGLE );
-	}
+    }
 }
 
 void CZMPlayer::PlayerUse()
 {
     // Reacquire the continuous use entity
     m_hContinuousUseEntity.Set( nullptr );
-
 
     auto* pOldUseEntity = GetUseEntity();
 
@@ -2070,62 +1957,61 @@ void CZMPlayer::PlayerUse()
         return;
     }
 
+    bool bPressedUse = ( m_afButtonPressed & IN_USE ) != 0;
+    bool bReleasedUse = ( m_afButtonReleased & IN_USE ) != 0;
+    bool bHoldingUse = ( m_nButtons & IN_USE ) != 0;
 
-    bool bPressedUse = (m_afButtonPressed & IN_USE) != 0;
-    bool bReleasedUse = (m_afButtonReleased & IN_USE) != 0;
-    bool bHoldingUse = (m_nButtons & IN_USE) != 0;
+    // Was use pressed or released?
+    if ( !bPressedUse && !bReleasedUse && !bHoldingUse )
+        return;
 
-	// Was use pressed or released?
-	if ( !bPressedUse && !bReleasedUse && !bHoldingUse )
-		return;
+    if ( bPressedUse )
+    {
+        // Currently using a latched entity?
+        if ( ClearUseEntity() )
+        {
+            m_afPhysicsFlags &= ~PFLAG_USING;
+            return;
+        }
+        else
+        {
+            if ( m_afPhysicsFlags & PFLAG_DIROVERRIDE )
+            {
+                m_afPhysicsFlags &= ~PFLAG_DIROVERRIDE;
+                m_iTrain = TRAIN_NEW | TRAIN_OFF;
+                return;
+            }
+            else
+            { // Start controlling the train!
+                auto* pTrain = dynamic_cast<CFuncTrackTrain*>( GetGroundEntity() );
+                if ( pTrain && !( m_nButtons & IN_JUMP ) && ( GetFlags() & FL_ONGROUND ) && ( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( this ) )
+                {
+                    m_afPhysicsFlags |= PFLAG_DIROVERRIDE;
+                    m_iTrain = TrainSpeed( pTrain->m_flSpeed, pTrain->GetMaxSpeed() );
+                    m_iTrain |= TRAIN_NEW;
+                    EmitSound( "HL2Player.TrainUse" );
+                    return;
+                }
+            }
+        }
+    }
 
-	if ( bPressedUse )
-	{
-		// Currently using a latched entity?
-		if ( ClearUseEntity() )
-		{
-			m_afPhysicsFlags &= ~PFLAG_USING;
-			return;
-		}
-		else
-		{
-			if ( m_afPhysicsFlags & PFLAG_DIROVERRIDE )
-			{
-				m_afPhysicsFlags &= ~PFLAG_DIROVERRIDE;
-				m_iTrain = TRAIN_NEW|TRAIN_OFF;
-				return;
-			}
-			else
-			{	// Start controlling the train!
-				auto* pTrain = dynamic_cast<CFuncTrackTrain*>( GetGroundEntity() );
-				if ( pTrain && !(m_nButtons & IN_JUMP) && (GetFlags() & FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(this) )
-				{
-					m_afPhysicsFlags |= PFLAG_DIROVERRIDE;
-					m_iTrain = TrainSpeed( pTrain->m_flSpeed, pTrain->GetMaxSpeed() );
-					m_iTrain |= TRAIN_NEW;
-					EmitSound( "HL2Player.TrainUse" );
-					return;
-				}
-			}
-		}
-	}
+    CBaseEntity* pUseEntity = FindUseEntity();
 
-	CBaseEntity* pUseEntity = FindUseEntity();
+    bool bUsedEntity = false;
 
-	bool bUsedEntity = false;
+    // Found an object
+    if ( pUseEntity )
+    {
+        int caps = pUseEntity->ObjectCaps();
+        variant_t emptyVariant;
 
-	// Found an object
-	if ( pUseEntity )
-	{
-		int caps = pUseEntity->ObjectCaps();
-		variant_t emptyVariant;
-
-
-		if ( ( bHoldingUse && (caps & FCAP_CONTINUOUS_USE) ) ||
-			 ( bPressedUse && (caps & (FCAP_IMPULSE_USE|FCAP_ONOFF_USE)) ) )
-		{
-			if ( caps & FCAP_CONTINUOUS_USE ) {
-				m_hContinuousUseEntity.Set( pUseEntity );
+        if ( ( bHoldingUse && ( caps & FCAP_CONTINUOUS_USE ) ) ||
+             ( bPressedUse && ( caps & ( FCAP_IMPULSE_USE | FCAP_ONOFF_USE ) ) ) )
+        {
+            if ( caps & FCAP_CONTINUOUS_USE )
+            {
+                m_hContinuousUseEntity.Set( pUseEntity );
                 m_afPhysicsFlags |= PFLAG_USING;
             }
 
@@ -2138,23 +2024,23 @@ void CZMPlayer::PlayerUse()
                 pUseEntity->AcceptInput( "Use", this, this, emptyVariant, USE_TOGGLE );
             }
 
-			bUsedEntity = true;
-		}
-		else if ( bReleasedUse && (caps & FCAP_ONOFF_USE) )
-		{
-			pUseEntity->AcceptInput( "Use", this, this, emptyVariant, USE_OFF );
+            bUsedEntity = true;
+        }
+        else if ( bReleasedUse && ( caps & FCAP_ONOFF_USE ) )
+        {
+            pUseEntity->AcceptInput( "Use", this, this, emptyVariant, USE_OFF );
 
-			bUsedEntity = true;
-		}
-	}
-	
+            bUsedEntity = true;
+        }
+    }
+
     if ( !bUsedEntity && bPressedUse )
-	{
-		// Signal that we want to play the deny sound, unless the user is +USEing on a ladder!
-		// The sound is emitted in ItemPostFrame, since that occurs after GameMovement::ProcessMove which
-		// lets the ladder code unset this flag.
-		m_bPlayUseDenySound = true;
-	}
+    {
+        // Signal that we want to play the deny sound, unless the user is +USEing on a ladder!
+        // The sound is emitted in ItemPostFrame, since that occurs after GameMovement::ProcessMove which
+        // lets the ladder code unset this flag.
+        m_bPlayUseDenySound = true;
+    }
     else if ( bUsedEntity && bPressedUse )
     {
         EmitSound( "HL2Player.Use" );
@@ -2166,89 +2052,88 @@ void CZMPlayer::PlayerUse()
 //
 void CZMPlayer::ItemPreFrame()
 {
-	PlayerUse();
+    PlayerUse();
 
-	auto* pActive = GetActiveWeapon();
+    auto* pActive = GetActiveWeapon();
 
-	// Allow all the holstered weapons to update
-	for ( int i = 0; i < WeaponCount(); ++i )
-	{
-		auto* pWeapon = GetWeapon( i );
+    // Allow all the holstered weapons to update
+    for ( int i = 0; i < WeaponCount(); ++i )
+    {
+        auto* pWeapon = GetWeapon( i );
 
-		if ( !pWeapon )
-			continue;
+        if ( !pWeapon )
+            continue;
 
-		if ( pActive == pWeapon )
-			continue;
+        if ( pActive == pWeapon )
+            continue;
 
-		pWeapon->ItemHolsterFrame();
-	}
+        pWeapon->ItemHolsterFrame();
+    }
 
     if ( gpGlobals->curtime < m_flNextAttack )
-		return;
+        return;
 
-	if ( !pActive )
-		return;
+    if ( !pActive )
+        return;
 
 #if defined( CLIENT_DLL )
-	// Not predicting this weapon
-	if ( !pActive->IsPredicted() )
-		return;
+    // Not predicting this weapon
+    if ( !pActive->IsPredicted() )
+        return;
 #endif
 
-	pActive->ItemPreFrame();
+    pActive->ItemPreFrame();
 }
 
 void CZMPlayer::ItemPostFrame()
 {
-	BaseClass::ItemPostFrame();
+    BaseClass::ItemPostFrame();
 
-	if ( m_bPlayUseDenySound )
-	{
-		m_bPlayUseDenySound = false;
-		EmitSound( "HL2Player.UseDeny" );
-	}
+    if ( m_bPlayUseDenySound )
+    {
+        m_bPlayUseDenySound = false;
+        EmitSound( "HL2Player.UseDeny" );
+    }
 }
-
 
 void CZMPlayer::StartWaterDeathSounds()
 {
-	CPASAttenuationFilter filter( this );
+    CPASAttenuationFilter filter( this );
 
-	if ( !m_sndLeeches )
-	{
-		m_sndLeeches = (CSoundEnvelopeController::GetController()).SoundCreate( filter, entindex(), CHAN_STATIC, "coast.leech_bites_loop" , ATTN_NORM );
-	}
+    if ( !m_sndLeeches )
+    {
+        m_sndLeeches = ( CSoundEnvelopeController::GetController() ).SoundCreate( filter, entindex(), CHAN_STATIC, "coast.leech_bites_loop", ATTN_NORM );
+    }
 
-	if ( m_sndLeeches )
-	{
-		(CSoundEnvelopeController::GetController()).Play( m_sndLeeches, 1.0f, 100 );
-	}
+    if ( m_sndLeeches )
+    {
+        ( CSoundEnvelopeController::GetController() ).Play( m_sndLeeches, 1.0f, 100 );
+    }
 
-	if ( !m_sndWaterSplashes )
-	{
-		m_sndWaterSplashes = (CSoundEnvelopeController::GetController()).SoundCreate( filter, entindex(), CHAN_STATIC, "coast.leech_water_churn_loop" , ATTN_NORM );
-	}
+    if ( !m_sndWaterSplashes )
+    {
+        m_sndWaterSplashes = ( CSoundEnvelopeController::GetController() ).SoundCreate( filter, entindex(), CHAN_STATIC, "coast.leech_water_churn_loop", ATTN_NORM );
+    }
 
-	if ( m_sndWaterSplashes )
-	{
-		(CSoundEnvelopeController::GetController()).Play( m_sndWaterSplashes, 1.0f, 100 );
-	}
+    if ( m_sndWaterSplashes )
+    {
+        ( CSoundEnvelopeController::GetController() ).Play( m_sndWaterSplashes, 1.0f, 100 );
+    }
 }
 
 void CZMPlayer::StopWaterDeathSounds()
 {
-	if ( m_sndLeeches )
-	{
-		(CSoundEnvelopeController::GetController()).SoundFadeOut( m_sndLeeches, 0.5f, true );
-		m_sndLeeches = nullptr;
-	}
+    if ( m_sndLeeches )
+    {
+        ( CSoundEnvelopeController::GetController() ).SoundFadeOut( m_sndLeeches, 0.5f, true );
+        m_sndLeeches = nullptr;
+    }
 
-	if ( m_sndWaterSplashes )
-	{
-		(CSoundEnvelopeController::GetController()).SoundFadeOut( m_sndWaterSplashes, 0.5f, true );
-		m_sndWaterSplashes = nullptr;
-	}
+    if ( m_sndWaterSplashes )
+    {
+        ( CSoundEnvelopeController::GetController() ).SoundFadeOut( m_sndWaterSplashes, 0.5f, true );
+        m_sndWaterSplashes = nullptr;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -2256,19 +2141,19 @@ void CZMPlayer::StopWaterDeathSounds()
 //-----------------------------------------------------------------------------
 void CZMPlayer::StopLoopingSounds( void )
 {
-	if ( m_sndLeeches )
-	{
-		 (CSoundEnvelopeController::GetController()).SoundDestroy( m_sndLeeches );
-		 m_sndLeeches = nullptr;
-	}
+    if ( m_sndLeeches )
+    {
+        ( CSoundEnvelopeController::GetController() ).SoundDestroy( m_sndLeeches );
+        m_sndLeeches = nullptr;
+    }
 
-	if ( m_sndWaterSplashes )
-	{
-		 (CSoundEnvelopeController::GetController()).SoundDestroy( m_sndWaterSplashes );
-		 m_sndWaterSplashes = nullptr;
-	}
+    if ( m_sndWaterSplashes )
+    {
+        ( CSoundEnvelopeController::GetController() ).SoundDestroy( m_sndWaterSplashes );
+        m_sndWaterSplashes = nullptr;
+    }
 
-	BaseClass::StopLoopingSounds();
+    BaseClass::StopLoopingSounds();
 }
 
 //-----------------------------------------------------------------------------
@@ -2276,45 +2161,44 @@ void CZMPlayer::StopLoopingSounds( void )
 //-----------------------------------------------------------------------------
 void CZMPlayer::Splash()
 {
-	CEffectData data;
-	data.m_fFlags = 0;
-	data.m_vOrigin = GetAbsOrigin();
-	data.m_vNormal = Vector( 0, 0, 1 );
-	data.m_vAngles = QAngle( 0, 0, 0 );
-	
-	if ( GetWaterType() & CONTENTS_SLIME )
-	{
-		data.m_fFlags |= FX_WATER_IN_SLIME;
-	}
+    CEffectData data;
+    data.m_fFlags = 0;
+    data.m_vOrigin = GetAbsOrigin();
+    data.m_vNormal = Vector( 0, 0, 1 );
+    data.m_vAngles = QAngle( 0, 0, 0 );
 
-	float flSpeed = GetAbsVelocity().Length();
-	if ( flSpeed < 300.0f )
-	{
-		data.m_flScale = random->RandomFloat( 10, 12 );
-		DispatchEffect( "waterripple", data );
-	}
-	else
-	{
-		data.m_flScale = random->RandomFloat( 6, 8 );
-		DispatchEffect( "watersplash", data );
-	}
+    if ( GetWaterType() & CONTENTS_SLIME )
+    {
+        data.m_fFlags |= FX_WATER_IN_SLIME;
+    }
+
+    float flSpeed = GetAbsVelocity().Length();
+    if ( flSpeed < 300.0f )
+    {
+        data.m_flScale = random->RandomFloat( 10, 12 );
+        DispatchEffect( "waterripple", data );
+    }
+    else
+    {
+        data.m_flScale = random->RandomFloat( 6, 8 );
+        DispatchEffect( "watersplash", data );
+    }
 }
-
 
 CZMBaseWeapon* CZMPlayer::GetWeaponOfHighestSlot() const
 {
     CZMBaseWeapon* pWep = nullptr;
 
-    if ( (pWep = GetWeaponOfSlot( ZMWEAPONSLOT_LARGE )) != nullptr )
+    if ( ( pWep = GetWeaponOfSlot( ZMWEAPONSLOT_LARGE ) ) != nullptr )
         return pWep;
 
-    if ( (pWep = GetWeaponOfSlot( ZMWEAPONSLOT_SIDEARM )) != nullptr )
+    if ( ( pWep = GetWeaponOfSlot( ZMWEAPONSLOT_SIDEARM ) ) != nullptr )
         return pWep;
 
-    if ( (pWep = GetWeaponOfSlot( ZMWEAPONSLOT_MELEE )) != nullptr )
+    if ( ( pWep = GetWeaponOfSlot( ZMWEAPONSLOT_MELEE ) ) != nullptr )
         return pWep;
 
-    if ( (pWep = GetWeaponOfSlot( ZMWEAPONSLOT_EQUIPMENT )) != nullptr )
+    if ( ( pWep = GetWeaponOfSlot( ZMWEAPONSLOT_EQUIPMENT ) ) != nullptr )
         return pWep;
 
     // Just default to fists.
@@ -2324,13 +2208,12 @@ CZMBaseWeapon* CZMPlayer::GetWeaponOfHighestSlot() const
 CZMBaseWeapon* CZMPlayer::GetWeaponOfSlot( int slot ) const
 {
     // You can search for multiple slots.
-    if ( !(GetWeaponSlotFlags() & slot) )
+    if ( !( GetWeaponSlotFlags() & slot ) )
         return nullptr;
-
 
     CZMBaseWeapon* pWep;
 
-    for ( int i = 0; i < MAX_WEAPONS; i++ ) 
+    for ( int i = 0; i < MAX_WEAPONS; i++ )
     {
         pWep = ToZMBaseWeapon( m_hMyWeapons[i].Get() );
 
@@ -2377,27 +2260,23 @@ int CZMPlayer::ShouldTransmit( const CCheckTransmitInfo* pInfo )
         return FL_EDICT_ALWAYS;
     }
 
-
     if ( IsEffectActive( EF_NODRAW ) )
         return FL_EDICT_DONTSEND;
-
 
     // Don't send observers at all.
     // The player doesn't get switched fast enough to warrant this.
     if ( IsObserver()
-    /*&&  (gpGlobals->curtime - m_flDeathTime) > 0.5f
-    &&  m_lifeState == LIFE_DEAD && (gpGlobals->curtime - m_flDeathAnimTime) > 0.5f*/ )
+        /*&&  (gpGlobals->curtime - m_flDeathTime) > 0.5f
+    &&  m_lifeState == LIFE_DEAD && (gpGlobals->curtime - m_flDeathAnimTime) > 0.5f*/
+    )
     {
         return FL_EDICT_DONTSEND;
     }
-
-
 
     CZMPlayer* pRecipientPlayer = static_cast<CZMPlayer*>( CBaseEntity::Instance( pInfo->m_pClientEnt ) );
 
     if ( !pRecipientPlayer )
         return FL_EDICT_DONTSEND;
-
 
     if ( IsZM() )
     {
@@ -2407,7 +2286,6 @@ int CZMPlayer::ShouldTransmit( const CCheckTransmitInfo* pInfo )
             return FL_EDICT_DONTSEND;
         }
     }
-
 
     return CBaseEntity::ShouldTransmit( pInfo );
 }
@@ -2434,7 +2312,7 @@ void CZMPlayer::State_Enter_OBSERVER_MODE()
     int observerMode = m_iObserverLastMode;
     if ( IsNetClient() )
     {
-        const char *pIdealMode = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_spec_mode" );
+        const char* pIdealMode = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_spec_mode" );
         if ( pIdealMode )
         {
             observerMode = atoi( pIdealMode );
@@ -2461,77 +2339,76 @@ void CZMPlayer::State_PreThink_OBSERVER_MODE()
     Assert( pl.deadflag );
 }
 
-
 void CZMPlayer::State_Enter_ACTIVE()
 {
     SetMoveType( MOVETYPE_WALK );
-    
+
     // md 8/15/07 - They'll get set back to solid when they actually respawn. If we set them solid now and mp_forcerespawn
     // is false, then they'll be spectating but blocking live players from moving.
     // RemoveSolidFlags( FSOLID_NOT_SOLID );
-    
+
     m_Local.m_iHideHUD = 0;
 }
 
-
 void CZMPlayer::State_PreThink_ACTIVE()
 {
-    //we don't really need to do anything here. 
+    //we don't really need to do anything here.
     //This state_prethink structure came over from CS:S and was doing an assert check that fails the way hl2dm handles death
-
 
     UpdateLastKnownArea();
 }
 
 void CZMPlayer::UpdateClientData()
 {
-	if (m_DmgTake || m_DmgSave || m_bitsHUDDamage != m_bitsDamageType)
-	{
-		// Comes from inside me if not set
-		Vector damageOrigin = GetLocalOrigin();
-		// send "damage" message
-		// causes screen to flash, and pain compass to show direction of damage
-		damageOrigin = m_DmgOrigin;
+    if ( m_DmgTake || m_DmgSave || m_bitsHUDDamage != m_bitsDamageType )
+    {
+        // Comes from inside me if not set
+        Vector damageOrigin = GetLocalOrigin();
+        // send "damage" message
+        // causes screen to flash, and pain compass to show direction of damage
+        damageOrigin = m_DmgOrigin;
 
-		// only send down damage type that have hud art
-		int iShowHudDamage = g_pGameRules->Damage_GetShowOnHud();
-		int visibleDamageBits = m_bitsDamageType & iShowHudDamage;
+        // only send down damage type that have hud art
+        int iShowHudDamage = g_pGameRules->Damage_GetShowOnHud();
+        int visibleDamageBits = m_bitsDamageType & iShowHudDamage;
 
-		m_DmgTake = clamp( m_DmgTake, 0, 255 );
-		m_DmgSave = clamp( m_DmgSave, 0, 255 );
+        m_DmgTake = clamp( m_DmgTake, 0, 255 );
+        m_DmgSave = clamp( m_DmgSave, 0, 255 );
 
-		// If we're poisoned, but it wasn't this frame, don't send the indicator
-		// Without this check, any damage that occured to the player while they were
-		// recovering from a poison bite would register as poisonous as well and flash
-		// the whole screen! -- jdw
-		if ( visibleDamageBits & DMG_POISON )
-		{
-			float flLastPoisonedDelta = gpGlobals->curtime - m_tbdPrev;
-			if ( flLastPoisonedDelta > 0.1f )
-			{
-				visibleDamageBits &= ~DMG_POISON;
-			}
-		}
+        // If we're poisoned, but it wasn't this frame, don't send the indicator
+        // Without this check, any damage that occured to the player while they were
+        // recovering from a poison bite would register as poisonous as well and flash
+        // the whole screen! -- jdw
+        if ( visibleDamageBits & DMG_POISON )
+        {
+            float flLastPoisonedDelta = gpGlobals->curtime - m_tbdPrev;
+            if ( flLastPoisonedDelta > 0.1f )
+            {
+                visibleDamageBits &= ~DMG_POISON;
+            }
+        }
 
-		CSingleUserRecipientFilter user( this );
-		user.MakeReliable();
-		UserMessageBegin( user, "Damage" );
-			WRITE_BYTE( m_DmgSave );
-			WRITE_BYTE( m_DmgTake );
-			WRITE_LONG( visibleDamageBits );
-			WRITE_FLOAT( damageOrigin.x );	//BUG: Should be fixed point (to hud) not floats
-			WRITE_FLOAT( damageOrigin.y );	//BUG: However, the HUD does _not_ implement bitfield messages (yet)
-			WRITE_FLOAT( damageOrigin.z );	//BUG: We use WRITE_VEC3COORD for everything else
-		MessageEnd();
-	
-		m_DmgTake = 0;
-		m_DmgSave = 0;
-		m_bitsHUDDamage = m_bitsDamageType;
-		
-		// Clear off non-time-based damage indicators
-		int iTimeBasedDamage = g_pGameRules->Damage_GetTimeBased();
-		m_bitsDamageType &= iTimeBasedDamage;
-	}
+        CSingleUserRecipientFilter user( this );
+        user.MakeReliable();
+        UserMessageBegin( user, "Damage" );
+        {
+            WRITE_BYTE( m_DmgSave );
+            WRITE_BYTE( m_DmgTake );
+            WRITE_LONG( visibleDamageBits );
+            WRITE_FLOAT( damageOrigin.x ); //BUG: Should be fixed point (to hud) not floats
+            WRITE_FLOAT( damageOrigin.y ); //BUG: However, the HUD does _not_ implement bitfield messages (yet)
+            WRITE_FLOAT( damageOrigin.z ); //BUG: We use WRITE_VEC3COORD for everything else
+        }
+        MessageEnd();
+
+        m_DmgTake = 0;
+        m_DmgSave = 0;
+        m_bitsHUDDamage = m_bitsDamageType;
+
+        // Clear off non-time-based damage indicators
+        int iTimeBasedDamage = g_pGameRules->Damage_GetTimeBased();
+        m_bitsDamageType &= iTimeBasedDamage;
+    }
 
     //
     // Copy of CBasePlayer::UpdateClientData
@@ -2544,14 +2421,12 @@ void CZMPlayer::UpdateClientData()
     // Update all the items
     for ( int i = 0; i < WeaponCount(); i++ )
     {
-        if ( GetWeapon(i) )  // each item updates it's successors
-            GetWeapon(i)->UpdateClientData( this );
+        if ( GetWeapon( i ) )  // each item updates it's successors
+            GetWeapon( i )->UpdateClientData( this );
     }
 
     // update the client with our poison state
-    m_Local.m_bPoisoned =   ( m_bitsDamageType & DMG_POISON ) 
-                        &&  ( m_nPoisonDmg > m_nPoisonRestored ) 
-                        &&  ( GetHealth() < GetMaxHealth() );
+    m_Local.m_bPoisoned = ( m_bitsDamageType & DMG_POISON ) && ( m_nPoisonDmg > m_nPoisonRestored ) && ( GetHealth() < GetMaxHealth() );
 
     /*
     // Check if the bonus progress HUD element should be displayed
@@ -2567,36 +2442,35 @@ void CZMPlayer::UpdateClientData()
 
 void CZMPlayer::ExitLadder()
 {
-	if ( GetMoveType() == MOVETYPE_LADDER )
+    if ( GetMoveType() == MOVETYPE_LADDER )
     {
-	    SetMoveType( MOVETYPE_WALK );
-	    SetMoveCollide( MOVECOLLIDE_DEFAULT );
+        SetMoveType( MOVETYPE_WALK );
+        SetMoveCollide( MOVECOLLIDE_DEFAULT );
     }
 
-	// Remove from ladder
-	m_ZMLocal.m_hLadder.Set( nullptr );
+    // Remove from ladder
+    m_ZMLocal.m_hLadder.Set( nullptr );
 }
 
 surfacedata_t* CZMPlayer::GetLadderSurface( const Vector& origin )
 {
-	extern const char* FuncLadder_GetSurfaceprops( CBaseEntity* pLadderEntity );
+    extern const char* FuncLadder_GetSurfaceprops( CBaseEntity * pLadderEntity );
 
-	CBaseEntity* pLadder = m_ZMLocal.m_hLadder.Get();
-	if ( pLadder )
-	{
-		const char* pszSurfaceprops = FuncLadder_GetSurfaceprops(pLadder);
-		// get ladder material from func_ladder
-		return physprops->GetSurfaceData( physprops->GetSurfaceIndex( pszSurfaceprops ) );
-
-	}
-	return BaseClass::GetLadderSurface(origin);
+    CBaseEntity* pLadder = m_ZMLocal.m_hLadder.Get();
+    if ( pLadder )
+    {
+        const char* pszSurfaceprops = FuncLadder_GetSurfaceprops( pLadder );
+        // get ladder material from func_ladder
+        return physprops->GetSurfaceData( physprops->GetSurfaceIndex( pszSurfaceprops ) );
+    }
+    return BaseClass::GetLadderSurface( origin );
 }
 
 int CZMPlayer::GetZMCommandInterruptFlags() const
 {
     const char* val = engine->GetClientConVarValue( entindex(), "zm_cl_zmunitcommandinterrupt" );
 
-    if ( !val || !(*val) )
+    if ( !val || !( *val ) )
         return 0;
 
     return atoi( val );
@@ -2609,7 +2483,7 @@ ZombieCommandStyle_t CZMPlayer::GetZMCommandStyle() const
 {
     const char* val = engine->GetClientConVarValue( entindex(), "zm_cl_zmcontrolstyle" );
 
-    if ( !val || !(*val) )
+    if ( !val || !( *val ) )
         return ZCOMMANDSTYLE_DEFAULT;
 
     return (ZombieCommandStyle_t)atoi( val );
@@ -2623,10 +2497,7 @@ void CZMPlayer::GetMyRecipientFilter( CRecipientFilter& filter ) const
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
     {
         CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
-        if (pPlayer
-            &&  pPlayer->IsObserver()
-            &&  pPlayer->GetObserverMode() == OBS_MODE_IN_EYE
-            &&  pPlayer->GetObserverTarget() == this)
+        if ( pPlayer && pPlayer->IsObserver() && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE && pPlayer->GetObserverTarget() == this )
         {
             filter.AddRecipient( pPlayer );
         }

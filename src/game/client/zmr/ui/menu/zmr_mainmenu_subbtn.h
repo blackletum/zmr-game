@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "zmr_mainmenu_basebtn.h"
-
 
 class CZMMainMenu;
 
@@ -16,11 +14,9 @@ public:
     CZMMainMenuSubButton( vgui::Panel* pParent, const char* name );
     ~CZMMainMenuSubButton();
 
-
     virtual void Paint() override;
 
     virtual void FireActionSignal() override;
-
 
     void FadeIn( float fade );
     void FadeOut( float fade );

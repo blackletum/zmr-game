@@ -5,16 +5,14 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define PIPEBOMB_MODEL "models/weapons/w_pipebomb.mdl"
 
-#define PIPEBOMB_MODEL      "models/weapons/w_pipebomb.mdl"
-
-#define RINGTONE_SND        "Weapon_Pipebomb_ZM.Ringtone"
+#define RINGTONE_SND "Weapon_Pipebomb_ZM.Ringtone"
 
 class CZMProjectilePipebomb : public CZMBaseProjectile
 {
 public:
     DECLARE_CLASS( CZMProjectilePipebomb, CZMBaseProjectile );
-
 
     CZMProjectilePipebomb();
     ~CZMProjectilePipebomb();
@@ -30,7 +28,6 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( grenade_pipebomb, CZMProjectilePipebomb );
-
 
 CZMProjectilePipebomb::CZMProjectilePipebomb()
 {

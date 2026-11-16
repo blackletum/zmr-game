@@ -5,16 +5,13 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_zombie_threat_investigation_dist( "zm_sv_zombie_threat_investigation_maxdist", "700" );
-
 
 CZombieCombatSchedule::CZombieCombatSchedule()
 {
     m_vecFaceTowards = vec3_origin;
 
     m_pChaseSched = new CZombieChaseSchedule;
-
 
     m_hLastEnemy.Set( nullptr );
     m_flLastAlertSoundTime = 0.0f;
@@ -54,8 +51,6 @@ void CZombieCombatSchedule::OnUpdate()
             return;
     }
 
-
-        
     bool bCanMove = pOuter->IsBusy() != NPCR::RES_YES;
 
     if ( bCanMove )
@@ -71,7 +66,6 @@ void CZombieCombatSchedule::OnUpdate()
             }
         }
 
-
         // If we have a path, use that instead.
         if ( m_Path.IsValid() )
         {
@@ -85,7 +79,6 @@ void CZombieCombatSchedule::OnUpdate()
             m_Path.Invalidate();
         }
     }
-
 
     // Check for any enemies we might see.
     if ( !m_NextEnemyScan.HasStarted() || m_NextEnemyScan.IsElapsed() )
@@ -112,7 +105,7 @@ void CZombieCombatSchedule::OnUpdate()
                 // Don't spam alert sound if we recently played it.
                 float quietTime = pLastEnemy == pEnemy ? 12.0f : 5.0f;
 
-                if ( (m_flLastAlertSoundTime+quietTime) < gpGlobals->curtime )
+                if ( ( m_flLastAlertSoundTime + quietTime ) < gpGlobals->curtime )
                 {
                     pOuter->AlertSound();
 
@@ -122,9 +115,7 @@ void CZombieCombatSchedule::OnUpdate()
                 pOuter->RemoveSpawnFlags( SF_NPC_GAG );
             }
 
-
             m_hLastEnemy.Set( pEnemy );
-                
 
             Intercept( m_pChaseSched, "We see a potential enemy!" );
             return;
@@ -170,14 +161,12 @@ void CZombieCombatSchedule::OnHeardSound( CSound* pSound )
     if ( !pOuter->GetEnemy() && ShouldCareAboutThreat() && pSound->IsSoundType( SOUND_COMBAT | SOUND_PLAYER ) )
     {
         const Vector sndOrigin = pSound->GetSoundReactOrigin();
-            
-            
-            
+
         bool bFaceSound =
             // We should be able to see that location, just turn around.
             pOuter->GetSenses()->CanSee( sndOrigin )
             // If we can't see it, and we're in offensive mode, try moving there.
-        ||  (pOuter->GetZombieMode() != ZOMBIEMODE_OFFENSIVE || !GotoThreatPosition( sndOrigin ));
+            || ( pOuter->GetZombieMode() != ZOMBIEMODE_OFFENSIVE || !GotoThreatPosition( sndOrigin ) );
 
         if ( bFaceSound )
         {
@@ -224,17 +213,13 @@ bool CZombieCombatSchedule::GotoThreatPosition( const Vector& vecEnd )
     if ( !m_NextMove.IsElapsed() )
         return false;
 
-
     CZMBaseZombie* pOuter = GetOuter();
-
 
     // Don't bother investigating if we're moving right now.
     if ( pOuter->IsMoving() )
         return false;
 
-
     const Vector vecStart = pOuter->GetAbsOrigin();
-
 
     float flInvestigationDist = zm_sv_zombie_threat_investigation_dist.GetFloat();
 
@@ -246,18 +231,14 @@ bool CZombieCombatSchedule::GotoThreatPosition( const Vector& vecEnd )
         return false;
     }
 
-
-
     CNavArea* start = TheNavMesh->GetNearestNavArea( vecStart, true, 10000.0f, true );
     CNavArea* goal = TheNavMesh->GetNearestNavArea( vecEnd, true, 10000.0f, true );
-
 
     m_PathCost = *pOuter->GetPathCost();
     m_PathCost.SetStepHeight( pOuter->GetMotor()->GetStepHeight() );
 
     m_PathCost.SetStartPos( vecStart, start );
     m_PathCost.SetGoalPos( vecEnd, goal );
-
 
     m_Path.Compute( vecStart, vecEnd, start, goal, m_PathCost );
     if ( !m_Path.IsValid() )
@@ -267,14 +248,13 @@ bool CZombieCombatSchedule::GotoThreatPosition( const Vector& vecEnd )
         return false;
     }
 
-
     float flPathLength = m_Path.ComputeLength();
 
     if ( flPathLength > flInvestigationDist )
     {
         if ( IsDebugging() )
             Msg( "Investigation path for %i is too long! (%.1f)\n", pOuter->entindex(), flPathLength );
-            
+
         m_Path.Invalidate();
 
         // Don't attempt this path again for a while, it sounds expensive.
@@ -283,24 +263,19 @@ bool CZombieCombatSchedule::GotoThreatPosition( const Vector& vecEnd )
         return false;
     }
 
-
     pOuter->SetCurrentPath( &m_Path );
 
     // We don't need to get too close
     m_Path.SetGoalTolerance( 72.0f );
 
-
-
     if ( IsDebugging() )
         Msg( "Moving zombie %i towards sound.\n", pOuter->entindex() );
-
 
     m_FaceTimer.Invalidate();
 
     // Don't recompute this path again for a while.
     m_NextMove.Start( 2.0f );
     m_NextThreat.Start( 8.0f );
-
 
     return true;
 }
@@ -329,58 +304,50 @@ CBaseEntity* CZombieCombatSchedule::EvaluateEnemies()
 
     const bool bMoving = pOuter->GetMotor()->IsMoving();
 
-    pOuter->GetSenses()->IterateKnown( [ & ]( const NPCR::KnownEntity* pKnown )
-    {
-        auto* pEnt = pKnown->GetEntity();
-        if ( !pEnt ) return false;
-
-        if ( !pOuter->IsEnemy( pEnt ) || pOuter->ShouldChase( pEnt ) == NPCR::RES_NO )
+    pOuter->GetSenses()->IterateKnown( [&]( const NPCR::KnownEntity* pKnown )
         {
+            auto* pEnt = pKnown->GetEntity();
+            if ( !pEnt ) return false;
+
+            if ( !pOuter->IsEnemy( pEnt ) || pOuter->ShouldChase( pEnt ) == NPCR::RES_NO )
+            {
+                return false;
+            }
+
+            float distSqr = pEnt->GetAbsOrigin().DistToSqr( vecMyPos );
+
+            // Pick closest.
+            // The closest one must be seen
+            // or we heard them recently
+            // or they are within attack range.
+            float flLastSensed = gpGlobals->curtime - pKnown->LastSensedTime();
+            if ( pKnown->CanSee() || flLastSensed < 0.5f || pOuter->HasConditionsForClawAttack( pEnt ) )
+            {
+                if ( !pClosest || distSqr < flClosestDistSqr )
+                {
+                    pClosest = pEnt;
+                    flClosestDistSqr = distSqr;
+                }
+            }
+
+            // Pick newest acquired.
+            if ( pKnown->AcquiredTime() > flAcquiredTime )
+            {
+                if ( !pNewestAcquiredEnemy || distSqr < flAcquiredDistSqr )
+                {
+                    pNewestAcquiredEnemy = pEnt;
+                    flAcquiredDistSqr = distSqr;
+                    flAcquiredTime = pKnown->AcquiredTime();
+                }
+            }
+
             return false;
-        }
-
-
-        float distSqr = pEnt->GetAbsOrigin().DistToSqr( vecMyPos );
-
-        // Pick closest.
-        // The closest one must be seen
-        // or we heard them recently
-        // or they are within attack range.
-        float flLastSensed = gpGlobals->curtime - pKnown->LastSensedTime();
-        if ( pKnown->CanSee() || flLastSensed < 0.5f || pOuter->HasConditionsForClawAttack( pEnt ) )
-        {
-            if ( !pClosest || distSqr < flClosestDistSqr )
-            {
-                pClosest = pEnt;
-                flClosestDistSqr = distSqr;
-            }
-        }
-
-
-        // Pick newest acquired.
-        if ( pKnown->AcquiredTime() > flAcquiredTime )
-        {
-            if ( !pNewestAcquiredEnemy || distSqr < flAcquiredDistSqr )
-            {
-                pNewestAcquiredEnemy = pEnt;
-                flAcquiredDistSqr = distSqr;
-                flAcquiredTime = pKnown->AcquiredTime();
-            }
-        }
-
-
-
-        return false;
-    } );
-
+        } );
 
     // The zombie may only have a free will if:
-    // it's allowed to have one or 
+    // it's allowed to have one or
     // it's not moving or it can attack somebody!
-    bool bHasFreeWill = pOuter->GetMyCommandStyle() != ZCOMMANDSTYLE_OLD
-                    ||  !bMoving
-                    ||  (pClosest && pOuter->HasConditionsForClawAttack( pClosest ));
-
+    bool bHasFreeWill = pOuter->GetMyCommandStyle() != ZCOMMANDSTYLE_OLD || !bMoving || ( pClosest && pOuter->HasConditionsForClawAttack( pClosest ) );
 
     if ( bHasFreeWill )
     {

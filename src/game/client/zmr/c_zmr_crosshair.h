@@ -1,8 +1,5 @@
 #pragma once
 
-
-
-
 //
 abstract_class CZMCrosshairPartMat
 {
@@ -14,7 +11,6 @@ protected:
 
 private:
     int m_nTexId;
-
 };
 //
 
@@ -31,15 +27,13 @@ public:
     virtual void Draw() = 0;
     virtual void GetDrawPosition( float& flPosX, float& flPosY ) const;
 
-
     float GetOffsetFromCenter() const { return m_flOffsetFromCenter; }
     // Width = Y, Length = X
-    float GetOutlineWidth() const { return m_flOutlineSize; } 
+    float GetOutlineWidth() const { return m_flOutlineSize; }
     float GetDotSize() const { return m_flDotSize; }
-    
+
     const Color& GetMainColor() const;
     const Color& GetOutlineColor() const;
-
 
     // Set to -1, -1 to disable override
     void SetOverrideCenter( float x, float y )
@@ -48,15 +42,12 @@ public:
         m_flOverrideCenterY = y;
     }
 
-
     bool DisplayInMenu() const { return m_bDisplayInMenu; }
     const char* GetName() const { return m_szName; }
     const char* GetMenuName() const { return m_szMenuName; }
 
 protected:
     virtual void DrawDot();
-
-
 
     float m_flOverrideCenterX;
     float m_flOverrideCenterY;
@@ -79,10 +70,8 @@ class CZMEmptyCrosshair : public CZMBaseCrosshair
 public:
     virtual void WriteValues( KeyValues* kv ) const override;
     virtual void Draw() override;
-
 };
 //
-
 
 //
 class CZMBaseDynamicCrosshair : public CZMBaseCrosshair
@@ -90,10 +79,8 @@ class CZMBaseDynamicCrosshair : public CZMBaseCrosshair
 public:
     CZMBaseDynamicCrosshair();
 
-
     virtual void LoadValues( KeyValues* kv ) override;
     virtual void WriteValues( KeyValues* kv ) const override;
-
 
     virtual float GetMaxDynamicMove() const { return m_flDynamicMove; }
     virtual float GetDynamicMoveScale() const = 0;
@@ -107,7 +94,6 @@ protected:
 };
 //
 
-
 //
 class CZMDotCrosshair : public CZMBaseCrosshair
 {
@@ -118,26 +104,22 @@ public:
 };
 //
 
-
 //
 class CZMMaterialCrosshair : public CZMBaseCrosshair
 {
 public:
     CZMMaterialCrosshair();
 
-
     virtual void LoadValues( KeyValues* kv ) override;
     virtual void WriteValues( KeyValues* kv ) const override;
 
     virtual void Draw() override;
-
 
 protected:
     int m_nTexMat0Id;
     char m_szTexture[192];
 };
 //
-
 
 //
 class CZMPistolCrosshair : public CZMBaseCrosshair
@@ -149,7 +131,6 @@ public:
 };
 //
 
-
 //
 class CZMAccuracyCrosshair : public CZMBaseDynamicCrosshair
 {
@@ -158,7 +139,6 @@ public:
 
     virtual void LoadValues( KeyValues* kv ) override;
     virtual void WriteValues( KeyValues* kv ) const override;
-
 
     virtual void Draw() override;
 
@@ -173,7 +153,6 @@ protected:
 };
 //
 
-
 //
 class CZMCrosshairSystem : private CAutoGameSystem
 {
@@ -182,7 +161,6 @@ public:
 
     virtual bool Init() override;
 
-
     CUtlVector<CZMBaseCrosshair*>* GetCrosshairs() { return &m_vCrosshairs; }
 
     CZMBaseCrosshair* GetCrosshairByName( const char* name ) const;
@@ -190,7 +168,6 @@ public:
     int FindCrosshairByName( const char* name ) const;
 
     void WriteCrosshairsToFile() const;
-
 
     static CZMBaseCrosshair* CreateCrosshairFromData( KeyValues* kv );
 

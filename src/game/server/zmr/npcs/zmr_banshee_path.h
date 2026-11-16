@@ -2,7 +2,6 @@
 
 #include "npcr/npcr_path_follow.h"
 
-
 class CZMBansheeFollowPath : public NPCR::CFollowNavPath
 {
 public:
@@ -13,7 +12,6 @@ public:
 
     virtual bool Compute( const Vector& vecStart, const Vector& vecGoal, CNavArea* pStartArea, CNavArea* pGoalArea, const NPCR::CBasePathCost& cost ) override;
 
-    
     bool CanPotentiallyJumpTo( const Vector& vecStart, const Vector& vecGoal ) const;
 
     // Returns minimum jump height in order to jump over obstacles.

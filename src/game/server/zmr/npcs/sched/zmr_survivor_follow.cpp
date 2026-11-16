@@ -5,7 +5,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 CSurvivorFollowSchedule::CSurvivorFollowSchedule()
 {
 }
@@ -33,17 +32,14 @@ void CSurvivorFollowSchedule::OnUpdate()
         return;
     }
 
-
     auto* pFollow = m_hFollowTarget.Get();
 
-
-    if ( (pFollow && !IsValidFollowTarget( pFollow )) || m_NextFollowTarget.IsElapsed() )
+    if ( ( pFollow && !IsValidFollowTarget( pFollow ) ) || m_NextFollowTarget.IsElapsed() )
     {
         NextFollow();
 
         pFollow = m_hFollowTarget.Get();
     }
-
 
     bool bBusy = pOuter->IsBusy() == NPCR::RES_YES;
 
@@ -77,7 +73,7 @@ NPCR::QueryResult_t CSurvivorFollowSchedule::ShouldChase( CBaseEntity* pEnemy ) 
 
 //void CSurvivorFollowSchedule::OnMoveSuccess( NPCR::CBaseNavPath* pPath )
 //{
-//        
+//
 //}
 
 bool CSurvivorFollowSchedule::IsValidFollowTarget( CBasePlayer* pPlayer, bool bCheckLoop ) const
@@ -112,8 +108,7 @@ bool CSurvivorFollowSchedule::IsValidFollowTarget( CBasePlayer* pPlayer, bool bC
         {
             break;
         }
-    }
-    while ( pLoop != nullptr );
+    } while ( pLoop != nullptr );
 
     return true;
 }
@@ -124,18 +119,17 @@ void CSurvivorFollowSchedule::NextFollow()
 
     float flNextCheck = 1.0f;
 
-
     auto* pLastFollow = m_hFollowTarget.Get();
     bool bWasValid = pLastFollow ? IsValidFollowTarget( pLastFollow, true ) : false;
 
     auto* pFollow = FindSurvivorToFollow();
 
-    if ( (pLastFollow != pFollow || !m_Path.IsValid()) && pFollow )
+    if ( ( pLastFollow != pFollow || !m_Path.IsValid() ) && pFollow )
     {
         StartFollow( pFollow );
 
         //float dist = pOuter->GetAbsOrigin().DistTo( pFollow->GetAbsOrigin() );
-            
+
         flNextCheck = 15.0f;
     }
     else if ( !bWasValid )
@@ -150,7 +144,6 @@ void CSurvivorFollowSchedule::StartFollow( CBasePlayer* pFollow )
 {
     auto* pOuter = GetOuter();
 
-
     m_hFollowTarget.Set( pFollow );
     pOuter->SetFollowTarget( pFollow );
 
@@ -163,10 +156,10 @@ bool CSurvivorFollowSchedule::ShouldMoveCloser( CBasePlayer* pFollow ) const
     auto* pOuter = GetOuter();
 
     float flDistSqr = pOuter->GetAbsOrigin().DistToSqr( pFollow->GetAbsOrigin() );
-        
-    //if 
+
+    //if
     {
-        return ( flDistSqr > (128.0f * 128.0f));
+        return ( flDistSqr > ( 128.0f * 128.0f ) );
     }
 }
 
@@ -190,7 +183,6 @@ CBasePlayer* CSurvivorFollowSchedule::FindSurvivorToFollow( CBasePlayer* pIgnore
         if ( !bAllowBot && pPlayer->IsBot() ) continue;
 
         if ( !IsValidFollowTarget( pPlayer, true ) ) continue;
-
 
         float dist = pPlayer->GetAbsOrigin().DistToSqr( mypos );
         if ( dist < flClosestDist )

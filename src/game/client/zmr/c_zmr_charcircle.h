@@ -1,6 +1,5 @@
 #pragma once
 
-
 class CZMCharCircle
 {
 public:
@@ -13,7 +12,7 @@ public:
     void SetColor( float r, float g, float b );
     void SetAlpha( float a );
     void SetYaw( float yaw );
-    
+
 protected:
     float m_flSize;
     Vector m_vecOrigin;

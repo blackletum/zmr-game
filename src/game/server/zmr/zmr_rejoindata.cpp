@@ -6,10 +6,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_rejoindata( "zm_sv_debug_rejoindata", "0" );
-
-
 
 //
 CZMRejoinData::CZMRejoinData()
@@ -33,7 +30,7 @@ bool CZMRejoinData::ShouldKeepData( bool bMapChange, time_t leavetime )
 
         if ( zm_sv_debug_rejoindata.GetBool() )
         {
-            int timeleft = (expire > 0 && exp > curtime) ? (int)(exp - curtime) : -1;
+            int timeleft = ( expire > 0 && exp > curtime ) ? (int)( exp - curtime ) : -1;
 
             DevMsg( "Expiring in %i seconds...\n", timeleft );
         }
@@ -48,8 +45,6 @@ bool CZMRejoinData::ShouldKeepData( bool bMapChange, time_t leavetime )
     return true;
 }
 //
-
-
 
 //
 CZMRejoinPlayer::CZMRejoinPlayer( CSteamID id ) : m_SteamID( id )
@@ -72,13 +67,13 @@ bool CZMRejoinPlayer::IsSamePlayer( const CSteamID& id )
 void CZMRejoinPlayer::OnPlayerJoin( CZMPlayer* pPlayer )
 {
     time_t leavetime = GetLeaveTime();
-    ForEachData( [ pPlayer, &leavetime ]( CZMRejoinData* pData )
-    {
-        if ( pData->ShouldKeepData( false, leavetime ) )
+    ForEachData( [pPlayer, &leavetime]( CZMRejoinData* pData )
         {
-            pData->RestoreData( pPlayer );
-        }
-    } );
+            if ( pData->ShouldKeepData( false, leavetime ) )
+            {
+                pData->RestoreData( pPlayer );
+            }
+        } );
 }
 
 void CZMRejoinPlayer::CheckDataExpiration( bool bMapChange )
@@ -102,8 +97,6 @@ int CZMRejoinPlayer::AddData( CZMRejoinData* pData )
 }
 //
 
-
-
 //
 CZMRejoinListener::CZMRejoinListener()
 {
@@ -114,7 +107,6 @@ CZMRejoinListener::~CZMRejoinListener()
 {
 }
 //
-
 
 //
 CZMRejoinDataSystem::CZMRejoinDataSystem()
@@ -147,7 +139,6 @@ void CZMRejoinDataSystem::OnPlayerJoin( CZMPlayer* pPlayer )
 {
     if ( pPlayer->IsBot() ) return;
 
-
     CSteamID id;
     if ( !pPlayer->GetSteamID( &id ) )
     {
@@ -155,13 +146,10 @@ void CZMRejoinDataSystem::OnPlayerJoin( CZMPlayer* pPlayer )
         return;
     }
 
-
     if ( zm_sv_debug_rejoindata.GetBool() )
     {
         DevMsg( "Rejoin - Player %i has joined.\n", pPlayer->entindex() );
     }
-
-
 
     int i = FindPlayer( id );
 
@@ -178,21 +166,18 @@ void CZMRejoinDataSystem::OnPlayerLeave( CZMPlayer* pPlayer )
 {
     if ( pPlayer->IsBot() ) return;
 
-
     if ( zm_sv_debug_rejoindata.GetBool() )
     {
         DevMsg( "Rejoin - Player %i has left.\n", pPlayer->entindex() );
     }
 
+    ForEachListener( [pPlayer, this]( CZMRejoinListener* pListener )
+        {
+            CZMRejoinData* pData = pListener->OnPlayerLeave( pPlayer );
+            if ( !pData ) return;
 
-    ForEachListener( [ pPlayer, this ]( CZMRejoinListener* pListener )
-    {
-        CZMRejoinData* pData = pListener->OnPlayerLeave( pPlayer );
-        if ( !pData ) return;
-
-
-        SaveData( pPlayer, pData );
-    } );
+            SaveData( pPlayer, pData );
+        } );
 }
 
 void CZMRejoinDataSystem::OnLevelShutdown()
@@ -204,14 +189,12 @@ void CZMRejoinDataSystem::SaveData( CZMPlayer* pPlayer, CZMRejoinData* pData )
 {
     if ( pPlayer->IsBot() ) return;
 
-
     CSteamID id;
     if ( !pPlayer->GetSteamID( &id ) )
     {
         DevMsg( "Rejoin - Player has no Steam Id! Can't save data!\n" );
         return;
     }
-
 
     int i = FindPlayer( id );
     if ( i <= -1 )
@@ -220,7 +203,6 @@ void CZMRejoinDataSystem::SaveData( CZMPlayer* pPlayer, CZMRejoinData* pData )
     }
 
     m_vPlayerData[i]->AddData( pData );
-
 
     if ( zm_sv_debug_rejoindata.GetBool() )
     {
@@ -234,15 +216,15 @@ const CZMRejoinData* CZMRejoinDataSystem::FindPlayerData( CZMPlayer* pPlayer, co
     if ( i == -1 )
         return nullptr;
 
-
     CZMRejoinData* pOut = nullptr;
-    m_vPlayerData[i]->ForEachData( [ &pOut, pszDataName ]( CZMRejoinData* pData ) {
-        if ( Q_strcmp( pszDataName, pData->GetDataName() ) == 0 )
+    m_vPlayerData[i]->ForEachData( [&pOut, pszDataName]( CZMRejoinData* pData )
         {
-            pOut = pData;
-            return;
-        }
-    } );
+            if ( Q_strcmp( pszDataName, pData->GetDataName() ) == 0 )
+            {
+                pOut = pData;
+                return;
+            }
+        } );
 
     return pOut;
 }
@@ -305,13 +287,10 @@ void CZMRejoinDataSystem::PrintRejoinData()
         return;
     }
 
-
     time_t curtime;
     time( &curtime );
-    
 
     Msg( "Rejoin data:\n" );
-
 
     for ( int i = 0; i < m_vPlayerData.Count(); i++ )
     {
@@ -319,18 +298,18 @@ void CZMRejoinDataSystem::PrintRejoinData()
 
         Msg( "  Steam ID: %llu | Left: %lld seconds ago\n",
             m_vPlayerData[i]->GetSteamID().ConvertToUint64(),
-            (uint64)(curtime - leavetime) );
+            (uint64)( curtime - leavetime ) );
 
-        m_vPlayerData[i]->ForEachData( [ &leavetime, &curtime ]( CZMRejoinData* pData )
-        {
-            int expire = pData->GetExpirationTime();
-            time_t exp = leavetime + (time_t)expire;
-            int timeleft = (expire > 0 && exp > curtime) ? (int)(exp - curtime) : -1;
+        m_vPlayerData[i]->ForEachData( [&leavetime, &curtime]( CZMRejoinData* pData )
+            {
+                int expire = pData->GetExpirationTime();
+                time_t exp = leavetime + (time_t)expire;
+                int timeleft = ( expire > 0 && exp > curtime ) ? (int)( exp - curtime ) : -1;
 
-            Msg( "    %s | Expires in: %i seconds\n",
-                pData->GetDataName(),
-                timeleft );
-        } );
+                Msg( "    %s | Expires in: %i seconds\n",
+                    pData->GetDataName(),
+                    timeleft );
+            } );
     }
 }
 
@@ -340,7 +319,6 @@ CZMRejoinDataSystem* GetZMRejoinSystem()
     return &s_ZMRejoinSystem;
 }
 //
-
 
 CON_COMMAND( zm_printrejoindata, "" )
 {

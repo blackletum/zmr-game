@@ -5,9 +5,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 int UTIL_CreateClientModel( const char* pszModel );
-
 
 // ZMRTODO: If we ever care enough, we need to re-do this completely.
 // This is not a good way of doing this.
@@ -22,11 +20,9 @@ bool C_ZMHolidayHat::Initialize( C_BaseEntity* pOwner, const char* pszModel )
         return false;
     }
 
-
     AttachToEntity( pOwner );
 
-
-	SetNextClientThink( CLIENT_THINK_NEVER );
+    SetNextClientThink( CLIENT_THINK_NEVER );
 
     return true;
 }

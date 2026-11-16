@@ -1,8 +1,6 @@
 #pragma once
 
-
 //#include "npcr_events.h"
-
 
 enum ZombieCommandType_t : unsigned char;
 
@@ -25,7 +23,6 @@ namespace NPCR
     {
     public:
         EventComponent();
-
 
         // Events
         virtual void OnSpawn() {}
@@ -52,7 +49,6 @@ namespace NPCR
         virtual void OnQueuedCommand( CBasePlayer* pCommander, ZombieCommandType_t com ) {}
         virtual void OnAttacked() {}
 
-
         // Queries
         virtual QueryResult_t IsBusy() const { return RES_NONE; }
         virtual QueryResult_t ShouldTouch( CBaseEntity* pEnt ) const { return RES_NONE; }
@@ -73,23 +69,18 @@ namespace NPCR
         CComponent( CEventDispatcher* pOwner = nullptr, CBaseNPC* pNPC = nullptr );
         virtual ~CComponent();
 
-
         virtual const char* GetComponentName() const { return ""; }
-
 
         CBaseNPC* GetNPC() const;
         virtual CBaseCombatCharacter* GetOuter() const;
 
-
         CComponent* GetFriendComponent() const;
-
 
         virtual void Start() {}
         virtual void Update() {}
 
     private:
-        CEventDispatcher*  GetOwner() const { return m_pOwner; }
-
+        CEventDispatcher* GetOwner() const { return m_pOwner; }
 
         CEventDispatcher* m_pOwner;
         CBaseNPC* m_pNPC;
@@ -109,9 +100,8 @@ namespace NPCR
     abstract_class CEventDispatcher : public CComponent
     {
     public:
-        // Send 
+        // Send
         CEventDispatcher( CEventDispatcher* pOwner = nullptr, CBaseNPC* pNPC = nullptr );
-
 
         template<typename ForEachFunc>
         void ForEachComponent( ForEachFunc func )
@@ -145,7 +135,6 @@ namespace NPCR
         friend class CSchedule;
         friend class CBaseNPC;
 
-
         void AddComponent( CComponent* c );
         void RemoveComponent( CComponent* c );
         int FindComponent( CComponent* c ) const;
@@ -153,18 +142,52 @@ namespace NPCR
         CComponent* NextComponent( CComponent* c ) const;
         CComponent* PreviousComponent( CComponent* c ) const;
 
-
         CUtlVector<CComponent*> m_Components;
+
     public:
+#define COMP_DISPATCH_Q( func )                             \
+    QueryResult_t func() const override                     \
+    {                                                       \
+        return ForEachComponentQuery( []( CComponent* c ) { \
+            return c->func();                               \
+        } );                                                \
+    }
+#define COMP_DISPATCH_Q_1ARG( func, argtype1, arg1 )             \
+    QueryResult_t func( argtype1 arg1 ) const override           \
+    {                                                            \
+        return ForEachComponentQuery( [&arg1]( CComponent* c ) { \
+            return c->func( arg1 );                              \
+        } );                                                     \
+    }
+#define COMP_DISPATCH( func )                   \
+    void func() override                        \
+    {                                           \
+        ForEachComponent( []( CComponent* c ) { \
+            c->func();                          \
+        } );                                    \
+    }
+#define COMP_DISPATCH_1ARG( func, argtype1, arg1 )   \
+    void func( argtype1 arg1 ) override              \
+    {                                                \
+        ForEachComponent( [&arg1]( CComponent* c ) { \
+            c->func( arg1 );                         \
+        } );                                         \
+    }
+#define COMP_DISPATCH_2ARG( func, argtype1, arg1, argtype2, arg2 ) \
+    void func( argtype1 arg1, argtype2 arg2 ) override             \
+    {                                                              \
+        ForEachComponent( [&arg1, &arg2]( CComponent* c ) {        \
+            c->func( arg1, arg2 );                                 \
+        } );                                                       \
+    }
 
-#define COMP_DISPATCH_Q(func)                                   QueryResult_t func() const override { return ForEachComponentQuery( []( CComponent* c ) { return c->func(); } ); }
-#define COMP_DISPATCH_Q_1ARG(func,argtype1,arg1)                QueryResult_t func( argtype1 arg1 ) const override { return ForEachComponentQuery( [ &arg1 ]( CComponent* c ) { return c->func( arg1 ); } ); }
-#define COMP_DISPATCH(func)                                     void func() override { ForEachComponent( []( CComponent* c ) { c->func(); } ); }
-#define COMP_DISPATCH_1ARG(func,argtype1,arg1)                  void func( argtype1 arg1 ) override { ForEachComponent( [ &arg1 ]( CComponent* c ) { c->func( arg1 ); } ); }
-#define COMP_DISPATCH_2ARG(func,argtype1,arg1,argtype2,arg2)    void func( argtype1 arg1, argtype2 arg2 ) override { ForEachComponent( [ &arg1, &arg2 ]( CComponent* c ) { c->func( arg1, arg2 ); } ); }
-
-        void Update() override { ForEachComponent( []( CComponent* c ){ c->Update(); } ); }
-        
+        void Update() override
+        {
+            ForEachComponent( []( CComponent* c )
+                {
+                    c->Update();
+                } );
+        }
 
         // Events
         COMP_DISPATCH( OnSpawn )

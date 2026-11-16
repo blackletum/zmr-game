@@ -2,17 +2,16 @@
 #include "hud_macros.h"
 #include "iclientmode.h"
 
-#include <vgui_controls/Controls.h>
-#include <vgui_controls/AnimationController.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
+#include <vgui_controls/AnimationController.h>
+#include <vgui_controls/Controls.h>
 
-#include "zmr_hud_itemhistory.h"
 #include "weapons/zmr_base.h"
+#include "zmr_hud_itemhistory.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 ConVar zm_cl_itemhistory_draw_time( "zm_cl_itemhistory_draw_time", "3", FCVAR_ARCHIVE, "How long an item is drawn in the history?" );
 ConVar zm_cl_itemhistory_draw_denied_time( "zm_cl_itemhistory_draw_denied_time", "1.5", FCVAR_ARCHIVE, "How long an 'ammo denied' icon is drawn in the history?" );
@@ -21,7 +20,6 @@ DECLARE_HUDELEMENT( CZMHudItemHistory );
 DECLARE_HUD_MESSAGE( CZMHudItemHistory, ItemPickup );
 DECLARE_HUD_MESSAGE( CZMHudItemHistory, AmmoDenied );
 DECLARE_HUD_MESSAGE( CZMHudItemHistory, ZMAmmoPickup );
-
 
 CZMHudItemHistory::CZMHudItemHistory( const char* pszElementName ) : CHudElement( pszElementName ), BaseClass( g_pClientMode->GetViewport(), pszElementName )
 {
@@ -72,7 +70,6 @@ void CZMHudItemHistory::Reset()
     m_iCurrentHistorySlot = 0;
 }
 
-
 float CZMHudItemHistory::GetItemSlotTypeDrawTime( ZMItemHistorySlotType_t type )
 {
     if ( type == HISTSLOT_AMMODENIED )
@@ -103,7 +100,7 @@ void CZMHudItemHistory::AddWeaponToHistory( C_ZMBaseWeapon* pWeapon )
             return;
         }
     }
-    
+
     AddIconToHistory( HISTSLOT_WEAP, iId, pWeapon, 0, nullptr );
 }
 
@@ -111,7 +108,6 @@ void CZMHudItemHistory::AddAmmoToHistory( int iAmmoIndex, int nCount )
 {
     if ( nCount <= 0 )
         return;
-
 
     // Clear out any ammo pickup denied icons, since we can obviously pickup again
     for ( int i = 0; i < m_PickupHistory.Count(); i++ )
@@ -143,19 +139,19 @@ void CZMHudItemHistory::AddAmmoToHistory( int iAmmoIndex, int nCount )
 void CZMHudItemHistory::AddIconToHistory( ZMItemHistorySlotType_t iType, int iId, C_ZMBaseWeapon* pWeapon, int nCount, CHudTexture* pIcon )
 {
     // Check to see if the pic would have to be drawn too high. If so, start again from the bottom
-    if ( (m_flHistoryGap * (m_iCurrentHistorySlot+1)) > GetTall() )
+    if ( ( m_flHistoryGap * ( m_iCurrentHistorySlot + 1 ) ) > GetTall() )
     {
         m_iCurrentHistorySlot = 0;
     }
 
-    if ( m_PickupHistory.Count() < (m_iCurrentHistorySlot + 1) )
+    if ( m_PickupHistory.Count() < ( m_iCurrentHistorySlot + 1 ) )
     {
         m_PickupHistory.EnsureCount( m_iCurrentHistorySlot + 1 );
         m_PickupHistory[m_iCurrentHistorySlot].slotType = HISTSLOT_EMPTY;
     }
 
     auto& freeSlot = m_PickupHistory[m_iCurrentHistorySlot];
-    
+
     if ( freeSlot.slotType != HISTSLOT_EMPTY )
     {
         // Don't override existing pickup icons with denied icons
@@ -164,7 +160,6 @@ void CZMHudItemHistory::AddIconToHistory( ZMItemHistorySlotType_t iType, int iId
             return;
         }
     }
-
 
     freeSlot.iId = iId;
     freeSlot.icon = pIcon;
@@ -213,10 +208,10 @@ void CZMHudItemHistory::Paint()
         {
             continue;
         }
-            
+
         // Check expired
         if ( hist.flDisplayTime <= flCurTime )
-        {  
+        {
             hist.slotType = HISTSLOT_EMPTY;
             CheckClearHistory();
             continue;
@@ -254,7 +249,7 @@ void CZMHudItemHistory::Paint()
             nAmount = 0;
             bUseAmmoFullMsg = true;
             // display as red
-            clr = gHUD.m_clrCaution;	
+            clr = gHUD.m_clrCaution;
             clr[3] = alpha;
 
             break;
@@ -270,7 +265,7 @@ void CZMHudItemHistory::Paint()
             if ( !pWeapon->HasAmmo() )
             {
                 // if the weapon doesn't have ammo, display it as red
-                clr = gHUD.m_clrCaution;	
+                clr = gHUD.m_clrCaution;
                 clr[3] = alpha;
             }
 
@@ -296,9 +291,8 @@ void CZMHudItemHistory::Paint()
         if ( !itemIcon )
             continue;
 
-        int ypos = tall - (m_flHistoryGap * (i + 1));
+        int ypos = tall - ( m_flHistoryGap * ( i + 1 ) );
         int xpos = wide - itemIcon->Width() - m_flIconInset;
-
 
         itemIcon->DrawSelf( xpos, ypos, clr );
 
@@ -339,7 +333,6 @@ void CZMHudItemHistory::MsgFunc_ItemPickup( bf_read& msg )
 
     char szName[64];
     msg.ReadString( szName, sizeof( szName ) );
-
 
     auto* pIcon = gHUD.GetIcon( szName );
     if ( !pIcon )

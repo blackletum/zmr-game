@@ -2,29 +2,26 @@
 #include "hudelement.h"
 #include <vgui_controls/ImagePanel.h>
 
-#include "iclientmode.h"
 #include "baseviewport.h"
-
+#include "iclientmode.h"
 
 #include "c_zmr_player.h"
+#include "c_zmr_util.h"
+#include "npcs/c_zmr_zombiebase.h"
 #include "zmr_gamerules.h"
 #include "zmr_resource_system.h"
-#include "npcs/c_zmr_zombiebase.h"
-#include "c_zmr_util.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
-
 enum// Icon
-{ 
-	ICON_RES,
-	ICON_ZEDS,
+{
+    ICON_RES,
+    ICON_ZEDS,
 
-	NUM_ICONS,
+    NUM_ICONS,
 };
 
 class CZMResourceHud : public CHudElement, public Panel
@@ -63,17 +60,14 @@ private:
 
 DECLARE_HUDELEMENT( CZMResourceHud );
 
-
-CZMResourceHud::CZMResourceHud( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudResource" )
+CZMResourceHud::CZMResourceHud( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudResource" )
 {
     SetPaintBackgroundEnabled( true );
     SetProportional( true );
     HScheme scheme = vgui::scheme()->LoadSchemeFromFile( "resource/ClientScheme.res", "ClientScheme" );
 
-    
     HFont mediumFont = vgui::scheme()->GetIScheme( scheme )->GetFont( "Trebuchet12", true );
     HFont largeFont = vgui::scheme()->GetIScheme( scheme )->GetFont( "Trebuchet16", true );
-
 
     m_pResourcesImage = new ImagePanel( this, "ResourcesImage" );
     m_pResourcesImage->SetImage( vgui::scheme()->GetImage( "miniskull", false ) );
@@ -91,9 +85,8 @@ CZMResourceHud::CZMResourceHud( const char *pElementName ) : CHudElement( pEleme
     m_pPopulationLabel = new Label( this, "PopulationLabel", "000 / 000 (000)" );
     m_pPopulationLabel->SetFont( mediumFont );
     m_pPopulationLabel->SizeToContents();
-    
-    Reset();
 
+    Reset();
 
     m_nTexBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBgId, "zmr_effects/hud_bg_zmres", true, false );
@@ -147,7 +140,6 @@ void CZMResourceHud::OnThink()
     C_ZMPlayer* pPlayer = ToZMPlayer( C_BasePlayer::GetLocalPlayer() );
     if ( !pPlayer ) return;
 
-
     SetVisible( pPlayer->IsZM() );
 
     if ( !IsVisible() ) return;
@@ -165,8 +157,6 @@ void CZMResourceHud::OnThink()
     g_ZMResourceSystem.UpdateState();
 
     float newResPerMin = g_ZMResourceSystem.GetResourcesPerMinute();
-    
-
 
     if ( m_nResCount != newResources )
     {

@@ -1,7 +1,6 @@
 #pragma once
 
-
-class CZMPlayer;
+#include "c_zmr_player.h"
 
 class CZMFlashlightEffect
 {
@@ -9,11 +8,9 @@ public:
     CZMFlashlightEffect( CZMPlayer* pPlayer );
     virtual ~CZMFlashlightEffect();
 
-
     virtual void UpdateLight();
     void TurnOn();
     void TurnOff();
-
 
     float GetFlashlightFov() const;
     float GetFlashlightNearZ() const;
@@ -29,11 +26,10 @@ public:
     ClientShadowHandle_t GetFlashlightHandle() const { return m_FlashlightHandle; }
     bool HasExpensiveOn() const { return GetFlashlightHandle() != CLIENTSHADOW_INVALID_HANDLE; }
 
-
     void SetFlashlightHandle( ClientShadowHandle_t handle );
     void SetRightHandAttachment( int index );
     void PreferExpensive( bool state );
-    
+
 protected:
     void LightOff();
     void LightOffCheap();
@@ -57,13 +53,11 @@ protected:
     // Texture for flashlight
     CTextureReference m_FlashlightTexture;
 
-
     bool m_bPreferExpensive;
     bool m_bDoFade;
     float m_flFadeAlpha;
 
     float m_flMoveFwd;
-
 
     CZMPlayer* m_pPlayer;
 };

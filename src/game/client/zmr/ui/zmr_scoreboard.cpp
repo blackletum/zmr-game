@@ -1,30 +1,30 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
 
+#include "c_playerresource.h"
+#include "c_team.h"
 #include "cbase.h"
 #include "hud.h"
-#include "c_team.h"
-#include "c_playerresource.h"
 
-#include <vgui/IScheme.h>
 #include <vgui/ILocalize.h>
+#include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui/IVGui.h>
 #include <vgui_controls/ImageList.h>
 #include <vgui_controls/SectionedListPanel.h>
 
-#include "voice_status.h"
-#include "vgui_avatarimage.h"
-#include "inputsystem/iinputsystem.h"
 #include "clientmode_shared.h"
+#include "inputsystem/iinputsystem.h"
+#include "vgui_avatarimage.h"
+#include "voice_status.h"
 
-#include "zmr_shareddefs.h"
-#include "zmr_gamerules.h"
 #include "c_zmr_importancesystem.h"
+#include "zmr_gamerules.h"
+#include "zmr_shareddefs.h"
 
 #include "zmr_listpanel.h"
 #include "zmr_scoreboard.h"
@@ -32,19 +32,16 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
 // HACK
 static char g_szHostname[256];
 
-
-#define MAX_SCORE_HEIGHT            YRES( 450 )
+#define MAX_SCORE_HEIGHT YRES( 450 )
 
 static bool SortHumanSection( KeyValues* kv1, KeyValues* kv2 )
 {
     if ( !kv1 || !kv2 ) return false;
-
 
     int p1 = kv1->GetInt( "playerIndex" );
     int p2 = kv2->GetInt( "playerIndex" );
@@ -77,18 +74,15 @@ static bool SortZMSection( KeyValues* kv1, KeyValues* kv2 )
 {
     if ( !kv1 || !kv2 ) return false;
 
-
     return ( kv1->GetInt( "zmkills" ) > kv2->GetInt( "zmkills" ) );
 }
-
 
 int CZMAvatarList::CreateAvatarBySteamId( CSteamID id )
 {
     int index = -1;
 
-    if ( (index = FindAvatarBySteamId( id )) != -1 )
+    if ( ( index = FindAvatarBySteamId( id ) ) != -1 )
         return index;
-
 
     CAvatarImage* pImage = new CAvatarImage();
     pImage->SetDrawFriend( false );
@@ -110,24 +104,19 @@ int CZMAvatarList::FindAvatarBySteamId( CSteamID id )
     return -1;
 }
 
-
 // NOTE: We have to be a frame to enable mouse input.
 CZMClientScoreBoardDialog::CZMClientScoreBoardDialog( IViewPort* pViewPort ) : CZMFramePanel( nullptr, PANEL_SCOREBOARD )
 {
     // Has to be set to load fonts correctly.
     SetScheme( vgui::scheme()->LoadSchemeFromFile( "resource/ClientScheme.res", "ClientScheme" ) );
 
-
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString( "playerIndex" );
 
-
     ListenForGameEvent( "server_spawn" );
-
 
     SetKeyBoardInputEnabled( false );
     SetMouseInputEnabled( false );
     SetProportional( true );
-
 
     m_flNextUpdateTime = 0.0f;
     m_flLastMouseToggle = 0.0f;
@@ -141,9 +130,7 @@ CZMClientScoreBoardDialog::CZMClientScoreBoardDialog( IViewPort* pViewPort ) : C
     m_nTexBgCornerId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBgCornerId, "zmr_effects/hud_bg_score_corner", true, false );
 
-
     LoadControlSettings( "resource/ui/zmscoreboard.res" );
-
 
     m_pList = dynamic_cast<CZMListPanel*>( FindChildByName( "PlayerList" ) );
     Assert( m_pList );
@@ -159,10 +146,8 @@ CZMClientScoreBoardDialog::CZMClientScoreBoardDialog( IViewPort* pViewPort ) : C
     m_pList->SetSectionMouseInputEnabled( m_iSectionHuman, true );
     m_pList->SetSectionMouseInputEnabled( m_iSectionZM, true );
 
-
     m_iVoiceOff = m_pList->AddImage( scheme()->GetImage( "zmr_misc/voice_off", true ) );
     m_iVoiceOn = m_pList->AddImage( scheme()->GetImage( "zmr_misc/voice_on", true ) );
-
 
     //
     // Importance images.
@@ -179,7 +164,6 @@ CZMClientScoreBoardDialog::CZMClientScoreBoardDialog( IViewPort* pViewPort ) : C
     m_pImportanceImages[ZMIMPORTANCE_PLAYTESTER] = vgui::scheme()->GetImage( "zmr_misc/playtester", true );
     m_pImportanceImages[ZMIMPORTANCE_LEAD] = vgui::scheme()->GetImage( "zmr_misc/lead", true );
     m_pImportanceImages[ZMIMPORTANCE_CONTRIBUTOR] = vgui::scheme()->GetImage( "zmr_misc/contributor", true );
-
 
     int imagesize = 24;
     for ( int i = 0; i < ARRAYSIZE( m_pImportanceImages ); i++ )
@@ -198,7 +182,6 @@ CZMClientScoreBoardDialog::~CZMClientScoreBoardDialog()
 void CZMClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme* pScheme )
 {
     BaseClass::ApplySchemeSettings( pScheme );
-
 
     SetBgColor( vgui::scheme()->GetIScheme( GetScheme() )->GetColor( "ZMScoreboardBg", COLOR_BLACK ) );
 }
@@ -244,10 +227,9 @@ void CZMClientScoreBoardDialog::OnRowItemPressed( KeyValues* kv )
 void CZMClientScoreBoardDialog::OnThink()
 {
     BaseClass::OnThink();
-    
 
     // HACK: Enable mouse input on right click.
-    if ( IsVisible() && g_pInputSystem->IsButtonDown( MOUSE_RIGHT ) && (gpGlobals->curtime - m_flLastMouseToggle) > 0.2f )
+    if ( IsVisible() && g_pInputSystem->IsButtonDown( MOUSE_RIGHT ) && ( gpGlobals->curtime - m_flLastMouseToggle ) > 0.2f )
     {
         bool toggle = !IsMouseInputEnabled();
 
@@ -282,7 +264,6 @@ void CZMClientScoreBoardDialog::ShowPanel( bool bShow )
     if ( IsVisible() == bShow )
         return;
 
-
     if ( bShow )
     {
         Reset();
@@ -308,18 +289,16 @@ void CZMClientScoreBoardDialog::PerformLayout()
     int x, y, w, h;
     m_pList->GetBounds( x, y, w, h );
 
-
     y += h + YRES( 32 );
     if ( y < min_h )
         y = min_h;
     else if ( y > max_h )
         y = max_h;
 
-
     SetSize( GetWide(), y );
 
     // Center
-    SetPos( (ScreenWidth() - GetWide()) / 2, (ScreenHeight() - MAX_SCORE_HEIGHT) / 2 );
+    SetPos( ( ScreenWidth() - GetWide() ) / 2, ( ScreenHeight() - MAX_SCORE_HEIGHT ) / 2 );
 }
 
 void CZMClientScoreBoardDialog::PaintBackground()
@@ -342,7 +321,6 @@ void CZMClientScoreBoardDialog::PaintBackground()
     CMatRenderContextPtr pRenderContext( materials );
     pRenderContext->SetStencilReferenceValue( 0 );
 
-
     // Paint fancy border.
 
     int x, y;
@@ -352,7 +330,6 @@ void CZMClientScoreBoardDialog::PaintBackground()
     int repeats;
     float tx1, ty1;
 
-
     const Color clr = GetBgColor();
 
     // Actual length of texture.
@@ -361,18 +338,15 @@ void CZMClientScoreBoardDialog::PaintBackground()
     const int border_w = XRES( 32 );
     const int border_h = YRES( 32 );
 
-
     x = border_w;
     y = border_h;
     w -= border_w * 2;
     h -= border_h * 2;
 
-
-    repeats = (int)(nBorderTexLength / (float)h);
+    repeats = (int)( nBorderTexLength / (float)h );
     if ( repeats < 1 ) repeats = 1;
 
     ty1 = (float)repeats;
-
 
     surface()->DrawSetColor( clr );
 
@@ -382,10 +356,9 @@ void CZMClientScoreBoardDialog::PaintBackground()
 
     // Right
     surface()->DrawSetTexture( m_nTexBgSideId );
-    surface()->DrawTexturedSubRect( border_w + w, border_h, border_w + w + border_w, border_h + h, 1.0f, 1.0f, 0.0f, (-ty1) + 1.0f );
-    
+    surface()->DrawTexturedSubRect( border_w + w, border_h, border_w + w + border_w, border_h + h, 1.0f, 1.0f, 0.0f, ( -ty1 ) + 1.0f );
 
-    repeats = (int)(nBorderTexLength / (float)w);
+    repeats = (int)( nBorderTexLength / (float)w );
     if ( repeats < 1 ) repeats = 1;
 
     tx1 = (float)repeats;
@@ -396,8 +369,7 @@ void CZMClientScoreBoardDialog::PaintBackground()
 
     // Bottom
     surface()->DrawSetTexture( m_nTexBgTopId );
-    surface()->DrawTexturedSubRect( border_w, border_h + h, border_w + w, border_h + h + border_h, 1.0f, 1.0f, (-tx1) + 1.0f, 0.0f );
-
+    surface()->DrawTexturedSubRect( border_w, border_h + h, border_w + w, border_h + h + border_h, 1.0f, 1.0f, ( -tx1 ) + 1.0f, 0.0f );
 
     // Top left corner
     surface()->DrawSetTexture( m_nTexBgCornerId );
@@ -414,7 +386,6 @@ void CZMClientScoreBoardDialog::PaintBackground()
     // Bottom right corner
     surface()->DrawSetTexture( m_nTexBgCornerId );
     surface()->DrawTexturedSubRect( border_w + w, border_h + h, border_w + w + border_w, border_h + h + border_h, 1.0f, 1.0f, 0.0f, 0.0f );
-
 
     // Actual background.
     surface()->DrawFilledRect( x, y, x + w, y + h );
@@ -438,7 +409,6 @@ void CZMClientScoreBoardDialog::UpdateStats()
         char tempstr[128];
         wchar_t buf[256];
         wchar_t wMapName[64];
-
 
         Q_FileBase( engine->GetLevelName(), tempstr, sizeof( tempstr ) );
 
@@ -481,9 +451,10 @@ int CZMClientScoreBoardDialog::TeamToSection( int iTeam )
 {
     switch ( iTeam )
     {
-    case ZMTEAM_ZM : return m_iSectionZM;
-    case ZMTEAM_HUMAN :
-    default :
+    case ZMTEAM_ZM:
+        return m_iSectionZM;
+    case ZMTEAM_HUMAN:
+    default:
         return m_iSectionHuman;
     }
 }
@@ -491,7 +462,6 @@ int CZMClientScoreBoardDialog::TeamToSection( int iTeam )
 void CZMClientScoreBoardDialog::UpdatePlayerInfo()
 {
     if ( !g_PR ) return;
-
 
     for ( int i = 1; i <= gpGlobals->maxClients; ++i )
     {
@@ -508,7 +478,6 @@ void CZMClientScoreBoardDialog::UpdatePlayerInfo()
             continue;
         }
 
-
         int iTeam = g_PR->GetTeam( i );
 
         // Get the player data.
@@ -523,9 +492,8 @@ void CZMClientScoreBoardDialog::UpdatePlayerInfo()
 
         data->SetString( "name", newName );
 
-
         int itemId = FindPlayerItem( i );
-            
+
         //if ( g_PR->IsLocalPlayer( i ) )
         //{
         //    selectedRow = itemId;
@@ -563,8 +531,7 @@ void CZMClientScoreBoardDialog::GetPlayerScoreInfo( int playerIndex, KeyValues* 
 
     kv->SetInt( "frags", g_PR->GetPlayerScore( playerIndex ) );
 
-	kv->SetInt( "deaths", g_PR->GetDeaths( playerIndex ) );
-
+    kv->SetInt( "deaths", g_PR->GetDeaths( playerIndex ) );
 
     bool bIsLocal = GetLocalPlayerIndex() == playerIndex;
     bool bIsBot = g_PR->IsFakePlayer( playerIndex );
@@ -574,7 +541,6 @@ void CZMClientScoreBoardDialog::GetPlayerScoreInfo( int playerIndex, KeyValues* 
     else
         kv->SetInt( "ping", g_PR->GetPing( playerIndex ) );
 
-
     int iMuteIcon = -1;
 #ifdef _DEBUG // For testing
     if ( bIsLocal == bIsLocal )
@@ -583,15 +549,13 @@ void CZMClientScoreBoardDialog::GetPlayerScoreInfo( int playerIndex, KeyValues* 
 #endif
         iMuteIcon = GetClientVoiceMgr()->IsPlayerBlocked( playerIndex ) ? m_iVoiceOff : m_iVoiceOn;
 
-
     kv->SetInt( "mutestatus", iMuteIcon );
-
 
     // Importance
     auto importance = g_ZMImportanceSystem.GetPlayerImportance( playerIndex );
     int iImage = -1;
 
-#pragma warning( disable: 33011 )
+#pragma warning( disable : 33011 )
     if ( importance >= 0 && importance < ARRAYSIZE( m_pImportanceImages ) && m_pImportanceImages[importance] != nullptr )
     {
         iImage = m_pList->AddImage( m_pImportanceImages[importance] );
@@ -613,7 +577,6 @@ void CZMClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues* 
             if ( pi.friendsID )
             {
                 CSteamID SteamId( pi.friendsID, 1, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
-
 
                 int index = m_Avatars.CreateAvatarBySteamId( SteamId );
 

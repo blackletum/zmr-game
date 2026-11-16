@@ -10,15 +10,12 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
 
 extern ConVar zm_sv_roundintermissiontime;
 
 ConVar zm_cl_round_cinematic_effects_text( "zm_cl_round_cinematic_effects_text", "1", FCVAR_ARCHIVE, "Center text" );
 ConVar zm_cl_round_cinematic_effects_duration( "zm_cl_round_cinematic_effects_duration", "5", FCVAR_ARCHIVE, "The cinematic effects duration." );
-
 
 CON_COMMAND( zm_hudcentertext, "Displays a center text message." )
 {
@@ -36,18 +33,14 @@ CON_COMMAND( zm_hudcentertext, "Displays a center text message." )
     }
 }
 
-
 DECLARE_HUDELEMENT( CZMHudCenterText );
 DECLARE_HUD_MESSAGE( CZMHudCenterText, ZMCenterText );
 
-
-CZMHudCenterText::CZMHudCenterText( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudCenterText" )
+CZMHudCenterText::CZMHudCenterText( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudCenterText" )
 {
     SetPaintBackgroundEnabled( false );
 
-
     Reset();
-
 
     ListenForGameEvent( "round_end_post" );
     ListenForGameEvent( "round_restart_post" );
@@ -55,7 +48,6 @@ CZMHudCenterText::CZMHudCenterText( const char *pElementName ) : CHudElement( pE
 
 CZMHudCenterText::~CZMHudCenterText()
 {
-    
 }
 
 void CZMHudCenterText::Init()
@@ -73,7 +65,6 @@ void CZMHudCenterText::VidInit()
 void CZMHudCenterText::Reset()
 {
     SetWide( ScreenWidth() );
-
 
     // IMPORTANT!!! Animation variables must be reset here.
     // All animations are removed on Reset.
@@ -125,21 +116,20 @@ void CZMHudCenterText::OnThink()
 
 void CZMHudCenterText::PaintString( const HFont font, const HFont shadowfont, const Color& clr, int x, int y, const wchar_t* txt )
 {
-	surface()->DrawSetTextPos( x, y );
+    surface()->DrawSetTextPos( x, y );
     surface()->DrawSetTextColor( Color( 0, 0, 0, clr[3] ) );
     surface()->DrawSetTextFont( shadowfont );
-	surface()->DrawUnicodeString( txt );
+    surface()->DrawUnicodeString( txt );
 
     surface()->DrawSetTextPos( x, y );
     surface()->DrawSetTextColor( clr );
     surface()->DrawSetTextFont( font );
-	surface()->DrawUnicodeString( txt );
+    surface()->DrawUnicodeString( txt );
 }
 
 void CZMHudCenterText::Paint()
 {
     if ( m_flBigAlpha <= 0.0f && m_flSmallAlpha <= 0.0f ) return;
-
 
     int h_big;
     int w, h;
@@ -167,15 +157,11 @@ void CZMHudCenterText::ShowRoundStart( const char* insmalltxt )
         return;
     }
 
-
     //CZMHudCenterText* center = GET_HUDELEMENT( CZMHudCenterText );
 
     //if ( !center ) return;
 
-
     CZMRules* pRules = ZMRules();
-    
-
 
     wchar_t txt[128];
     wchar_t smalltxt[128];
@@ -194,7 +180,6 @@ void CZMHudCenterText::ShowRoundStart( const char* insmalltxt )
 
     g_pVGuiLocalize->ConstructString( txt, sizeof( txt ), g_pVGuiLocalize->Find( "#ZMRoundCount" ), 1, wround );
 
-
     if ( insmalltxt && *insmalltxt )
     {
         // It's a localized text.
@@ -209,7 +194,6 @@ void CZMHudCenterText::ShowRoundStart( const char* insmalltxt )
         }
     }
 
-
     ShowText( txt, smalltxt, 1.0f, zm_cl_round_cinematic_effects_duration.GetFloat() );
 }
 
@@ -220,17 +204,30 @@ void CZMHudCenterText::ShowRoundEnd( ZMRoundEndReason_t reason )
         return;
     }
 
-
     const char* localized = nullptr;
     switch ( reason )
     {
-    case ZMROUND_GAMEBEGIN : localized = "#ZMRoundEndShortGameBegin"; break;
-    case ZMROUND_HUMANDEAD : localized = "#ZMRoundEndShortHumanDead"; break;
-    case ZMROUND_HUMANLOSE : localized = "#ZMRoundEndShortHumanLose"; break;
-    case ZMROUND_HUMANWIN : localized = "#ZMRoundEndShortHumanWin"; break;
-    case ZMROUND_VOTERESTART : localized = "#ZMRoundEndShortVoteRestart"; break;
-    case ZMROUND_ZMSUBMIT : localized = "#ZMRoundEndShortSubmit"; break;
-    default : localized = "#ZMRoundEndShortGeneric"; break;
+    case ZMROUND_GAMEBEGIN:
+        localized = "#ZMRoundEndShortGameBegin";
+        break;
+    case ZMROUND_HUMANDEAD:
+        localized = "#ZMRoundEndShortHumanDead";
+        break;
+    case ZMROUND_HUMANLOSE:
+        localized = "#ZMRoundEndShortHumanLose";
+        break;
+    case ZMROUND_HUMANWIN:
+        localized = "#ZMRoundEndShortHumanWin";
+        break;
+    case ZMROUND_VOTERESTART:
+        localized = "#ZMRoundEndShortVoteRestart";
+        break;
+    case ZMROUND_ZMSUBMIT:
+        localized = "#ZMRoundEndShortSubmit";
+        break;
+    default:
+        localized = "#ZMRoundEndShortGeneric";
+        break;
     }
 
     // Add a bit of padding in case of lag.
@@ -260,7 +257,7 @@ void CZMHudCenterText::ShowText( const char* bigtxt, const char* smalltxt, float
         if ( big[0] == L'\0' )
             g_pVGuiLocalize->ConvertANSIToUnicode( bigtxt, big, sizeof( big ) );
     }
-    
+
     if ( smalltxt )
     {
         if ( smalltxt[0] == '#' )
@@ -276,7 +273,6 @@ void CZMHudCenterText::ShowText( const char* bigtxt, const char* smalltxt, float
         if ( small[0] == L'\0' )
             g_pVGuiLocalize->ConvertANSIToUnicode( smalltxt, small, sizeof( small ) );
     }
-    
 
     ShowText( big, small, smalldelay, displaytime );
 }
@@ -299,7 +295,6 @@ void CZMHudCenterText::ShowText( const wchar_t* bigtxt, const wchar_t* smalltxt,
 
         m_flNextHide = gpGlobals->curtime + displaytime;
 
-
         m_flShowSmall = gpGlobals->curtime + smalldelay;
     }
     else
@@ -314,13 +309,11 @@ void CZMHudCenterText::MsgFunc_ZMCenterText( bf_read& msg )
     wchar_t big[256];
     wchar_t small[256];
 
-
     msg.ReadString( buffer, sizeof( buffer ), true );
     g_pVGuiLocalize->ConvertANSIToUnicode( buffer, big, sizeof( big ) );
 
     msg.ReadString( buffer, sizeof( buffer ), true );
     g_pVGuiLocalize->ConvertANSIToUnicode( buffer, small, sizeof( small ) );
-
 
     ShowText( big, small );
 }

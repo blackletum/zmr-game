@@ -1,14 +1,12 @@
+#include "basegrenade_shared.h"
 #include "cbase.h"
 #include "in_buttons.h"
 #include "npcevent.h"
-#include "basegrenade_shared.h"
-
 
 #include "zmr_basethrowable.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMBaseThrowableWeapon, DT_ZM_BaseThrowableWeapon )
 
@@ -26,7 +24,7 @@ BEGIN_PREDICTION_DATA( CZMBaseThrowableWeapon )
 END_PREDICTION_DATA()
 #endif
 
-CZMBaseThrowableWeapon::CZMBaseThrowableWeapon()
+        CZMBaseThrowableWeapon::CZMBaseThrowableWeapon()
 {
     m_iThrowState = THROWSTATE_IDLE;
 #ifndef CLIENT_DLL
@@ -53,7 +51,6 @@ void CZMBaseThrowableWeapon::ItemPostFrame()
 
     if ( !pPlayer ) return;
 
-
     // We've thrown the grenade, remove our weapon.
 #ifndef CLIENT_DLL
     if ( GetThrowState() == THROWSTATE_THROWN && IsViewModelSequenceFinished() )
@@ -62,7 +59,6 @@ void CZMBaseThrowableWeapon::ItemPostFrame()
         return;
     }
 #endif
-
 
     if ( GetThrowState() == THROWSTATE_IDLE && pPlayer->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack <= gpGlobals->curtime )
     {
@@ -78,13 +74,13 @@ void CZMBaseThrowableWeapon::ItemPostFrame()
 #endif
     }
 
-
-    if ( GetThrowState() == THROWSTATE_READYTOTHROW && !(pPlayer->m_nButtons & IN_ATTACK) )
+    if ( GetThrowState() == THROWSTATE_READYTOTHROW && !( pPlayer->m_nButtons & IN_ATTACK ) )
     {
         SendWeaponAnim( ACT_VM_THROW );
         SetThrowState( THROWSTATE_THROWN );
 
-        auto HasAnimEvent = [&]( int iAnimEvent ) {
+        auto HasAnimEvent = [&]( int iAnimEvent )
+        {
             return GetFirstInstanceOfAnimEventTime( GetSequence(), iAnimEvent, false ) != -1.0f;
         };
 
@@ -149,17 +145,17 @@ void CZMBaseThrowableWeapon::Drop( const Vector& vecVelocity )
 
 void CZMBaseThrowableWeapon::Operator_HandleAnimEvent( animevent_t* pEvent, CBaseCombatCharacter* pOperator )
 {
-	switch( pEvent->event )
-	{
-    case EVENT_WEAPON_THROW :
-    case EVENT_WEAPON_THROW2 :
-    case EVENT_WEAPON_THROW3 :
+    switch ( pEvent->event )
+    {
+    case EVENT_WEAPON_THROW:
+    case EVENT_WEAPON_THROW2:
+    case EVENT_WEAPON_THROW3:
         Throw( GetPlayerOwner() );
         break;
-	default:
-		BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
-		break;
-	}
+    default:
+        BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
+        break;
+    }
 }
 
 void CZMBaseThrowableWeapon::OnProjectileExplode()
@@ -174,7 +170,7 @@ void CZMBaseThrowableWeapon::OnProjectileExplode()
 void CZMBaseThrowableWeapon::PostThrowCleanup()
 {
     auto* pPlayer = GetPlayerOwner();
-    
+
     if ( pPlayer )
     {
         pPlayer->Weapon_Drop( this, nullptr, nullptr );
@@ -248,7 +244,6 @@ Vector CZMBaseThrowableWeapon::GetThrowPos( CZMPlayer* pPlayer )
 {
     Assert( pPlayer );
 
-
     trace_t trace;
     Vector fwd;
 
@@ -258,7 +253,6 @@ Vector CZMBaseThrowableWeapon::GetThrowPos( CZMPlayer* pPlayer )
     Vector maxs = Vector( 6, 6, 6 );
 
     UTIL_TraceHull( pPlayer->EyePosition(), pPlayer->EyePosition() + fwd * 18.0f, -maxs, maxs, MASK_SHOT, pPlayer, COLLISION_GROUP_NONE, &trace );
-
 
     return trace.endpos;
 }
@@ -291,9 +285,7 @@ void CZMBaseThrowableWeapon::Throw( CZMPlayer* pPlayer )
 {
     SetThrowState( THROWSTATE_THROWN );
 
-
     if ( !pPlayer ) return;
-
 
 #ifndef CLIENT_DLL
     Vector pos = GetThrowPos( pPlayer );
@@ -398,7 +390,7 @@ bool CZMBaseThrowableConfig::OverrideFromConfig( KeyValues* kv )
     OVERRIDE_FROM_WEPCONFIG_F( kv, throw_velocity, flThrowVelocity );
     OVERRIDE_FROM_WEPCONFIG_F( kv, projectile_damage, flProjectileDamage );
     OVERRIDE_FROM_WEPCONFIG_F( kv, projectile_radius, flProjectileRadius );
-    
+
     bool bGotDefault = false;
     auto bArmOnReady_ = kv->GetBool( "arm_on_ready", false, &bGotDefault );
     if ( !bGotDefault )

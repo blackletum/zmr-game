@@ -3,23 +3,19 @@
 #include "input.h"
 #include <vgui/ISurface.h>
 
-
 #include "zmr_imagerow.h"
 #include "zmr_radial.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
-
 
 CZMRadialButton::CZMRadialButton( Panel* parent, const char* name ) : Panel( parent, name )
 {
     SetPaintBackgroundEnabled( false );
     SetMouseInputEnabled( false );
     SetKeyBoardInputEnabled( false );
-
 
     m_pCurImage = nullptr;
     m_pImage = nullptr;
@@ -73,7 +69,6 @@ void CZMRadialButton::SetFocus( bool state )
     if ( m_bDisabled )
         return;
 
-
     if ( state )
     {
         m_pCurImage = m_pImageFocus;
@@ -117,7 +112,6 @@ void CZMRadialButton::SetLabelData( KeyValues* kv )
         return;
     }
 
-
     m_pTextKvData = kv->MakeCopy();
 
     ApplyLabelData();
@@ -129,10 +123,8 @@ void CZMRadialButton::ApplyLabelData()
 
     if ( !kv ) return;
 
-
     m_pTextLabel->SetWide( GetParent()->GetWide() * kv->GetFloat( "wide", 0.16f ) );
     m_pTextLabel->SetTall( GetParent()->GetTall() * kv->GetFloat( "tall", 0.16f ) );
-
 
     CSplitString vPos( kv->GetString( "pos", "" ), " " );
 
@@ -154,10 +146,8 @@ void CZMRadialButton::ApplyLabelData()
     m_pTextLabel->SetText( kv->GetString( "text" ) );
     m_pTextLabel->SetName( kv->GetString( "name" ) );
 
-
     if ( kv->GetBool( "center" ) )
         m_pTextLabel->SetContentAlignment( Label::Alignment::a_center );
-
 
     m_pTextLabel->SetCenterWrap( kv->GetBool( "centerwrap", false ) );
     m_pTextLabel->SetVisible( kv->GetBool( "visible", true ) );
@@ -171,12 +161,11 @@ void CZMRadialButton::CenterLabelToButton()
     int cx = size / 2;
     int cy = cx;
 
-    float distcenter = ( GetStartFrac() + (GetEndFrac() - GetStartFrac()) / 2.0f ) * (float)cx;
+    float distcenter = ( GetStartFrac() + ( GetEndFrac() - GetStartFrac() ) / 2.0f ) * (float)cx;
 
     float rad = -DEG2RAD( AngleNormalize( GetOffset() + GetSize() / 2.0f ) );
     float ux = cos( rad );
     float uy = sin( rad );
-
 
     int x = cx + ux * distcenter;
     int y = cy + uy * distcenter;
@@ -203,10 +192,8 @@ void CZMRadialButton::Paint( int w, int h )
     }
 }
 
-
 //DECLARE_BUILD_FACTORY( CZMRadialButton );
 DECLARE_BUILD_FACTORY( CZMRadialPanel );
-
 
 CZMRadialPanel::CZMRadialPanel( Panel* parent, const char* name ) : Panel( parent, name )
 {
@@ -232,7 +219,6 @@ void CZMRadialPanel::SetBackgroundImage( const char* image )
 void CZMRadialPanel::AddButton( KeyValues* kv )
 {
     const char* command = kv->GetString( "command" );
-
 
     CZMRadialButton* btn = new CZMRadialButton( this, kv->GetName() );
 
@@ -269,7 +255,6 @@ void CZMRadialPanel::AddButton( KeyValues* kv )
     if ( *command )
         btn->SetCommand( command );
 
-
     btn->SetLabelData( kv->FindKey( "label" ) );
 
     m_Buttons.AddToTail( btn );
@@ -283,7 +268,6 @@ void CZMRadialPanel::LoadFromFile( const char* file )
     if ( kv->LoadFromFile( filesystem, file, "MOD" ) )
     {
         KeyValues* pKey = kv->GetFirstSubKey();
-
 
         while ( pKey )
         {
@@ -302,8 +286,6 @@ CZMRadialButton* CZMRadialPanel::GetButton( int x, int y )
 {
     float r = ( GetWide() > GetTall() ? GetTall() : GetWide() ) / 2.0f;
 
-
-
     float difx = x - r;
     float dify = r - y;
 
@@ -314,11 +296,10 @@ CZMRadialButton* CZMRadialPanel::GetButton( int x, int y )
         return nullptr;
     }
 
-    
     float sf, ef;
     float size;
     float start, end;
-    
+
     float deg = RAD2DEG( atan2f( dify, difx ) );
 
     int len = m_Buttons.Count();
@@ -332,11 +313,11 @@ CZMRadialButton* CZMRadialPanel::GetButton( int x, int y )
         size = m_Buttons[i]->GetSize();
         start = m_Buttons[i]->GetOffset();
         end = AngleNormalize( start + size );
-        
+
         if ( deg > start || deg < end )
         {
             // Account for the wrapping.
-            if ( fabsf( (end - start) - size ) > 5.0f )
+            if ( fabsf( ( end - start ) - size ) > 5.0f )
             {
                 end += 360.0f;
 
@@ -388,13 +369,12 @@ void CZMRadialPanel::OnMousePressed( MouseCode code )
 // The effect is "missing" clicks which is incredibly annoying.
 void CZMRadialPanel::OnMouseDoublePressed( MouseCode code )
 {
-	OnMousePressed(code);
+    OnMousePressed( code );
 }
 
 void CZMRadialPanel::OnThink()
 {
     if ( !IsVisible() ) return;
-    
 
     int mx, my;
     int myx, myy;
@@ -410,8 +390,7 @@ void CZMRadialPanel::OnThink()
     ::input->GetFullscreenMousePos( &mx, &my );
     GetPos( myx, myy );
 
-    CZMRadialButton* button = IsCursorOver() ? GetButton( mx - (px + myx), my - (py + myy) ) : nullptr;
-
+    CZMRadialButton* button = IsCursorOver() ? GetButton( mx - ( px + myx ), my - ( py + myy ) ) : nullptr;
 
     if ( m_pLastButton != button )
     {
@@ -449,7 +428,6 @@ void CZMRadialPanel::OnThink()
     }
 
     UpdateButtonFocus( button );
-
 
     m_pLastButton = button;
 }

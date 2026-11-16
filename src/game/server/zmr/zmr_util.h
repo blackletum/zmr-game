@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "zmr_shareddefs.h"
-
 
 namespace ZMUtil
 {

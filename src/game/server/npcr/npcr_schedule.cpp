@@ -9,7 +9,6 @@ namespace NPCR
     ConVar npcr_debug_schedules( "npcr_debug_schedules", "0" );
 }
 
-
 NPCR::CScheduleInterface::CScheduleInterface( NPCR::CBaseNPC* pNPC, NPCR::CScheduleInt* pInitialSched ) : NPCR::CEventDispatcher( pNPC, pNPC )
 {
     Assert( pInitialSched );

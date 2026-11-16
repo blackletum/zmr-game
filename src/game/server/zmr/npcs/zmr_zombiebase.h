@@ -1,25 +1,22 @@
 #pragma once
 
-
-#include "npcr_schedule.h"
-#include "npcr_nonplayer.h"
 #include "npcr_motor_nonplayer.h"
-#include "npcr_senses.h"
+#include "npcr_nonplayer.h"
 #include "npcr_path_cost.h"
 #include "npcr_path_follow.h"
+#include "npcr_schedule.h"
+#include "npcr_senses.h"
 #include "npcs/zmr_npclagcomp.h"
 #include "zmr_cmd_queue.h"
 
 //#include "zmr_blockerfinder.h"
 
-#include "zmr_shareddefs.h"
 #include "zmr_player.h"
-
+#include "zmr_shareddefs.h"
 
 class CZMZombieAnimState;
 class CZMBlockerScanner;
 class CZMEntAmbushTrigger;
-
 
 class CZMBaseZombieMotor : public NPCR::CNonPlayerMotor
 {
@@ -31,7 +28,6 @@ public:
     virtual float GetYawRate( float delta ) const override;
 };
 
-
 class CZMBaseZombie : public CNPCRNonPlayer, public CZMNPCLagCompensation
 {
 public:
@@ -41,10 +37,8 @@ public:
     DECLARE_SERVERCLASS();
     DECLARE_DATADESC();
 
-
     CZMBaseZombie( ZombieClass_t zclass );
     ~CZMBaseZombie();
-
 
     virtual void Precache() override;
     virtual void Spawn() override;
@@ -53,54 +47,46 @@ public:
     virtual void PreUpdate() override;
     virtual void PostUpdate() override;
 
-
     virtual bool IsBaseZombie() const override { return true; }
     virtual Class_T Classify() override { return CLASS_ZOMBIE; }
-
 
     // Components
     virtual bool CreateComponents() override;
 
-    virtual CZMBlockerScanner*          CreateBlockerScanner();
-    virtual CZMZombieAnimState*         CreateAnimState();
+    virtual CZMBlockerScanner* CreateBlockerScanner();
+    virtual CZMZombieAnimState* CreateAnimState();
 
-    virtual NPCR::CScheduleInterface*   CreateScheduleInterface() override;
-    virtual NPCR::CBaseSenses*          CreateSenses() override;
-    virtual NPCR::CNonPlayerMotor*      CreateMotor() override;
+    virtual NPCR::CScheduleInterface* CreateScheduleInterface() override;
+    virtual NPCR::CBaseSenses* CreateSenses() override;
+    virtual NPCR::CNonPlayerMotor* CreateMotor() override;
 
-    CZMBlockerScanner*                  GetBlockerFinder() const { return m_pBlockerScanner; }
+    CZMBlockerScanner* GetBlockerFinder() const { return m_pBlockerScanner; }
 
     virtual bool ShouldUpdate() const override;
 
     virtual NPCR::QueryResult_t ShouldChase( CBaseEntity* pEnemy ) const override;
     virtual NPCR::QueryResult_t ShouldTouch( CBaseEntity* pEnt ) const override;
 
-
     virtual NPCR::CSchedule<CZMBaseZombie>* OverrideCombatSchedule() const { return nullptr; }
 
     virtual NPCR::CFollowNavPath* GetFollowPath() const;
 
-
     // Damage/death related
-    virtual void    Extinguish() override;
-    virtual void    Ignite( float flFlameLifetime, bool bNPCOnly = false, float flSize = 0.0f, bool bCalledByLevelDesigner = false ) override;
-    bool            ShouldIgnite( const CTakeDamageInfo& info );
+    virtual void Extinguish() override;
+    virtual void Ignite( float flFlameLifetime, bool bNPCOnly = false, float flSize = 0.0f, bool bCalledByLevelDesigner = false ) override;
+    bool ShouldIgnite( const CTakeDamageInfo& info );
 
-    virtual void            Event_Killed( const CTakeDamageInfo& info ) override;
-    virtual int             OnTakeDamage_Alive( const CTakeDamageInfo& inputInfo ) override;
-    virtual void            TraceAttack( const CTakeDamageInfo& inputInfo, const Vector& vecDir, trace_t* pTrace, CDmgAccumulator* pAccumulator ) override;
-    virtual bool            ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) const;
-    void                    MultiplyBuckshotDamage( CTakeDamageInfo& info ) const;
+    virtual void Event_Killed( const CTakeDamageInfo& info ) override;
+    virtual int OnTakeDamage_Alive( const CTakeDamageInfo& inputInfo ) override;
+    virtual void TraceAttack( const CTakeDamageInfo& inputInfo, const Vector& vecDir, trace_t* pTrace, CDmgAccumulator* pAccumulator ) override;
+    virtual bool ScaleDamageByHitgroup( int iHitGroup, CTakeDamageInfo& info ) const;
+    void MultiplyBuckshotDamage( CTakeDamageInfo& info ) const;
 
-
-    virtual bool            Event_Gibbed( const CTakeDamageInfo& info ) override;
-    virtual bool            CorpseGib( const CTakeDamageInfo& info ) override;
-    virtual bool            ShouldGib( const CTakeDamageInfo& info ) override;
-
-
+    virtual bool Event_Gibbed( const CTakeDamageInfo& info ) override;
+    virtual bool CorpseGib( const CTakeDamageInfo& info ) override;
+    virtual bool ShouldGib( const CTakeDamageInfo& info ) override;
 
     virtual void HandleAnimEvent( animevent_t* pEvent ) override;
-
 
     // Sounds
     virtual bool ShouldPlayIdleSound() const;
@@ -112,33 +98,30 @@ public:
 
     virtual void ClawImpactSound( bool bHit = true );
 
-
-
-
     // Implemented in zmr_zombiebase_shared
-    static bool             IsValidClass( ZombieClass_t zclass );
-    static ZombieClass_t    NameToClass( const char* name );
-    static const char*      ClassToName( ZombieClass_t zclass );
-    static int              GetPopCost( ZombieClass_t zclass );
-    static int              GetCost( ZombieClass_t zclass );
-    static float            GetSpawnDelay( ZombieClass_t zclass );
-    static bool             HasEnoughPopToSpawn( ZombieClass_t zclass );
-    int                     GetSelectorIndex() const;
-    CZMPlayer*              GetSelector() const;
-    void                    SetSelector( CZMPlayer* pPlayer );
-    void                    SetSelector( int index );
-    ZombieClass_t           GetZombieClass() const;
-    bool                    DoAnimationEvent( int iEvent, int nData = 0 );
-    virtual int             GetAnimationRandomSeed() override;
-    virtual bool            CanBePenetrated() const;
+    static bool IsValidClass( ZombieClass_t zclass );
+    static ZombieClass_t NameToClass( const char* name );
+    static const char* ClassToName( ZombieClass_t zclass );
+    static int GetPopCost( ZombieClass_t zclass );
+    static int GetCost( ZombieClass_t zclass );
+    static float GetSpawnDelay( ZombieClass_t zclass );
+    static bool HasEnoughPopToSpawn( ZombieClass_t zclass );
+    int GetSelectorIndex() const;
+    CZMPlayer* GetSelector() const;
+    void SetSelector( CZMPlayer* pPlayer );
+    void SetSelector( int index );
+    ZombieClass_t GetZombieClass() const;
+    bool DoAnimationEvent( int iEvent, int nData = 0 );
+    virtual int GetAnimationRandomSeed() override;
+    virtual bool CanBePenetrated() const;
+
 protected:
-    void                    SetZombieClass( ZombieClass_t zclass );
+    void SetZombieClass( ZombieClass_t zclass );
 
     int m_iAdditionalAnimRandomSeed;
+
 public:
-
     static void GetAnimRandomSeed( int iEvent, int& nData );
-
 
     static float GetSwatMaxMass();
     virtual bool Swat( CZMPlayer* pZM, CBaseEntity* pSwat, bool bBreak = false );
@@ -146,85 +129,70 @@ public:
     virtual void Command( CZMPlayer* pZM, const Vector& vecPos, float flTolerance = 0.0f );
     virtual Activity GetSwatActivity( CBaseEntity* pEnt, bool bBreak = true ) const { return ACT_MELEE_ATTACK1; }
 
-    static bool     CanSwatObject( CBaseEntity* pEnt );
-    virtual bool    CanBreakObject( CBaseEntity* pEnt, bool bSwat = false ) const;
-    virtual bool    CanSwatPhysicsObjects() const { return false; }
+    static bool CanSwatObject( CBaseEntity* pEnt );
+    virtual bool CanBreakObject( CBaseEntity* pEnt, bool bSwat = false ) const;
+    virtual bool CanSwatPhysicsObjects() const { return false; }
     //float           GetNextSwatScan() { return m_flNextSwatScan; }
     //void            SetNextSwatScan( float time ) { m_flNextSwatScan = time; }
-    CBaseEntity*    GetSwatObject() const { return m_hSwatObject.Get(); }
-    void            SetSwatObject( CBaseEntity* pEnt ) { m_hSwatObject.Set( pEnt ); }
+    CBaseEntity* GetSwatObject() const { return m_hSwatObject.Get(); }
+    void SetSwatObject( CBaseEntity* pEnt ) { m_hSwatObject.Set( pEnt ); }
 
-
-
-    CZMEntAmbushTrigger*    GetAmbushTrigger() const { return m_hAmbushEnt.Get(); };
-    void                    SetAmbush( CZMEntAmbushTrigger* trigger );
-    void                    RemoveFromAmbush( bool bRemoveFromAmbushEnt = true );
-
+    CZMEntAmbushTrigger* GetAmbushTrigger() const { return m_hAmbushEnt.Get(); };
+    void SetAmbush( CZMEntAmbushTrigger* trigger );
+    void RemoveFromAmbush( bool bRemoveFromAmbushEnt = true );
 
     bool CanSpawn( const Vector& vecPos ) const;
-    virtual bool    IsAttacking() const;
-    virtual bool    CanMove() const;
+    virtual bool IsAttacking() const;
+    virtual bool CanMove() const;
 
+    float GetLastTimeCommanded() const { return m_flLastCommanded; }
+    void UpdateLastTimeCommanded() { m_flLastCommanded = gpGlobals->curtime; }
 
-
-
-    float           GetLastTimeCommanded() const { return m_flLastCommanded; }
-    void            UpdateLastTimeCommanded() { m_flLastCommanded = gpGlobals->curtime; }
-
-    virtual bool    IsEnemy( CBaseEntity* pEnt ) const override;
-
+    virtual bool IsEnemy( CBaseEntity* pEnt ) const override;
 
     virtual float GetMoveActivityMovementSpeed() override;
 
-
     virtual NPCR::CPathCostGroundOnly* GetPathCost() const;
 
-
     // Attacks
-    virtual void            GetAttackHull( Vector& mins, Vector& maxs ) const;
-    virtual const Vector    GetAttackPos() const;
-    virtual float           GetAttackHeight() const;
-    virtual float           GetAttackLowest() const;
-    virtual float           GetClawAttackRange() const;
-    virtual CBaseEntity*    ClawAttack( float flDist, float flDamage, const QAngle& angPunch, const Vector& vecPunchVel );
+    virtual void GetAttackHull( Vector& mins, Vector& maxs ) const;
+    virtual const Vector GetAttackPos() const;
+    virtual float GetAttackHeight() const;
+    virtual float GetAttackLowest() const;
+    virtual float GetClawAttackRange() const;
+    virtual CBaseEntity* ClawAttack( float flDist, float flDamage, const QAngle& angPunch, const Vector& vecPunchVel );
 
-    virtual bool    HasConditionsForClawAttack( CBaseEntity* pEnemy ) const;
+    virtual bool HasConditionsForClawAttack( CBaseEntity* pEnemy ) const;
 
-    virtual bool    CanRangeAttack() const { return false; }
-    virtual bool    HasConditionsForRangeAttack( CBaseEntity* pEnemy ) const { return false; }
+    virtual bool CanRangeAttack() const { return false; }
+    virtual bool HasConditionsForRangeAttack( CBaseEntity* pEnemy ) const { return false; }
     virtual NPCR::CSchedule<CZMBaseZombie>* GetRangeAttackSchedule() const { return nullptr; }
 
+    inline float GetNextAttack() const { return m_flNextAttack; }
+    inline void SetNextAttack( float time ) { m_flNextAttack = time; }
 
-    inline float    GetNextAttack() const { return m_flNextAttack; }
-    inline void     SetNextAttack( float time ) { m_flNextAttack = time; }
+    ZombieMode_t GetZombieMode() const { return m_iZombieMode; }
+    void SetZombieMode( ZombieMode_t mode ) { m_iZombieMode = mode; }
 
+    inline void InitCost( int cost ) { m_nResourceCost = cost; };
+    inline int GetCost() const { return m_nResourceCost; };
+    inline int GetPopCost() const { return m_nPopCost; };
 
-    ZombieMode_t    GetZombieMode() const { return m_iZombieMode; }
-    void            SetZombieMode( ZombieMode_t mode ) { m_iZombieMode = mode; }
-
-    inline void     InitCost( int cost ) { m_nResourceCost = cost; };
-    inline int      GetCost() const { return m_nResourceCost; };
-    inline int      GetPopCost() const { return m_nPopCost; };
-
-
-    CZMCommandQueue*    GetCommandQueue() const { return const_cast<CZMCommandQueue*>( &m_CmdQueue ); }
+    CZMCommandQueue* GetCommandQueue() const { return const_cast<CZMCommandQueue*>( &m_CmdQueue ); }
 
     // Let our commander dictate certain behaviors.
-    ZombieCommandStyle_t    GetMyCommandStyle() const { return m_MyCommandStyle; }
-    void                    SetMyCommandStyle( const CZMPlayer* pZM );
-
+    ZombieCommandStyle_t GetMyCommandStyle() const { return m_MyCommandStyle; }
+    void SetMyCommandStyle( const CZMPlayer* pZM );
 
     const char* GetZombieModelGroupName() const { return STRING( m_strModelGroup ); }
     void SetZombieModelGroupName( string_t name ) { m_strModelGroup = name; }
     //void SetZombieModelGroupName( const char* name ) { m_strModelGroup = AllocPooledString( name ); }
 private:
     string_t m_strModelGroup;
+
 public:
-
-
-    float   GetNextMove() const { return m_flNextMove; }
-    void    SetNextMove( float nextmove ) { m_flNextMove = nextmove; }
-
+    float GetNextMove() const { return m_flNextMove; }
+    void SetNextMove( float nextmove ) { m_flNextMove = nextmove; }
 
     // Hull trace that starts from our origin.
     bool MeleeAttackTrace(
@@ -234,12 +202,10 @@ public:
         CUtlVector<CBaseEntity*>* vHitEnts = nullptr,
         const Vector* vecDir = nullptr );
 
-
     static float g_flLastZombieSound;
 
 protected:
     CZMZombieAnimState* GetAnimState() const { return m_pAnimState; }
-
 
     float m_flNextIdleSound;
     float m_flNextPainSound;
@@ -249,18 +215,15 @@ private:
 
     float m_flLastCommanded;
 
-
     CZMBlockerScanner* m_pBlockerScanner;
     CZMZombieAnimState* m_pAnimState;
 
     CHandle<CBaseEntity> m_hSwatObject;
 
-
     ZombieMode_t m_iZombieMode;
     ZombieClass_t m_iZombieClass;
     int m_nPopCost;
     int m_nResourceCost;
-
 
     CNetworkVar( int, m_iSelectorIndex );
     CNetworkVar( float, m_flHealthRatio ); // For humans we can use health/maxhealth
@@ -270,25 +233,17 @@ private:
     // When we die these change.
     CNetworkVar( int, m_iGibType );
 
-
-
     CHandle<CZMEntAmbushTrigger> m_hAmbushEnt;
-
-
 
     CZMCommandQueue m_CmdQueue;
 
     // Changes depending on who is commanding us.
     ZombieCommandStyle_t m_MyCommandStyle;
 
-
-
     float m_flNextMove;
-
 
     float m_flBurnDamage;
     float m_flBurnDamageTime;
-
 
 public:
     static int AE_ZOMBIE_ATTACK_RIGHT;

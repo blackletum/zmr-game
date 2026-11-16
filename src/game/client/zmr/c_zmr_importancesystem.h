@@ -1,12 +1,11 @@
 #pragma once
 
-
 enum ZMImportance_t
 {
     ZMIMPORTANCE_NONE = -1,
 
     ZMIMPORTANCE_DEV,
-    
+
     ZMIMPORTANCE_VIP,
     ZMIMPORTANCE_PLAYTESTER,
 
@@ -16,7 +15,6 @@ enum ZMImportance_t
 
     ZMIMPORTANCE_MAX
 };
-
 
 //
 //
@@ -33,15 +31,11 @@ public:
         ZMImportance_t importance;
     };
 
-
     C_ZMImportanceSystem();
     ~C_ZMImportanceSystem();
 
-
     virtual void PostInit() override;
     virtual void LevelInitPostEntity() override;
-
-
 
     void Reset();
 
@@ -54,7 +48,6 @@ protected:
     bool LoadFromFile();
     int FindSteamIdIndex( uint64 steamId );
 
-
     bool ComputePlayerImportance( int playerIndex );
 
     static const char* ImportanceToName( ZMImportance_t index );
@@ -62,7 +55,6 @@ protected:
 
 private:
     ImportanceData_t m_Importance[MAX_PLAYERS];
-
 
     // Sorted 64bit steam ids.
     CUtlVector<uint64> m_vSteamIdIndices;

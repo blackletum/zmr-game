@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "vguitextwindow.h"
-
 
 class CZMTextWindow : public CTextWindow
 {
@@ -20,7 +18,6 @@ public:
 
 protected:
     ButtonCode_t m_iScoreBoardKey;
-
 
 public:
     virtual void PaintBackground();

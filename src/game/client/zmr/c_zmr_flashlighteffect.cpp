@@ -1,30 +1,26 @@
 #include "cbase.h"
 #include "dlight.h"
+#include "engine/ivdebugoverlay.h"
 #include "iefx.h"
 #include "iviewrender.h"
-#include "view.h"
-#include "engine/ivdebugoverlay.h"
+#include "iviewrender_beams.h"
 #include "tier0/vprof.h"
 #include "tier1/KeyValues.h"
 #include "toolframework_client.h"
-#include "iviewrender_beams.h"
+#include "view.h"
 
-#include "c_zmr_player.h"
-#include "c_zmr_flashlightsystem.h"
 #include "c_zmr_flashlighteffect.h"
+#include "c_zmr_flashlightsystem.h"
+#include "c_zmr_player.h"
 #include "zmr_player_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
 ConVar zm_cl_flashlight_localuseshadows( "zm_cl_flashlight_localuseshadows", "1", FCVAR_ARCHIVE );
 ConVar zm_cl_flashlight_thirdperson( "zm_cl_flashlight_thirdperson", "1", FCVAR_ARCHIVE, "Do other players have a flashlight beam + dynamic light" );
 ConVar zm_cl_flashlight_spec_uselocal( "zm_cl_flashlight_spec_uselocal", "1", FCVAR_ARCHIVE, "Use better flashlight when spectating in firstperson" );
 ConVar zm_cl_flashlight_expensive_fadetime( "zm_cl_flashlight_expensive_fadetime", "0.4", FCVAR_ARCHIVE );
-
-
 
 extern ConVar r_flashlightdepthres;
 extern ConVar r_flashlightdepthtexture;
@@ -48,29 +44,24 @@ ConVar r_flashlightambient( "r_flashlightambient", "0.0", FCVAR_CHEAT );
 ConVar r_flashlightshadowatten( "r_flashlightshadowatten", "0.35", FCVAR_CHEAT );
 
 ConVar mat_slopescaledepthbias_shadowmap( "mat_slopescaledepthbias_shadowmap", "16", FCVAR_CHEAT );
-ConVar mat_depthbias_shadowmap( "mat_depthbias_shadowmap", "0.0005", FCVAR_CHEAT  );
-
+ConVar mat_depthbias_shadowmap( "mat_depthbias_shadowmap", "0.0005", FCVAR_CHEAT );
 
 CZMFlashlightEffect::CZMFlashlightEffect( CZMPlayer* pPlayer )
 {
     m_pPlayer = pPlayer;
     Assert( m_pPlayer );
 
-
     m_FlashlightHandle = CLIENTSHADOW_INVALID_HANDLE;
     m_bIsOn = false;
 
-
     m_pFlashlightBeam = nullptr;
     m_iAttachmentRH = m_pPlayer->LookupAttachment( "anim_attachment_RH" );
-
 
     m_bPreferExpensive = false;
     m_bDoFade = false;
     m_flFadeAlpha = 1.0f;
 
     m_flMoveFwd = 0.0f;
-
 
     if ( g_pMaterialSystemHardwareConfig->SupportsBorderColor() )
     {
@@ -80,7 +71,6 @@ CZMFlashlightEffect::CZMFlashlightEffect( CZMPlayer* pPlayer )
     {
         m_FlashlightTexture.Init( "effects/flashlight001", TEXTURE_GROUP_OTHER, true );
     }
-
 
     if ( !m_pPlayer->IsLocalPlayer() )
     {
@@ -143,7 +133,7 @@ bool CZMFlashlightEffect::IsInThirdperson() const
     {
         return !C_ZMPlayer::LocalPlayerInFirstPersonView();
     }
-    
+
     if ( pLocal )
     {
         return pLocal->GetObserverTarget() != m_pPlayer || pLocal->GetObserverMode() != OBS_MODE_IN_EYE;
@@ -159,7 +149,7 @@ bool CZMFlashlightEffect::LocalPlayerWatchingMe() const
     {
         return true;
     }
-    
+
     if ( pLocal && pLocal->GetObserverMode() == OBS_MODE_IN_EYE && pLocal->GetObserverTarget() == m_pPlayer )
     {
         return zm_cl_flashlight_spec_uselocal.GetBool();
@@ -198,11 +188,11 @@ public:
     {
         // Test against the vehicle too?
         // FLASHLIGHTFIXME: how do you know that you are actually inside of the vehicle?
-        C_BaseEntity *pEntity = EntityFromEntityHandle( pServerEntity );
+        C_BaseEntity* pEntity = EntityFromEntityHandle( pServerEntity );
         if ( !pEntity )
             return true;
 
-        if ( ( dynamic_cast<C_BaseViewModel *>( pEntity ) != nullptr ) ||
+        if ( ( dynamic_cast<C_BaseViewModel*>( pEntity ) != nullptr ) ||
              pEntity->IsPlayer() ||
              pEntity->GetCollisionGroup() == COLLISION_GROUP_DEBRIS ||
              pEntity->GetCollisionGroup() == COLLISION_GROUP_INTERACTIVE_DEBRIS )
@@ -218,11 +208,10 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
 {
     VPROF_BUDGET( "CZMFlashlightEffect::UpdateLightNew", VPROF_BUDGETGROUP_SHADOW_DEPTH_TEXTURING );
 
-
     // We will lock some of the flashlight params if player is on a ladder, to prevent oscillations due to the trace-rays
     //bool bPlayerOnLadder = m_pPlayer->GetMoveType() == MOVETYPE_LADDER;
 
-    const float flEpsilon = 0.1f;			// Offset flashlight position along vecUp
+    const float flEpsilon = 0.1f;   // Offset flashlight position along vecUp
     const float flDistCutoff = 128.0f;
     const float flDistDrag = 0.2f;
 
@@ -234,7 +223,6 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
 
     const bool bUseFirstpersonEffects = !bIsThirdperson;
 
-
     // How much we will move forward.
     float flMoveFwd = bUseFirstpersonEffects ? m_flMoveFwd : 16.0f;
 
@@ -243,16 +231,16 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
         // This projects the view direction backwards, attempting to raise the vertical
         // offset of the flashlight, but only when the player is looking down.
         Vector vecSwingLight = vecPos + vecForward * -12.0f;
-        if( vecSwingLight.z > vecPos.z )
+        if ( vecSwingLight.z > vecPos.z )
         {
-            flOffsetY += (vecSwingLight.z - vecPos.z);
+            flOffsetY += ( vecSwingLight.z - vecPos.z );
         }
     }
 
     Vector vOrigin = vecPos;// + flOffsetY * vecUp;
 
     // Not on ladder...trace a hull
-    //if ( !bPlayerOnLadder ) 
+    //if ( !bPlayerOnLadder )
     //{
     //    trace_t pmOriginTrace;
     //    UTIL_TraceHull( vecPos, vOrigin, Vector(-4, -4, -4), Vector(4, 4, 4), MASK_SOLID & ~(CONTENTS_HITBOX), &traceFilter, &pmOriginTrace );
@@ -273,9 +261,9 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
     iMask |= CONTENTS_WINDOW;
 
     // Work with these local copies of the basis for the rest of the function
-    Vector vDir   = vecForward;
+    Vector vDir = vecForward;
     Vector vRight = vecRight;
-    Vector vUp    = vecUp;
+    Vector vUp = vecUp;
     //VectorNormalize( vDir );
     //VectorNormalize( vRight );
     //VectorNormalize( vUp );
@@ -289,10 +277,8 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
     VectorNormalize( vRight );
 
     AssertFloatEquals( DotProduct( vDir, vRight ), 0.0f, 1e-3f );
-    AssertFloatEquals( DotProduct( vDir, vUp    ), 0.0f, 1e-3f );
-    AssertFloatEquals( DotProduct( vRight, vUp  ), 0.0f, 1e-3f );
-
-
+    AssertFloatEquals( DotProduct( vDir, vUp ), 0.0f, 1e-3f );
+    AssertFloatEquals( DotProduct( vRight, vUp ), 0.0f, 1e-3f );
 
     if ( bUseFirstpersonEffects )
     {
@@ -304,7 +290,6 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
         trace_t tr;
 
         const Vector hull( 4, 4, 4 );
-
 
         Vector vTarget = vOrigin + vecForward * flDistCutoff;
 
@@ -318,21 +303,21 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
 
         if ( tr.fraction != 1.0f && !tr.startsolid )
         {
-            float flDist = (tr.endpos - vOrigin).Length();
+            float flDist = ( tr.endpos - vOrigin ).Length();
             float flMoveBack = -flMoveFwd;
 
             // We have an intersection with our cutoff range
             // Determine how far to pull back, then trace to see if we are clear
-            float flPullBackDist = flDistCutoff - flDist;	// Fixed pull-back distance if on ladder
-            
+            float flPullBackDist = flDistCutoff - flDist; // Fixed pull-back distance if on ladder
+
             flMoveBack = Lerp( flDistDrag, flMoveBack, flPullBackDist );
-            
+
             {
-                UTIL_TraceHull( vOrigin, vOrigin - vDir*(flPullBackDist-flEpsilon), -hull, hull, iMask, &traceFilter, &tr );
+                UTIL_TraceHull( vOrigin, vOrigin - vDir * ( flPullBackDist - flEpsilon ), -hull, hull, iMask, &traceFilter, &tr );
                 if ( tr.fraction != 1.0f )
                 {
                     // We have an intersection behind us as well, so limit our back move.
-                    float flMaxDist = (tr.endpos - vOrigin).Length() - flEpsilon;
+                    float flMaxDist = ( tr.endpos - vOrigin ).Length() - flEpsilon;
                     if ( flMoveBack > flMaxDist )
                         flMoveBack = flMaxDist;
                 }
@@ -346,10 +331,7 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
         }
     }
 
-
     vOrigin = vOrigin + vDir * flMoveFwd;
-
-
 
     //
     // Flickering
@@ -364,11 +346,11 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
         if ( flScale < 0.35f )
         {
             float flFlicker = cosf( gpGlobals->curtime * 6.0f ) * sinf( gpGlobals->curtime * 15.0f );
-            
+
             // On/Off
             flLinearAtten = ( flFlicker > 0.25f && flFlicker < 0.75f )
-                            ? (flLinearAtten * flScale)
-                            : 0.0f;
+                              ? ( flLinearAtten * flScale )
+                              : 0.0f;
         }
         else
         {
@@ -376,10 +358,8 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
             flLinearAtten *= flScale + 1.5f * flNoise;
         }
 
-        flFov -= ( 16.0f * (1.0f-flScale) );
+        flFov -= ( 16.0f * ( 1.0f - flScale ) );
     }
-
-
 
     //
     // TODO: Fix me.
@@ -390,16 +370,14 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
     // You can barely even see the shadows.
     bool bDrawShadows = bIsThirdperson || zm_cl_flashlight_localuseshadows.GetBool();
 
-
     float clr = 1.0f;
-
 
     //
     // Perform fade in/out
     //
     if ( m_bDoFade )
     {
-        float delta = gpGlobals->frametime * (1.0f / zm_cl_flashlight_expensive_fadetime.GetFloat());
+        float delta = gpGlobals->frametime * ( 1.0f / zm_cl_flashlight_expensive_fadetime.GetFloat() );
 
         if ( m_bPreferExpensive ) // Fade in
         {
@@ -423,8 +401,6 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
         clr = m_flFadeAlpha;
     }
 
-
-
     FlashlightState_t state;
     state.m_vecLightOrigin = vOrigin;
     BasisToQuaternion( vDir, vRight, vUp, state.m_quatOrientation );
@@ -446,20 +422,19 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
     state.m_flShadowSlopeScaleDepthBias = mat_slopescaledepthbias_shadowmap.GetFloat();
     state.m_flShadowDepthBias = mat_depthbias_shadowmap.GetFloat();
 
-    if( m_FlashlightHandle == CLIENTSHADOW_INVALID_HANDLE )
+    if ( m_FlashlightHandle == CLIENTSHADOW_INVALID_HANDLE )
     {
         m_FlashlightHandle = g_pClientShadowMgr->CreateFlashlight( state );
     }
     else
     {
-        if( !r_flashlightlockposition.GetBool() )
+        if ( !r_flashlightlockposition.GetBool() )
         {
             g_pClientShadowMgr->UpdateFlashlightState( m_FlashlightHandle, state );
         }
     }
-    
+
     g_pClientShadowMgr->UpdateProjectedTexture( m_FlashlightHandle, true );
-    
 
 #ifndef NO_TOOLFRAMEWORK
     if ( clienttools->IsInRecordingMode() )
@@ -472,7 +447,6 @@ void CZMFlashlightEffect::UpdateLightNew( const Vector& vecPos, const Vector& ve
         ToolFramework_PostToolMessage( HTOOLHANDLE_INVALID, msg );
     }
 #endif
-
 
     m_flMoveFwd = flMoveFwd;
 }
@@ -487,15 +461,14 @@ void CZMFlashlightEffect::UpdateLightCheap( const Vector& vecPos, const Vector& 
         return;
     }
 
-
     trace_t tr;
-    UTIL_TraceLine( vecPos, vecPos + (vecDir * 200), MASK_SOLID, m_pPlayer, COLLISION_GROUP_NONE, &tr );
+    UTIL_TraceLine( vecPos, vecPos + ( vecDir * 200 ), MASK_SOLID, m_pPlayer, COLLISION_GROUP_NONE, &tr );
 
     if ( tr.fraction != 1.0f )
     {
         dlight_t* l = effects->CL_AllocDlight( m_pPlayer->entindex() );
         l->origin = tr.endpos;
-        l->radius = 50; 
+        l->radius = 50;
         l->color.r = 200;
         l->color.g = 200;
         l->color.b = 200;
@@ -504,7 +477,7 @@ void CZMFlashlightEffect::UpdateLightCheap( const Vector& vecPos, const Vector& 
 }
 
 //
-// Thirdperson flashlight beam. 
+// Thirdperson flashlight beam.
 //
 void CZMFlashlightEffect::UpdateBeam( const Vector& vecDir )
 {
@@ -513,23 +486,19 @@ void CZMFlashlightEffect::UpdateBeam( const Vector& vecDir )
         return;
     }
 
-
     // We have nothing to attach the flashlight on to.
     if ( m_iAttachmentRH <= 0 )
     {
         return;
     }
 
-
     trace_t tr;
     Vector vecOrigin;
     QAngle temp;
-    
 
     m_pPlayer->GetAttachment( m_iAttachmentRH, vecOrigin, temp );
 
-    UTIL_TraceLine( vecOrigin, vecOrigin + (vecDir * 200), MASK_SOLID, m_pPlayer, COLLISION_GROUP_NONE, &tr );
-
+    UTIL_TraceLine( vecOrigin, vecOrigin + ( vecDir * 200 ), MASK_SOLID, m_pPlayer, COLLISION_GROUP_NONE, &tr );
 
     if ( !m_pFlashlightBeam )
     {
@@ -555,7 +524,7 @@ void CZMFlashlightEffect::UpdateBeam( const Vector& vecDir )
         beamInfo.m_bRenderable = true;
         beamInfo.m_flLife = 0.5f;
         beamInfo.m_nFlags = FBEAM_FOREVER | FBEAM_ONLYNOISEONCE | FBEAM_NOTILE | FBEAM_HALOBEAM;
-                
+
         m_pFlashlightBeam = beams->CreateBeamPoints( beamInfo );
     }
 
@@ -582,16 +551,13 @@ void CZMFlashlightEffect::UpdateLight()
         return;
     }
 
-
     Assert( m_pPlayer );
-
 
     Vector fwd, right, up;
     Vector pos;
 
     AngleVectors( m_pPlayer->EyeAngles(), &fwd, &right, &up );
     pos = m_pPlayer->EyePosition();
-
 
     //
     // ZMRTODO: We still need to allocate the lights per player.
@@ -602,8 +568,7 @@ void CZMFlashlightEffect::UpdateLight()
     //const bool bUseLocalEffects = LocalPlayerWatchingMe();
     const bool bInThirdperson = IsInThirdperson();
 
-
-    if( bUseFancyLight )
+    if ( bUseFancyLight )
     {
         LightOffCheap();
         UpdateLightNew( pos, fwd, right, up, bInThirdperson );
@@ -613,7 +578,6 @@ void CZMFlashlightEffect::UpdateLight()
         LightOffNew();
         UpdateLightCheap( pos, fwd );
     }
-
 
     if ( bInThirdperson )
     {
@@ -640,7 +604,7 @@ void CZMFlashlightEffect::LightOffNew()
 #endif
 
     // Clear out the light
-    if( m_FlashlightHandle != CLIENTSHADOW_INVALID_HANDLE )
+    if ( m_FlashlightHandle != CLIENTSHADOW_INVALID_HANDLE )
     {
         g_pClientShadowMgr->DestroyFlashlight( m_FlashlightHandle );
         m_FlashlightHandle = CLIENTSHADOW_INVALID_HANDLE;
@@ -648,7 +612,7 @@ void CZMFlashlightEffect::LightOffNew()
 }
 
 void CZMFlashlightEffect::LightOffCheap()
-{	
+{
     // Cheap is turned off automatically.
 }
 
@@ -664,7 +628,7 @@ void CZMFlashlightEffect::BeamOff()
 }
 
 void CZMFlashlightEffect::LightOff()
-{	
+{
     LightOffNew();
     LightOffCheap();
     BeamOff();

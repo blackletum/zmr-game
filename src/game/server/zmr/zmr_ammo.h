@@ -11,16 +11,13 @@ public:
 
     CZMAmmo();
 
+    virtual void Spawn() override;
+    virtual void Precache() override;
+    virtual void OnEntityEvent( EntityEvent_t event, void* pEventData ) override;
 
-    virtual void        Spawn() override;
-    virtual void        Precache() override;
-    virtual void        OnEntityEvent( EntityEvent_t event, void* pEventData ) override;
+    virtual bool MyTouch( CBasePlayer* pPlayer ) override;
 
-    virtual bool        MyTouch( CBasePlayer* pPlayer ) override;
-
-
-    void                SetNextPickupTouch( float delay = 1.0f );
-
+    void SetNextPickupTouch( float delay = 1.0f );
 
     virtual const char* GetItemModel() const { return nullptr; }
     virtual const char* GetAmmoName() const { return nullptr; }
@@ -28,9 +25,8 @@ public:
     int GetMaxAmmoCount() const { return m_nMaxAmmo; }
 
 protected:
-    void                NoPickupThink();
-    void                EmptyTouch( CBaseEntity* pOther );
-
+    void NoPickupThink();
+    void EmptyTouch( CBaseEntity* pOther );
 
     CNetworkVar( int, m_iAmmoType );
     CNetworkVar( int, m_nAmmo );

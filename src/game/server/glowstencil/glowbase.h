@@ -11,18 +11,16 @@ public:
 
     CBaseGlowProp();
 
+    void AddGlowEffect();
+    void RemoveGlowEffect();
+    inline bool IsGlowEffectActive() { return m_bGlowEnabled; };
 
-    void            AddGlowEffect();
-    void            RemoveGlowEffect();
-    inline bool     IsGlowEffectActive() { return m_bGlowEnabled; };
+    virtual bool KeyValue( const char* szKeyValue, const char* szKeyName ) override;
 
-    virtual bool    KeyValue( const char* szKeyValue, const char* szKeyName ) override;
-
-
-    void            InputEnableGlow( inputdata_t& inputData );
-    void            InputDisableGlow( inputdata_t& inputData );
-    void            InputToggleGlow( inputdata_t& inputData );
-    void            InputSetGlowColor( inputdata_t& inputData );
+    void InputEnableGlow( inputdata_t& inputData );
+    void InputDisableGlow( inputdata_t& inputData );
+    void InputToggleGlow( inputdata_t& inputData );
+    void InputSetGlowColor( inputdata_t& inputData );
 
 protected:
     CNetworkVar( bool, m_bGlowEnabled );

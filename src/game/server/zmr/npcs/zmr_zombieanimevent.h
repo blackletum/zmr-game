@@ -2,7 +2,6 @@
 
 #include "npcs/zmr_zombiebase_shared.h"
 
-
 class CZMTEZombieAnimEvent : public CBaseTempEntity
 {
 public:

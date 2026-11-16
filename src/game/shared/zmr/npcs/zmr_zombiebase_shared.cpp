@@ -1,14 +1,11 @@
 #include "cbase.h"
 
-
 #include "zmr_zombiebase_shared.h"
 
-#include "zmr_player_shared.h"
-#include "zmr_gamerules.h"
-#include "zmr_shareddefs.h"
 #include "npcs/zmr_zombieanimstate.h"
-
-
+#include "zmr_gamerules.h"
+#include "zmr_player_shared.h"
+#include "zmr_shareddefs.h"
 
 ConVar zm_sv_popcost_shambler( "zm_sv_popcost_shambler", "1", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 ConVar zm_sv_popcost_banshee( "zm_sv_popcost_banshee", "6", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
@@ -22,23 +19,17 @@ ConVar zm_sv_cost_hulk( "zm_sv_cost_hulk", "70", FCVAR_REPLICATED | FCVAR_NOTIFY
 ConVar zm_sv_cost_drifter( "zm_sv_cost_drifter", "35", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 ConVar zm_sv_cost_immolator( "zm_sv_cost_immolator", "100", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 
-
 ConVar zm_sv_spawndelay_shambler( "zm_sv_spawndelay_shambler", "0.5", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 ConVar zm_sv_spawndelay_banshee( "zm_sv_spawndelay_banshee", "0.7", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 ConVar zm_sv_spawndelay_hulk( "zm_sv_spawndelay_hulk", "0.75", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 ConVar zm_sv_spawndelay_drifter( "zm_sv_spawndelay_drifter", "0.6", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 ConVar zm_sv_spawndelay_immolator( "zm_sv_spawndelay_immolator", "0.75", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_ARCHIVE );
 
-
 ConVar zm_sv_happyzombies( "zm_sv_happyzombies", "0", FCVAR_REPLICATED, "Happy, happy zombies :)" );
-
-
 
 CZMZombieManager g_ZombieManager;
 
-
 ConVar zm_sv_debug_zombieik( "zm_sv_debug_zombieik", "0", FCVAR_REPLICATED );
-
 
 ZombieClass_t CZMBaseZombie::NameToClass( const char* name )
 {
@@ -79,12 +70,18 @@ const char* CZMBaseZombie::ClassToName( ZombieClass_t zclass )
 {
     switch ( zclass )
     {
-    case ZMCLASS_SHAMBLER : return "npc_zombie";
-    case ZMCLASS_BANSHEE : return "npc_fastzombie";
-    case ZMCLASS_HULK : return "npc_poisonzombie";
-    case ZMCLASS_DRIFTER : return "npc_dragzombie";
-    case ZMCLASS_IMMOLATOR : return "npc_burnzombie";
-    default : return nullptr;
+    case ZMCLASS_SHAMBLER:
+        return "npc_zombie";
+    case ZMCLASS_BANSHEE:
+        return "npc_fastzombie";
+    case ZMCLASS_HULK:
+        return "npc_poisonzombie";
+    case ZMCLASS_DRIFTER:
+        return "npc_dragzombie";
+    case ZMCLASS_IMMOLATOR:
+        return "npc_burnzombie";
+    default:
+        return nullptr;
     }
 }
 
@@ -92,12 +89,18 @@ int CZMBaseZombie::GetPopCost( ZombieClass_t zclass )
 {
     switch ( zclass )
     {
-    case ZMCLASS_SHAMBLER : return zm_sv_popcost_shambler.GetInt();
-    case ZMCLASS_BANSHEE : return zm_sv_popcost_banshee.GetInt();
-    case ZMCLASS_HULK : return zm_sv_popcost_hulk.GetInt();
-    case ZMCLASS_DRIFTER : return zm_sv_popcost_drifter.GetInt();
-    case ZMCLASS_IMMOLATOR : return zm_sv_popcost_immolator.GetInt();
-    default : return 0;
+    case ZMCLASS_SHAMBLER:
+        return zm_sv_popcost_shambler.GetInt();
+    case ZMCLASS_BANSHEE:
+        return zm_sv_popcost_banshee.GetInt();
+    case ZMCLASS_HULK:
+        return zm_sv_popcost_hulk.GetInt();
+    case ZMCLASS_DRIFTER:
+        return zm_sv_popcost_drifter.GetInt();
+    case ZMCLASS_IMMOLATOR:
+        return zm_sv_popcost_immolator.GetInt();
+    default:
+        return 0;
     }
 }
 
@@ -105,12 +108,18 @@ int CZMBaseZombie::GetCost( ZombieClass_t zclass )
 {
     switch ( zclass )
     {
-    case ZMCLASS_SHAMBLER : return zm_sv_cost_shambler.GetInt();
-    case ZMCLASS_BANSHEE : return zm_sv_cost_banshee.GetInt();
-    case ZMCLASS_HULK : return zm_sv_cost_hulk.GetInt();
-    case ZMCLASS_DRIFTER : return zm_sv_cost_drifter.GetInt();
-    case ZMCLASS_IMMOLATOR : return zm_sv_cost_immolator.GetInt();
-    default : return 0;
+    case ZMCLASS_SHAMBLER:
+        return zm_sv_cost_shambler.GetInt();
+    case ZMCLASS_BANSHEE:
+        return zm_sv_cost_banshee.GetInt();
+    case ZMCLASS_HULK:
+        return zm_sv_cost_hulk.GetInt();
+    case ZMCLASS_DRIFTER:
+        return zm_sv_cost_drifter.GetInt();
+    case ZMCLASS_IMMOLATOR:
+        return zm_sv_cost_immolator.GetInt();
+    default:
+        return 0;
     }
 }
 
@@ -118,19 +127,24 @@ float CZMBaseZombie::GetSpawnDelay( ZombieClass_t zclass )
 {
     switch ( zclass )
     {
-    case ZMCLASS_SHAMBLER : return zm_sv_spawndelay_shambler.GetFloat();
-    case ZMCLASS_BANSHEE : return zm_sv_spawndelay_banshee.GetFloat();
-    case ZMCLASS_HULK : return zm_sv_spawndelay_hulk.GetFloat();
-    case ZMCLASS_DRIFTER : return zm_sv_spawndelay_drifter.GetFloat();
-    case ZMCLASS_IMMOLATOR : return zm_sv_spawndelay_immolator.GetFloat();
-    default : return zm_sv_spawndelay_shambler.GetFloat();
+    case ZMCLASS_SHAMBLER:
+        return zm_sv_spawndelay_shambler.GetFloat();
+    case ZMCLASS_BANSHEE:
+        return zm_sv_spawndelay_banshee.GetFloat();
+    case ZMCLASS_HULK:
+        return zm_sv_spawndelay_hulk.GetFloat();
+    case ZMCLASS_DRIFTER:
+        return zm_sv_spawndelay_drifter.GetFloat();
+    case ZMCLASS_IMMOLATOR:
+        return zm_sv_spawndelay_immolator.GetFloat();
+    default:
+        return zm_sv_spawndelay_shambler.GetFloat();
     }
 }
 
 bool CZMBaseZombie::HasEnoughPopToSpawn( ZombieClass_t zclass )
 {
     CZMRules* pRules = ZMRules();
-
 
     int curpop = 0;
 
@@ -139,8 +153,7 @@ bool CZMBaseZombie::HasEnoughPopToSpawn( ZombieClass_t zclass )
         curpop = pRules->GetZombiePop();
     }
 
-
-    return (curpop + GetPopCost( zclass )) <= zm_sv_zombiemax.GetInt();
+    return ( curpop + GetPopCost( zclass ) ) <= zm_sv_zombiemax.GetInt();
 }
 
 CZMPlayer* CZMBaseZombie::GetSelector() const
@@ -158,7 +171,6 @@ void CZMBaseZombie::SetSelector( CZMPlayer* pPlayer )
     int index = 0;
 
     if ( pPlayer ) index = pPlayer->entindex();
-
 
     SetSelector( index );
 }
@@ -199,7 +211,6 @@ bool CZMBaseZombie::DoAnimationEvent( int iEvent, int nData )
     // Depending on the event, send a random seed in data
     GetAnimRandomSeed( iEvent, nData );
 #endif
-
 
     m_iAdditionalAnimRandomSeed = nData;
 

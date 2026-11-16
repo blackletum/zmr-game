@@ -1,6 +1,6 @@
 #include "cbase.h"
-#include "iefx.h"
 #include "debugoverlay_shared.h"
+#include "iefx.h"
 
 #include "c_zmr_fireglow_system.h"
 
@@ -32,12 +32,10 @@ ConVar zm_cl_fireglow_radius_random( "zm_cl_fireglow_radius_random", "32" );
 ConVar zm_cl_fireglow_color( "zm_cl_fireglow_color", "254 95 10 2", 0, "Fourth number is exponent." );
 ConVar zm_cl_fireglow_combine_dist( "zm_cl_fireglow_combine_dist", "35" );
 
-
 CON_COMMAND_F( zm_cl_debug_getlightatpos, "", FCVAR_CHEAT )
 {
     auto* pLocal = CBasePlayer::GetLocalPlayer();
     if ( !pLocal ) return;
-
 
     Vector pos;
 
@@ -55,7 +53,6 @@ CON_COMMAND_F( zm_cl_debug_getlightatpos, "", FCVAR_CHEAT )
 
     engine->ComputeLighting( pos, nullptr, true, clr, nullptr );
 
-
     Msg( "Lighting color at pos (%.1f, %.1f, %.1f)\n",
         pos.x, pos.y, pos.z );
 
@@ -70,7 +67,6 @@ CON_COMMAND_F( zm_cl_debug_getlightatpos, "", FCVAR_CHEAT )
 FireGlow_t::FireGlow_t( FireGlowEnt_t* pEnt, FireGlowType_t glowType ) : glowType( glowType )
 {
     static int lightIndices = 4096;
-
 
     pLight = nullptr;
     flNextUpdate = 0.0f;
@@ -108,7 +104,6 @@ void FireGlow_t::Update( float flUpdateInterval )
     if ( bDying )
         return;
 
-
     Assert( vpEnts.Count() > 0 );
     if ( vpEnts.Count() <= 0 )
         return;
@@ -128,8 +123,6 @@ void FireGlow_t::Update( float flUpdateInterval )
 
     flNextUpdate = gpGlobals->curtime + flUpdateInterval;
 
-    
-
     if ( !pLight )
     {
         pLight = effects->CL_AllocDlight( iLightIndex );
@@ -140,30 +133,27 @@ void FireGlow_t::Update( float flUpdateInterval )
             return;
         }
 
-
         int clr[4];
         UTIL_ParseColorFromString( zm_cl_fireglow_color.GetString(), clr, ARRAYSIZE( clr ) );
 
-	    pLight->color.r = (unsigned char)clr[0];
-	    pLight->color.g = (unsigned char)clr[1];
-	    pLight->color.b = (unsigned char)clr[2];
+        pLight->color.r = (unsigned char)clr[0];
+        pLight->color.g = (unsigned char)clr[1];
+        pLight->color.b = (unsigned char)clr[2];
         pLight->color.exponent = (unsigned char)clr[3];
         pLight->decay = 0.0f;
     }
-    
+
     if ( flNextFlicker <= curtime )
     {
         float ratio = RandomFloat();
-        pLight->radius = (zm_cl_fireglow_radius_base.GetFloat() + zm_cl_fireglow_radius_random.GetFloat() * ratio);
+        pLight->radius = ( zm_cl_fireglow_radius_base.GetFloat() + zm_cl_fireglow_radius_random.GetFloat() * ratio );
 
         flNextFlicker = curtime + flFlickerInterval;
     }
-	
 
-	vecLastPos = ComputePosition();
-	pLight->origin = vecLastPos;
-	pLight->die = curtime + MAX( flUpdateInterval * 2, 0.1f );
-    
+    vecLastPos = ComputePosition();
+    pLight->origin = vecLastPos;
+    pLight->die = curtime + MAX( flUpdateInterval * 2, 0.1f );
 
     if ( CZMFireGlowSystem::IsDebugging() )
     {
@@ -250,10 +240,9 @@ bool FireGlow_t::ShouldCombine( const Vector& pos ) const
     if ( glowType == FireGlowType_t::GLOW_ENTITY_FLAME )
         return false;
 
-
     float dist = zm_cl_fireglow_combine_dist.GetFloat();
 
-     return pos.DistToSqr( vecLastPos ) <= (dist*dist);
+    return pos.DistToSqr( vecLastPos ) <= ( dist * dist );
 }
 
 //
@@ -264,11 +253,9 @@ bool FireGlow_t::IsWorldLightSufficient( FireGlowEnt_t* pEnt, FireGlowType_t glo
     if ( glowType != FireGlowType_t::GLOW_GENERIC_FIRE )
         return false;
 
-
     auto pos = pEnt->GetAbsOrigin();
     pos.z += 16.0f;
 
-    
     Vector clr;
 
     //clr = engine->GetLightForPoint( pos, false ); // These are the same thing?
@@ -282,7 +269,6 @@ bool FireGlow_t::IsWorldLightSufficient( FireGlowEnt_t* pEnt, FireGlowType_t glo
             pos.x, pos.y, pos.z,
             clr.x, clr.y, clr.z );
     }
-        
 
     bool bIsInRed = clr.x > clr.y && clr.x > clr.z;
 
@@ -333,7 +319,6 @@ void CZMFireGlowSystem::Update( float frametime )
 {
     const float updateInterval = 1.0f / zm_cl_fireglow_updaterate.GetFloat();
 
-
     const int nMaxCount = GetMaxCount();
 
     // Remove dying lights.
@@ -351,14 +336,12 @@ void CZMFireGlowSystem::Update( float frametime )
         m_vFireEntities.Remove( 0 );
     }
 
-
     // SUPER HACK: This is here to assure we have lightmaps loaded to perform the worldlight check.
     // Apparently lightmaps are loaded AFTER the map env_fires spawn on client.
     if ( CZMFireGlowSystem::WaitMapStart() )
     {
         return;
     }
-
 
     FOR_EACH_VEC( m_vFireEntities, i )
     {
@@ -367,8 +350,8 @@ void CZMFireGlowSystem::Update( float frametime )
 
         switch ( type )
         {
-        case FireGlowType_t::GLOW_GENERIC_FIRE :
-        default :
+        case FireGlowType_t::GLOW_GENERIC_FIRE:
+        default:
             pFireData->Update( updateInterval );
             break;
         }
@@ -382,12 +365,10 @@ int CZMFireGlowSystem::AddFireEntity( FireGlowEnt_t* pEnt, FireGlowType_t glowTy
     if ( nMaxCount <= 0 )
         return m_vFireEntities.InvalidIndex();
 
-
     if ( !pEnt || FindFireEntity( pEnt ) != m_vFireEntities.InvalidIndex() )
     {
         return m_vFireEntities.InvalidIndex();
     }
-
 
     int iCombined = AttemptCombine( pEnt, glowType );
 
@@ -395,8 +376,6 @@ int CZMFireGlowSystem::AddFireEntity( FireGlowEnt_t* pEnt, FireGlowType_t glowTy
     {
         return iCombined;
     }
-
-
 
     if ( m_vFireEntities.Count() >= nMaxCount )
     {
@@ -412,7 +391,6 @@ int CZMFireGlowSystem::AddFireEntity( FireGlowEnt_t* pEnt, FireGlowType_t glowTy
 
         m_vFireEntities.Remove( iReplace );
     }
-
 
     if ( IsDebugging() )
     {
@@ -524,7 +502,6 @@ int CZMFireGlowSystem::FindSuitableReplacement() const
     if ( iDying != m_vFireEntities.InvalidIndex() )
         return iDying;
 
-
     return 0;
 }
 
@@ -537,6 +514,5 @@ bool CZMFireGlowSystem::WaitMapStart()
 {
     return m_MapStartTimer.HasStarted() && !m_MapStartTimer.IsElapsed();
 }
-
 
 CZMFireGlowSystem g_ZMFireGlowSystem;

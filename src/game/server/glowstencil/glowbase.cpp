@@ -1,13 +1,11 @@
-#include "cbase.h"
 #include "glowbase.h"
+#include "cbase.h"
 
 #include "zmr_shareddefs.h"
 
-
-#define GLOWTYPE_ALWAYS             0
-#define GLOWTYPE_OCCLUDED           1
-#define GLOWTYPE_UNOCCLUDED         2
-
+#define GLOWTYPE_ALWAYS     0
+#define GLOWTYPE_OCCLUDED   1
+#define GLOWTYPE_UNOCCLUDED 2
 
 IMPLEMENT_SERVERCLASS_ST( CBaseGlowProp, DT_BaseGlowProp )
     SendPropBool( SENDINFO( m_bGlowEnabled ) ),
@@ -55,9 +53,15 @@ bool CBaseGlowProp::KeyValue( const char* szKeyValue, const char* szKeyName )
     {
         switch ( atoi( szKeyName ) )
         {
-        case GLOWTYPE_OCCLUDED : m_fGlowType = GLOWFLAG_OCCLUDED; break;
-        case GLOWTYPE_UNOCCLUDED : m_fGlowType = GLOWFLAG_UNOCCLUDED; break;
-        default : m_fGlowType = GLOWFLAG_ALWAYS; break;
+        case GLOWTYPE_OCCLUDED:
+            m_fGlowType = GLOWFLAG_OCCLUDED;
+            break;
+        case GLOWTYPE_UNOCCLUDED:
+            m_fGlowType = GLOWFLAG_UNOCCLUDED;
+            break;
+        default:
+            m_fGlowType = GLOWFLAG_ALWAYS;
+            break;
         }
 
         return true;

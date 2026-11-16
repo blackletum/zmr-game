@@ -1,20 +1,17 @@
 #pragma once
 
 #include <vgui/VGUI.h>
-#include <vgui_controls/Panel.h>
 #include <vgui_controls/Image.h>
 #include <vgui_controls/Label.h>
-
+#include <vgui_controls/Panel.h>
 
 class CZMRadialButton : public vgui::Panel
 {
 public:
     DECLARE_CLASS_SIMPLE( CZMRadialButton, vgui::Panel );
 
-
     CZMRadialButton( vgui::Panel* parent, const char* name );
     ~CZMRadialButton();
-
 
     inline void SetImage( vgui::IImage* image );
     inline void SetImageFocus( vgui::IImage* image );
@@ -75,15 +72,13 @@ public:
     CZMRadialPanel( vgui::Panel* parent, const char* name );
     ~CZMRadialPanel();
 
-
-    void                            AddButton( KeyValues* kv );
-    void                            LoadFromFile( const char* file );
-    CUtlVector<CZMRadialButton*>*   GetButtons() { return &m_Buttons; };
-    CZMRadialButton*				GetLastButton() { return m_pLastButton; }
+    void AddButton( KeyValues* kv );
+    void LoadFromFile( const char* file );
+    CUtlVector<CZMRadialButton*>* GetButtons() { return &m_Buttons; };
+    CZMRadialButton* GetLastButton() { return m_pLastButton; }
 
     void SetBackgroundImage( const char* image );
 
-    
     virtual void OnMousePressed( vgui::MouseCode code ) override;
     virtual void OnMouseDoublePressed( vgui::MouseCode code ) override;
     virtual void OnThink() override;
@@ -92,7 +87,7 @@ public:
 protected:
     virtual void GetSettings( KeyValues* outResourceData ) override;
     virtual const char* GetDescription() override;
-    
+
     virtual void PaintBackground() override;
     virtual void Paint() override;
 

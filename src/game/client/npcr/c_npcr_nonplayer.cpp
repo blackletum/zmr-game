@@ -1,8 +1,7 @@
-#include "cbase.h"
 #include "animation.h"
+#include "cbase.h"
 
 #include "c_npcr_nonplayer.h"
-
 
 C_NPCRNonPlayer::C_NPCRNonPlayer()
 {
@@ -28,15 +27,12 @@ void C_NPCRNonPlayer::DispatchAnimEvents()
     if ( m_flPlaybackRate == 0.0f )
         return;
 
-
     CStudioHdr* hdr = GetModelPtr();
 
     if ( !hdr || !hdr->SequencesAvailable() )
     {
         return;
     }
-
-
 
     int iSeq = GetSequence();
 
@@ -45,9 +41,8 @@ void C_NPCRNonPlayer::DispatchAnimEvents()
     {
         return;
     }
-        
 
-    // look from when it last checked to some short time in the future	
+    // look from when it last checked to some short time in the future
     float flCycleRate = GetSequenceCycleRate( hdr, iSeq ) * m_flPlaybackRate;
     float flStart = m_flLastEventCheck;
     float flEnd = GetCycle();
@@ -57,12 +52,11 @@ void C_NPCRNonPlayer::DispatchAnimEvents()
         flEnd = 1.01f;
     }
 
-
     //
     // FIXME: does not handle negative framerates!
     int index = 0;
-    animevent_t	event;
-    while ( (index = GetAnimationEvent( hdr, iSeq, &event, flStart, flEnd, index )) != 0 )
+    animevent_t event;
+    while ( ( index = GetAnimationEvent( hdr, iSeq, &event, flStart, flEnd, index ) ) != 0 )
     {
         event.pSource = this;
         // calc when this event should happen
@@ -73,9 +67,8 @@ void C_NPCRNonPlayer::DispatchAnimEvents()
             {
                 flCycle = flCycle - 1.0;
             }
-            event.eventtime = m_flAnimTime + (flCycle - GetCycle()) / flCycleRate + GetAnimTimeInterval();
+            event.eventtime = m_flAnimTime + ( flCycle - GetCycle() ) / flCycleRate + GetAnimTimeInterval();
         }
-
 
         HandleAnimEvent( &event );
     }

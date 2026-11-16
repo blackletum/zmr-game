@@ -1,18 +1,15 @@
+#include "IGameUIFuncs.h"
 #include "cbase.h"
 #include "hl2mp/ui/backgroundpanel.h"
-#include "IGameUIFuncs.h"
-
 
 #include "zmr_textwindow.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern IGameUIFuncs* gameuifuncs;
 
 using namespace vgui;
-
 
 CZMTextWindow::CZMTextWindow( IViewPort* pViewPort ) : CTextWindow( pViewPort )
 {
@@ -37,7 +34,7 @@ void CZMTextWindow::Update()
 
 void CZMTextWindow::SetVisible( bool state )
 {
-    BaseClass::SetVisible(state);
+    BaseClass::SetVisible( state );
 
     if ( state )
     {

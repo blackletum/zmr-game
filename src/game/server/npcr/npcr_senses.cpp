@@ -4,13 +4,10 @@
 #include "npcr_nonplayer.h"
 #include "npcr_senses.h"
 
-
-
-#define VISION_LASTSEEN_GRACE   0.2f
-#define KNOWN_FORGET_TIME       6.0f
+#define VISION_LASTSEEN_GRACE 0.2f
+#define KNOWN_FORGET_TIME     6.0f
 
 ConVar npcr_debug_senses( "npcr_debug_senses", "0" );
-
 
 class CVisionFilter : public CTraceFilterSimple
 {
@@ -28,11 +25,9 @@ public:
         if ( !ret )
             return false;
 
-
         auto* pEnt = EntityFromEntityHandle( pHandleEntity );
-	    if ( !pEnt )
-		    return false;
-
+        if ( !pEnt )
+            return false;
 
         return !m_pSenses->CanSeeThrough( pEnt );
     }
@@ -40,7 +35,6 @@ public:
 private:
     NPCR::CBaseSenses* m_pSenses;
 };
-
 
 NPCR::CBaseSenses::CBaseSenses( NPCR::CBaseNPC* pNPC ) : NPCR::CEventListener( pNPC, pNPC )
 {
@@ -58,7 +52,6 @@ void NPCR::CBaseSenses::Update()
 
     if ( ShouldUpdateHearing() )
         UpdateHearing();
-
 
     if ( IsDebugging() )
     {
@@ -78,7 +71,6 @@ void NPCR::CBaseSenses::Update()
             Q_snprintf( buffer, sizeof( buffer ), "Sensed: %.1f | Seen: %.1f", sensed, seen );
             NDebugOverlay::Text( pEnt->GetAbsOrigin(), buffer, true, interval );
         }
-        
     }
 }
 
@@ -97,8 +89,8 @@ void NPCR::CBaseSenses::UpdateHearing()
     if ( 1 /*&& !(GetOuter()->HasSpawnFlags(SF_NPC_WAIT_TILL_SEEN))*/ )
     {
         const int iSoundMask = GetSoundMask();
-    
-        int	iSound = CSoundEnt::ActiveList();
+
+        int iSound = CSoundEnt::ActiveList();
         while ( iSound != SOUNDLIST_EMPTY )
         {
             CSound* pSound = CSoundEnt::SoundPointerForIndex( iSound );
@@ -106,7 +98,7 @@ void NPCR::CBaseSenses::UpdateHearing()
             if ( !pSound )
                 break;
 
-            if ( (iSoundMask & pSound->SoundType()) )
+            if ( ( iSoundMask & pSound->SoundType() ) )
             {
                 if ( CanHearSound( pSound ) )
                 {
@@ -144,7 +136,6 @@ bool NPCR::CBaseSenses::CanHearSound( CSound* pSound ) const
     if ( pSound->Volume() <= 0.0f )
         return false;
 
-
     float flHearingDist = pSound->Volume();
     flHearingDist *= flHearingDist;
 
@@ -154,7 +145,6 @@ bool NPCR::CBaseSenses::CanHearSound( CSound* pSound ) const
 void NPCR::CBaseSenses::UpdateVision()
 {
     m_flFovCos = cosf( DEG2RAD( GetFieldOfView() / 2.0f ) );
-
 
     //
     // Update all the known entities.
@@ -182,7 +172,7 @@ void NPCR::CBaseSenses::UpdateVision()
             delete pKnown;
         }
     }
-    
+
     //
     // Find new entities.
     //
@@ -195,10 +185,8 @@ void NPCR::CBaseSenses::UpdateVision()
         if ( GetKnownOf( vListEnts[i] ) )
             continue;
 
-
         if ( !CanSeeCharacter( vListEnts[i] ) )
             continue;
-
 
         m_vKnownEnts.AddToTail( new KnownEntity( vListEnts[i], true ) );
 
@@ -229,7 +217,6 @@ NPCR::KnownEntity* NPCR::CBaseSenses::FindKnownOf( CBaseEntity* pEnt ) const
 {
     if ( !pEnt ) return nullptr;
 
-
     FOR_EACH_VEC( m_vKnownEnts, i )
     {
         if ( m_vKnownEnts[i]->GetEntity() == pEnt )
@@ -250,13 +237,11 @@ void NPCR::CBaseSenses::UpdateVisionForKnown( KnownEntity* pKnown )
     if ( !pEnt )
         return;
 
-    if ( (gpGlobals->curtime - pKnown->LastSeenTime()) < VISION_LASTSEEN_GRACE )
+    if ( ( gpGlobals->curtime - pKnown->LastSeenTime() ) < VISION_LASTSEEN_GRACE )
         return;
-
 
     bool bDidSee = pKnown->CanSee();
     bool bCanSee = CanSeeCharacter( pEnt );
-
 
     if ( bCanSee )
     {
@@ -313,7 +298,6 @@ bool NPCR::CBaseSenses::CanSee( const Vector& vecPos ) const
         return false;
     }
 
-
     return HasLOS( vecPos );
 }
 
@@ -323,7 +307,7 @@ bool NPCR::CBaseSenses::HasLOS( const Vector& vecPos ) const
     CVisionFilter filter( GetNPC() );
 
     UTIL_TraceLine( GetOuter()->EyePosition(), vecPos, GetVisionMask(), &filter, &tr );
-    
+
     return tr.fraction == 1.0f;
 }
 
@@ -338,7 +322,6 @@ CBaseEntity* NPCR::CBaseSenses::GetClosestEntity() const
     {
         CBaseEntity* pEnt = m_vKnownEnts[i]->GetEntity();
         if ( !pEnt ) continue;
-
 
         float dist = pEnt->WorldSpaceCenter().DistToSqr( vecMyPos );
         if ( dist < closest )
@@ -359,8 +342,7 @@ bool NPCR::CBaseSenses::IsValidKnownEntity( CBaseEntity* pEnt ) const
 bool NPCR::CBaseSenses::CanSeeCharacter( CBaseEntity* pEnt ) const
 {
     // Check plausible spots
-    Vector checkSpots[] =
-    {
+    Vector checkSpots[] = {
         pEnt->WorldSpaceCenter(),
         pEnt->EyePosition()
     };

@@ -1,20 +1,15 @@
 #include "cbase.h"
 #include "gamestringpool.h"
 
-
 #include "c_zmr_shambler.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZOMBIE_SANTAHAT     "models/props/misc/zombie_santahat01.mdl"
-
-
+#define ZOMBIE_SANTAHAT "models/props/misc/zombie_santahat01.mdl"
 
 IMPLEMENT_CLIENTCLASS_DT( C_ZMShambler, DT_ZM_Shambler, CZMShambler )
 END_RECV_TABLE()
-
 
 C_ZMShambler::C_ZMShambler()
 {
@@ -88,7 +83,6 @@ void C_ZMShambler::SetFlexWeightSafe( const char* pszName, float value )
 
     if ( cntrl == (LocalFlexController_t)0 )
         return;
-
 
     SetFlexWeight( cntrl, value );
 }

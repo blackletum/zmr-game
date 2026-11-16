@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include "npcs/zmr_zombiebase.h"
 #include "npcs/zmr_banshee.h"
+#include "npcs/zmr_zombiebase.h"
 #include "zmr_zombie_main.h"
 
 extern ConVar zm_sk_banshee_dmg_leap;

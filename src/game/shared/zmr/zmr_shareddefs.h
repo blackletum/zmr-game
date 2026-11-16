@@ -1,18 +1,16 @@
 #pragma once
 
+#define ZMR_NAME    "Zombie Master: Reborn"
+#define ZMR_VERSION "b6"
 
-#define ZMR_NAME        "Zombie Master: Reborn"
-#define ZMR_VERSION     "b6"
-
-
-#define ZMR_GAMEDESC    (ZMR_NAME " " ZMR_VERSION)
+#define ZMR_GAMEDESC ( ZMR_NAME " " ZMR_VERSION )
 
 enum
 {
     ZMTEAM_INVALID = -1,
-    
+
     ZMTEAM_UNASSIGNED,
-    
+
     ZMTEAM_SPECTATOR,
     ZMTEAM_HUMAN,
     ZMTEAM_ZM
@@ -93,8 +91,8 @@ enum ServerParticipation_t
     ZMSERVPART_NOHUMANSPECONLY
 };
 
-#define ZMPARTFLAG_NOHUMANSONLY         ( 1 << 0 )
-#define ZMPARTFLAG_NOSPECONLY           ( 1 << 1 )
+#define ZMPARTFLAG_NOHUMANSONLY ( 1 << 0 )
+#define ZMPARTFLAG_NOSPECONLY   ( 1 << 1 )
 
 /*
 #define TEAMNAME_SPECTATOR          "#TeamName_Spec"
@@ -102,21 +100,16 @@ enum ServerParticipation_t
 #define TEAMNAME_ZM                 "#TeamName_ZombieMaster"
 */
 
-#define SIZE_ZMAMMO_REVOLVER        6
+#define SIZE_ZMAMMO_REVOLVER 6
 
-
-#define ZM_POINTS_HUMAN_WIN         50
-#define ZM_POINTS_ZM_WIN            10
-
+#define ZM_POINTS_HUMAN_WIN 50
+#define ZM_POINTS_ZM_WIN    10
 
 // IN_RUN
-#define IN_ZM_OBSERVERMODE          ( 1 << 12 )
+#define IN_ZM_OBSERVERMODE ( 1 << 12 )
 
-
-
-
-#define NUM_OBJ_LINES           5
-#define MAX_OBJ_LINESIZE        128
+#define NUM_OBJ_LINES    5
+#define MAX_OBJ_LINESIZE 128
 
 enum ObjArgType_t
 {
@@ -140,41 +133,36 @@ enum ObjRecipient_t
     OBJRECIPIENT_MAX
 };
 
-
 enum ZMChatNotifyType_t
 {
     ZMCHATNOTIFY_NORMAL = 0,
     ZMCHATNOTIFY_ZM
 };
 
-
 // How far items will glow if players can pick them up.
-#define ITEM_GLOW_DIST_SQR          ( 162.0f * 162.0f )
+#define ITEM_GLOW_DIST_SQR ( 162.0f * 162.0f )
 
-#define GLOWFLAG_OCCLUDED           ( 1 << 0 )
-#define GLOWFLAG_UNOCCLUDED         ( 1 << 1 )
-#define GLOWFLAG_ALWAYS             ( GLOWFLAG_OCCLUDED | GLOWFLAG_UNOCCLUDED )
+#define GLOWFLAG_OCCLUDED   ( 1 << 0 )
+#define GLOWFLAG_UNOCCLUDED ( 1 << 1 )
+#define GLOWFLAG_ALWAYS     ( GLOWFLAG_OCCLUDED | GLOWFLAG_UNOCCLUDED )
 
+#define ZM_MAX_MANI_DESC 256
 
-#define ZM_MAX_MANI_DESC         256
+#define ZM_WALK_SPEED 190.0f
 
-#define ZM_WALK_SPEED               190.0f
-
-#define ZM_MIN_FOV          75 // Not the absolute minimum. GetMinFOV will not use this.
+#define ZM_MIN_FOV 75 // Not the absolute minimum. GetMinFOV will not use this.
 
 // m_hViewModel
-#define VMINDEX_WEP         0
-#define VMINDEX_ARMS        1
+#define VMINDEX_WEP  0
+#define VMINDEX_ARMS 1
 
+#define VEC_ZM_HULL_MIN ( ZMRules()->GetZMViewVectors()->m_vZMHullMin )
+#define VEC_ZM_HULL_MAX ( ZMRules()->GetZMViewVectors()->m_vZMHullMax )
+#define VEC_ZM_VIEW     ( ZMRules()->GetZMViewVectors()->m_vZMView )
 
-
-#define VEC_ZM_HULL_MIN     (ZMRules()->GetZMViewVectors()->m_vZMHullMin)
-#define VEC_ZM_HULL_MAX     (ZMRules()->GetZMViewVectors()->m_vZMHullMax)
-#define VEC_ZM_VIEW         (ZMRules()->GetZMViewVectors()->m_vZMView)
-
-#define VEC_RAT_HULL_MIN    (ZMRules()->GetZMViewVectors()->m_vRatHullMin)
-#define VEC_RAT_HULL_MAX    (ZMRules()->GetZMViewVectors()->m_vRatHullMax)
-#define VEC_RAT_VIEW        (ZMRules()->GetZMViewVectors()->m_vRatView)
+#define VEC_RAT_HULL_MIN ( ZMRules()->GetZMViewVectors()->m_vRatHullMin )
+#define VEC_RAT_HULL_MAX ( ZMRules()->GetZMViewVectors()->m_vRatHullMax )
+#define VEC_RAT_VIEW     ( ZMRules()->GetZMViewVectors()->m_vRatView )
 
 enum HappyZombieEvent_t
 {
@@ -220,9 +208,8 @@ enum ZombieCommandStyle_t
 enum ZMZombieGibType_t
 {
     ZMGIBTYPE_NONE = 0,
-    
-    ZMGIBTYPE_HEAD,
 
+    ZMGIBTYPE_HEAD,
 
     ZMGIBTYPE_MAX
 };

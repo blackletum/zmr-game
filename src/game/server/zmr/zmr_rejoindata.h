@@ -1,10 +1,9 @@
 #pragma once
 
-#include "igamesystem.h"
 #include "GameEventListener.h"
+#include "igamesystem.h"
 
 #include "zmr_player.h"
-
 
 //
 class CZMRejoinData
@@ -15,9 +14,8 @@ public:
 
     virtual const char* GetDataName() const { return "N/A"; }
 
-    virtual bool    DeleteOnMapChange() const { return false; }
-    virtual int     GetExpirationTime() const { return 0; }
-
+    virtual bool DeleteOnMapChange() const { return false; }
+    virtual int GetExpirationTime() const { return 0; }
 
     virtual bool ShouldKeepData( bool bMapChange, time_t leavetime );
 
@@ -26,7 +24,6 @@ public:
 };
 //
 
-
 //
 class CZMRejoinPlayer
 {
@@ -34,10 +31,8 @@ public:
     CZMRejoinPlayer( CSteamID id );
     virtual ~CZMRejoinPlayer();
 
-
     void OnPlayerJoin( CZMPlayer* pPlayer );
     void CheckDataExpiration( bool bMapChange );
-
 
     template<typename EachFunc>
     void ForEachData( EachFunc func )
@@ -48,7 +43,6 @@ public:
             func( m_vRejoinData[i] );
         }
     }
-
 
     bool IsSamePlayer( const CSteamID& id );
 
@@ -66,7 +60,6 @@ private:
 };
 //
 
-
 //
 class CZMRejoinListener
 {
@@ -80,7 +73,6 @@ public:
 };
 //
 
-
 //
 class CZMRejoinDataSystem
 {
@@ -92,12 +84,10 @@ public:
     void OnPlayerLeave( CZMPlayer* pPlayer );
     void OnLevelShutdown();
 
-
     void AddListener( CZMRejoinListener* pListener );
     bool RemoveListener( CZMRejoinListener* pListener );
     void SaveData( CZMPlayer* pPlayer, CZMRejoinData* pData );
     const CZMRejoinData* FindPlayerData( CZMPlayer* pPlayer, const char* pszDataName ) const;
-
 
     void PrintRejoinData();
 
@@ -127,7 +117,6 @@ private:
             func( m_vPlayerData[i] );
         }
     }
-
 
     CUtlVector<CZMRejoinListener*> m_vListeners;
     CUtlVector<CZMRejoinPlayer*> m_vPlayerData;

@@ -25,7 +25,7 @@ public:
 
     DECLARE_ENT_SCRIPTDESC();
     HSCRIPT GetScriptInstance();
-    
+
 private:
     bool m_bHasNoFloor;
 
@@ -43,7 +43,8 @@ inline HSCRIPT ToHScript( CZMRNavArea* pArea )
     return ( pArea ) ? pArea->GetScriptInstance() : nullptr;
 }
 
-template <> ScriptClassDesc_t* GetScriptDesc<CZMRNavArea>( CZMRNavArea* );
+template<>
+ScriptClassDesc_t* GetScriptDesc<CZMRNavArea>( CZMRNavArea* );
 inline CZMRNavArea* ToNavArea( HSCRIPT hScript )
 {
     return ( IsValid( hScript ) ) ? static_cast<CZMRNavArea*>( g_pScriptVM->GetInstanceValue( hScript, GetScriptDescForClass( CZMRNavArea ) ) ) : nullptr;

@@ -1,16 +1,14 @@
 #include "cbase.h"
 
-#include <vgui_controls/ComboBox.h>
-#include "spectatorgui.h"
 #include "iclientmode.h"
+#include "spectatorgui.h"
 #include "vgui_bitmapbutton.h"
+#include <vgui_controls/ComboBox.h>
 
-
-#include "npcs/zmr_zombiebase_shared.h"
-#include "zmr_zmview_base.h"
-#include "zmr_cntrlpanel.h"
 #include "c_zmr_zmvision.h"
-
+#include "npcs/zmr_zombiebase_shared.h"
+#include "zmr_cntrlpanel.h"
+#include "zmr_zmview_base.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -22,7 +20,7 @@ const int buttonToTab[CZMHudControlPanel::NUM_BUTTONS] = {
     CZMHudControlPanel::TAB_POWERS, //night vision
     CZMHudControlPanel::TAB_MODES, //select all
     CZMHudControlPanel::TAB_MODES, //defense
-    CZMHudControlPanel::TAB_MODES, //offense 
+    CZMHudControlPanel::TAB_MODES, //offense
     CZMHudControlPanel::TAB_MODES, //ambush
     CZMHudControlPanel::TAB_ZEDS, //create group
     CZMHudControlPanel::TAB_ZEDS, //goto group
@@ -38,12 +36,9 @@ CZMHudControlPanel::CZMHudControlPanel( Panel* pParent ) : Panel( pParent, "CZMH
     DisableMouseInputForThisPanel( true );
     SetKeyBoardInputEnabled( false );
 
-
     CreateButtons();
 
-
     UpdateTabs( CZMHudControlPanel::TAB_MODES );
-
 
     m_nTexBgId = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile( m_nTexBgId, "zmr_effects/hud_bg_zmcntrl", true, false );
@@ -52,7 +47,6 @@ CZMHudControlPanel::CZMHudControlPanel( Panel* pParent ) : Panel( pParent, "CZMH
 void CZMHudControlPanel::ApplySchemeSettings( IScheme* pScheme )
 {
     BaseClass::ApplySchemeSettings( pScheme );
-
 
     SetBgColor( GetSchemeColor( "ZMHudBgColor", pScheme ) );
     SetFgColor( GetSchemeColor( "ZMFgColor", pScheme ) );
@@ -67,7 +61,6 @@ void CZMHudControlPanel::PerformLayout()
 void CZMHudControlPanel::OnThink()
 {
     if ( !IsVisible() ) return;
-
 
     GroupsListUpdate();
 }
@@ -146,23 +139,21 @@ void CZMHudControlPanel::CreateButtons()
     // TODO: could mostly be moved into keyvalue files...
 
     //order needs to correspond with button enum
-    const char *buttonMat[NUM_BUTTONS] = 
-    {
-        "VGUI/minispotcreate",					//spot create
-        "VGUI/minieye",							//night vision
-        "VGUI/miniselectall",					//select all
-        "VGUI/minishield",						//defensive mode
-        "VGUI/minicrosshair",					//offensive mode
-        "VGUI/miniceiling",						//banshee ceiling jump/ambush
-        "VGUI/minigroupadd",					//create group
-        "VGUI/minigroupselect",					//select group
-        "VGUI/minishockwave",					//physexp
-        "VGUI/minideletezombies",				//Delete Zombies
-        "VGUI/miniarrows",						//ambush mode
+    const char* buttonMat[NUM_BUTTONS] = {
+        "VGUI/minispotcreate",     //spot create
+        "VGUI/minieye",       //night vision
+        "VGUI/miniselectall",     //select all
+        "VGUI/minishield",      //defensive mode
+        "VGUI/minicrosshair",     //offensive mode
+        "VGUI/miniceiling",      //banshee ceiling jump/ambush
+        "VGUI/minigroupadd",     //create group
+        "VGUI/minigroupselect",     //select group
+        "VGUI/minishockwave",     //physexp
+        "VGUI/minideletezombies",    //Delete Zombies
+        "VGUI/miniarrows",      //ambush mode
     };
 
-    const char *buttonCmd[NUM_BUTTONS] =
-    {
+    const char* buttonCmd[NUM_BUTTONS] = {
         "MODE_POWER_SPOTCREATE",
         "MODE_POWER_NIGHTVISION",
         "MODE_SELECT_ALL",
@@ -176,8 +167,7 @@ void CZMHudControlPanel::CreateButtons()
         "MODE_AMBUSH_CREATE",
     };
 
-    const char *toolTip[NUM_BUTTONS] =
-    {
+    const char* toolTip[NUM_BUTTONS] = {
         "zmmenu_createhidden",
         "zmmenu_nv",
         "zmmenu_selectall",
@@ -191,7 +181,7 @@ void CZMHudControlPanel::CreateButtons()
         "zmmenu_ambush",
     };
 
-    for (int i = 0; i < ARRAYSIZE( m_pButtons ); i++)
+    for ( int i = 0; i < ARRAYSIZE( m_pButtons ); i++ )
     {
         m_pButtons[i] = new CZMBitMapButton( this, buttonCmd[i], "" );
         m_pButtons[i]->SetImage( CBitmapButton::BUTTON_ENABLED, buttonMat[i], white );
@@ -208,22 +198,20 @@ void CZMHudControlPanel::CreateButtons()
     //-------
     // TABS
     //-------
-    const char *tabMat[NUM_TABS] = 
-    {
+    const char* tabMat[NUM_TABS] = {
         //temp mats
-        "VGUI/minicrosshair",					//offensive mode
-        "VGUI/minishockwave",					//physexp
-        "VGUI/minigroupadd",					//zombie groups
+        "VGUI/minicrosshair", //offensive mode
+        "VGUI/minishockwave", //physexp
+        "VGUI/minigroupadd", //zombie groups
     };
 
-    const char *tabCmd[NUM_TABS] =
-    {
+    const char* tabCmd[NUM_TABS] = {
         "TAB_MODES",
         "TAB_POWERS",
         "TAB_ZEDS",
     };
 
-    for (int i = 0; i < ARRAYSIZE( m_pTabs ); i++)
+    for ( int i = 0; i < ARRAYSIZE( m_pTabs ); i++ )
     {
         m_pTabs[i] = new CZMBitMapButton( this, tabCmd[i], "" );
         m_pTabs[i]->SetImage( CBitmapButton::BUTTON_ENABLED, tabMat[i], white );
@@ -236,12 +224,11 @@ void CZMHudControlPanel::CreateButtons()
         m_pTabs[i]->AddActionSignalTarget( this );
     }
 
-    m_pZombieGroups = new ComboBox( this, "groupscombo", 5 , false ); 
+    m_pZombieGroups = new ComboBox( this, "groupscombo", 5, false );
     //m_pZombieGroups->SetOpenDirection( ComboBox::UP );
-    m_pZombieGroups->SetText("None");
+    m_pZombieGroups->SetText( "None" );
     m_pZombieGroups->GetMenu()->MakeReadyForUse();
     m_pZombieGroups->GetMenu()->SetBgColor( BLACK_BAR_COLOR );
-
 
     InvalidateLayout();
 }
@@ -250,42 +237,38 @@ void CZMHudControlPanel::GroupsListUpdate()
 {
     if ( m_iActiveTab != TAB_ZEDS ) return;
 
-
-    //qck: Keep track of groups inside of our combo box. No duplicates.	
+    //qck: Keep track of groups inside of our combo box. No duplicates.
     C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
     if ( !pPlayer ) return;
 
-
     CUtlVector<int> vGroups;
 
-    g_ZombieManager.ForEachZombie( [ &vGroups, this ]( C_ZMBaseZombie* pZombie )
-    {
-        int group = pZombie->GetGroup();
-
-        if ( group > INVALID_GROUP_INDEX && vGroups.Find( group ) == -1 )
+    g_ZombieManager.ForEachZombie( [&vGroups, this]( C_ZMBaseZombie* pZombie )
         {
-            vGroups.AddToTail( group );
+            int group = pZombie->GetGroup();
 
-            if ( m_ComboBoxItems.Find( group ) == -1 )
+            if ( group > INVALID_GROUP_INDEX && vGroups.Find( group ) == -1 )
             {
-                char groupName[16];
-                Q_snprintf( groupName, sizeof( groupName ), "Group %i", group );
+                vGroups.AddToTail( group );
 
-                KeyValuesAD kv( "group" ); //qck: Associate entity serial number with its menu listing under key "serial"
-                if ( !kv || !m_pZombieGroups ) return;
-                
-                kv->SetInt( "groupnum", group );
-                m_pZombieGroups->AddItem( groupName, kv ); 
+                if ( m_ComboBoxItems.Find( group ) == -1 )
+                {
+                    char groupName[16];
+                    Q_snprintf( groupName, sizeof( groupName ), "Group %i", group );
 
-                m_ComboBoxItems.AddToTail( group );
+                    KeyValuesAD kv( "group" ); //qck: Associate entity serial number with its menu listing under key "serial"
+                    if ( !kv || !m_pZombieGroups ) return;
+
+                    kv->SetInt( "groupnum", group );
+                    m_pZombieGroups->AddItem( groupName, kv );
+
+                    m_ComboBoxItems.AddToTail( group );
+                }
             }
-        }
-    } );
-
+        } );
 
     Menu* dropdown = m_pZombieGroups->GetMenu();
     if ( !dropdown ) return;
-
 
     for ( int i = 0; i < dropdown->GetItemCount(); i++ )
     {
@@ -317,7 +300,7 @@ void CZMHudControlPanel::CreateGroup()
 {
     // Find empty group.
     int newgroup = 1;
-    
+
     for ( int i = 0; i < g_ZombieManager.GetNumZombies(); )
     {
         C_ZMBaseZombie* pZombie = g_ZombieManager.GetZombieByIndex( i );
@@ -332,7 +315,6 @@ void CZMHudControlPanel::CreateGroup()
 
         ++i;
     }
-
 
     if ( newgroup <= MAX_GROUP_INDEX )
     {
@@ -372,7 +354,7 @@ void CZMHudControlPanel::PositionButtons()
     GetParent()->GetBounds( x, y, w, h );
 
     SetPos( w - GetWide(), h - GetTall() );
-    
+
     int topleft_x = margin_left;
     int topleft_y = margin_top;
 
@@ -382,7 +364,7 @@ void CZMHudControlPanel::PositionButtons()
     int tab_x[NUM_TABS];
     int tab_y[NUM_TABS];
     int tab_count[NUM_TABS];
-    for (int i = 0; i < NUM_TABS; i++ )
+    for ( int i = 0; i < NUM_TABS; i++ )
     {
         tab_x[i] = start_x;
         tab_y[i] = start_y;
@@ -390,7 +372,7 @@ void CZMHudControlPanel::PositionButtons()
     }
 
     int curTab = 0;
-    for (int i = 0; i < ARRAYSIZE( m_pButtons ); i++)
+    for ( int i = 0; i < ARRAYSIZE( m_pButtons ); i++ )
     {
         // Look up tab for this button
         curTab = buttonToTab[i];
@@ -401,7 +383,7 @@ void CZMHudControlPanel::PositionButtons()
         tab_count[curTab] += 1;
 
         // Hardcoded line switch
-        if ( tab_count[curTab] == 3 || tab_count[curTab] == 6)
+        if ( tab_count[curTab] == 3 || tab_count[curTab] == 6 )
         {
             tab_x[curTab] = start_x;
             tab_y[curTab] += button_spacing + button_size;
@@ -418,7 +400,7 @@ void CZMHudControlPanel::PositionButtons()
     int tabpos_x = topleft_x;
     int tabpos_y = topleft_y;
 
-    for (int i = 0; i < ARRAYSIZE( m_pTabs ); i++)
+    for ( int i = 0; i < ARRAYSIZE( m_pTabs ); i++ )
     {
         m_pTabs[i]->SetPos( tabpos_x, tabpos_y );
         m_pTabs[i]->SetSize( button_size, button_size );
@@ -460,7 +442,7 @@ void CZMHudControlPanel::UpdateTabs( int activatedTab )
         m_iActiveTab = activatedTab;
     }
 
-    for (int i = 0; i < ARRAYSIZE( m_pButtons ); i++)
+    for ( int i = 0; i < ARRAYSIZE( m_pButtons ); i++ )
     {
         m_pButtons[i]->SetVisible( buttonToTab[i] == m_iActiveTab );
     }

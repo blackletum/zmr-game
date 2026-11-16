@@ -6,7 +6,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 enum ZMScopeZoomLevel_t
 {
     SCOPEZOOM_NONE = -1,
@@ -17,7 +16,6 @@ enum ZMScopeZoomLevel_t
 
     SCOPEZOOM_MAX
 };
-
 
 #ifdef CLIENT_DLL
 #define CZMWeaponR700 C_ZMWeaponR700
@@ -32,7 +30,6 @@ public:
 
     CZMWeaponR700();
 
-
     virtual void Precache() override;
 
     virtual Vector GetBulletSpread() const override;
@@ -45,7 +42,6 @@ public:
     virtual void ItemPostFrame() override;
 
     virtual void Equip( CBaseCombatCharacter* pCharacter ) override;
-
 
     void ChangeZoom();
 
@@ -74,7 +70,6 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS( weapon_zm_r700, CZMWeaponR700 );
 PRECACHE_WEAPON_REGISTER( weapon_zm_r700 );
 
-
 CZMWeaponR700::CZMWeaponR700()
 {
     SetConfigSlot( ZMWeaponConfig::ZMCONFIGSLOT_R700 );
@@ -85,7 +80,7 @@ CZMWeaponR700::CZMWeaponR700()
 void CZMWeaponR700::Precache()
 {
     BaseClass::Precache();
-    
+
     PrecacheScriptSound( "Weapon_R700_ZM.Zoom" );
 }
 
@@ -120,7 +115,6 @@ Vector CZMWeaponR700::GetBulletSpread() const
         cone.z = ratio * cone.z;
     }
 
-
     return cone;
 }
 
@@ -130,14 +124,14 @@ float CZMWeaponR700::GetScopeFOVModifier() const
     float modifier;
     switch ( m_iZoomLevel )
     {
-    case SCOPEZOOM_4X :
+    case SCOPEZOOM_4X:
         modifier = 4.0f;
         break;
-    case SCOPEZOOM_2X :
+    case SCOPEZOOM_2X:
         modifier = 2.0f;
         break;
-    case SCOPEZOOM_1X :
-    default :
+    case SCOPEZOOM_1X:
+    default:
         modifier = 1.0f;
         break;
     }
@@ -155,13 +149,10 @@ void CZMWeaponR700::ItemPostFrame()
 {
     BaseClass::ItemPostFrame();
 
-
     auto* pOwner = GetPlayerOwner();
     if ( !pOwner ) return;
 
-
     bool bPressedAttack3 = pOwner->m_afButtonPressed & IN_ATTACK3;
-
 
     if ( bPressedAttack3 )
     {

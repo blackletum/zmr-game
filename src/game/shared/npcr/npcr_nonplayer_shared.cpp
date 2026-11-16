@@ -1,13 +1,12 @@
-#include "cbase.h"
 #include "animation.h"
+#include "cbase.h"
 
 #include "npcr_nonplayer_shared.h"
-
 
 int CNPCRNonPlayer::GetAnimationRandomSeed()
 {
     static int i = 0;
-    return ( i = ((i + 1) % 50) );
+    return ( i = ( ( i + 1 ) % 50 ) );
 }
 
 bool CNPCRNonPlayer::HasActivity( Activity act )
@@ -35,7 +34,6 @@ bool CNPCRNonPlayer::SetActivity( Activity act )
     if ( act == m_iCurActivity && m_bCurActivityLoops )
         return true;
 
-
     CStudioHdr* hdr = GetModelPtr();
     if ( !hdr || !hdr->SequencesAvailable() )
     {
@@ -43,9 +41,8 @@ bool CNPCRNonPlayer::SetActivity( Activity act )
         return false;
     }
 
-
     VerifySequenceIndex( hdr );
-    
+
     RandomSeed( GetAnimationRandomSeed() ); // Don't use random->SetSeed, SelectWeightedSequence does not use it.
     int iNewSeq = hdr->SelectWeightedSequence( act, GetSequence() );
 
@@ -55,7 +52,6 @@ bool CNPCRNonPlayer::SetActivity( Activity act )
         return false;
     }
 
-
     Activity last = m_iCurActivity;
 
 #ifdef GAME_DLL
@@ -63,9 +59,8 @@ bool CNPCRNonPlayer::SetActivity( Activity act )
     // because it's possible for the activity to be interrupted
     // but then never finished
     //if ( !IsSequenceFinished() )
-        OnAnimActivityInterrupted( act );
+    OnAnimActivityInterrupted( act );
 #endif
-
 
     SetCycle( 0.0f );
 

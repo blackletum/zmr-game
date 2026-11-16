@@ -1,36 +1,32 @@
+#include "IGameUIFuncs.h"
 #include "cbase.h"
-#include "view.h" // MainViewForward
-#include "iclientmode.h" // g_pClientMode
-#include "hud.h" // CHudElement
-#include "in_buttons.h"
-#include "input.h"
 #include "clienteffectprecachesystem.h"
 #include "fx_quad.h"
-#include "IGameUIFuncs.h"
+#include "hud.h" // CHudElement
+#include "iclientmode.h" // g_pClientMode
+#include "in_buttons.h"
+#include "input.h"
+#include "view.h" // MainViewForward
 
-#include "npcs/zmr_zombiebase_shared.h"
-#include "c_zmr_util.h"
 #include "c_zmr_clientmode.h"
-#include "zmr_hiddenspawn.h"
 #include "c_zmr_in_main.h"
 #include "c_zmr_tempmodel.h"
+#include "c_zmr_util.h"
+#include "npcs/zmr_zombiebase_shared.h"
+#include "zmr_hiddenspawn.h"
 #include "zmr_zmview_base.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define TEMPHIDDENSPAWN_MODEL           "models/zombie/zm_classic_01.mdl"
-
+#define TEMPHIDDENSPAWN_MODEL "models/zombie/zm_classic_01.mdl"
 
 CZMViewBase* g_pZMView = nullptr;
-
 
 ConVar zm_cl_zmview_hiddenspawneffect( "zm_cl_zmview_hiddenspawneffect", "1", FCVAR_ARCHIVE );
 ConVar zm_cl_zmview_doubleclick( "zm_cl_zmview_doubleclick", "0.4", FCVAR_ARCHIVE );
 
 ConVar zm_cl_zmview_switchmousebuttons( "zm_cl_zmview_switchmousebuttons", "0", FCVAR_ARCHIVE );
-
 
 ConVar zm_cl_poweruser_boxselect( "zm_cl_poweruser_boxselect", "0", FCVAR_ARCHIVE, "Select zombies through walls with box select." );
 ConVar zm_cl_poweruser( "zm_cl_poweruser", "0", FCVAR_ARCHIVE, "Select spawns/traps/zombies through walls." );
@@ -39,46 +35,38 @@ ConVar zm_cl_border_scroll( "zm_cl_border_scroll", "10", FCVAR_ARCHIVE, "Border 
 
 ConVar zm_cl_select_radius_size( "zm_cl_select_radius_size", "256", FCVAR_ARCHIVE, "How big the radius select size is in units." );
 
-
-
-
-
-#define MAT_RING            "effects/zm_ring"
-#define MAT_TARGETBREAK     "zmr_effects/target_break"
+#define MAT_RING        "effects/zm_ring"
+#define MAT_TARGETBREAK "zmr_effects/target_break"
 
 CLIENTEFFECT_REGISTER_BEGIN( PrecacheZMViewEffects )
 CLIENTEFFECT_MATERIAL( MAT_RING )
 CLIENTEFFECT_MATERIAL( MAT_TARGETBREAK )
 CLIENTEFFECT_REGISTER_END()
 
-
 bool UTIL_PassKeyToEngine( ButtonCode_t code, bool bDoRelease = true, bool bOnlyRelease = false );
-
 
 class CTraceFilterNoNPCs : public CTraceFilterSimple
 {
 public:
-	CTraceFilterNoNPCs( const IHandleEntity *passentity, int collisionGroup )
-	: CTraceFilterSimple( passentity, collisionGroup )
-	{
-	}
-
-	virtual bool ShouldHitEntity( IHandleEntity *pHandleEntity, int contentsMask )
+    CTraceFilterNoNPCs( const IHandleEntity* passentity, int collisionGroup )
+        : CTraceFilterSimple( passentity, collisionGroup )
     {
-	    if ( CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask ) )
-	    {
-		    CBaseEntity *pEntity = EntityFromEntityHandle( pHandleEntity );
-		    if ( !pEntity )
-			    return false;
+    }
 
-		    return !pEntity->IsNPCR();
-	    }
+    virtual bool ShouldHitEntity( IHandleEntity* pHandleEntity, int contentsMask )
+    {
+        if ( CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask ) )
+        {
+            CBaseEntity* pEntity = EntityFromEntityHandle( pHandleEntity );
+            if ( !pEntity )
+                return false;
 
-	    return false;
+            return !pEntity->IsNPCR();
+        }
+
+        return false;
     }
 };
-
-
 
 CON_COMMAND( zm_observermode, "" )
 {
@@ -87,7 +75,6 @@ CON_COMMAND( zm_observermode, "" )
         bool state = !g_pZMView->IsVisible();
 
         if ( args.ArgC() > 1 ) state = atoi( args.Arg( 1 ) ) ? true : false;
-
 
         g_pZMView->SetVisible( state );
     }
@@ -123,24 +110,22 @@ CON_COMMAND( zm_cmd_select_radius, "Selects zombies in a radius." )
 
     ZMClientUtil::SelectZombiesInRadius( trace.endpos, radius, bSticky );
 
-
     // Add an effect.
     FX_AddQuad( trace.endpos + trace.plane.normal * 2.0f,
-                Vector( 0, 0, 1 ), // Normal
-                0.0f, // Start size
-                radius * 2.4f, // End size
-                0,
-                0.2f, // Start alpha
-                0.8f, // End alpha
-                0.4f,
-                random->RandomInt( 0, 360 ), // Yaw
-                0,
-                Vector( 1.0f, 1.0f, 1.0f ), // Color
-                0.2f, // Lifetime
-                MAT_RING,
-                (FXQUAD_BIAS_ALPHA) );
+        Vector( 0, 0, 1 ), // Normal
+        0.0f, // Start size
+        radius * 2.4f, // End size
+        0,
+        0.2f, // Start alpha
+        0.8f, // End alpha
+        0.4f,
+        random->RandomInt( 0, 360 ), // Yaw
+        0,
+        Vector( 1.0f, 1.0f, 1.0f ), // Color
+        0.2f, // Lifetime
+        MAT_RING,
+        ( FXQUAD_BIAS_ALPHA ) );
 }
-
 
 CZMViewBase::CZMViewBase( const char* pElementName ) : CHudElement( pElementName ), CZMFramePanel( g_pClientMode->GetViewport(), pElementName )
 {
@@ -150,13 +135,11 @@ CZMViewBase::CZMViewBase( const char* pElementName ) : CHudElement( pElementName
     SetProportional( false );
     SetBounds( 0, 0, ScreenWidth(), ScreenHeight() );
 
-
     SetVisible( false );
     SetBorder( nullptr );
     SetPaintBackgroundEnabled( false );
 
     SetHiddenBits( HIDEHUD_WEAPONSELECTION );
-
 
     // We cannot enable input. Especially not keyboard input.
     // Otherwise the input would be swallowed by us, so players binding shit to let's say mouse4 wouldn't work.
@@ -164,15 +147,11 @@ CZMViewBase::CZMViewBase( const char* pElementName ) : CHudElement( pElementName
     SetKeyBoardInputEnabled( false );
     SetMouseInputEnabled( true );
 
-
-
     m_BoxSelect = new CZMBoxSelect( this );
     m_LineTool = new CZMLineTool( this );
 
-
     m_pTempHiddenZombie = nullptr;
     m_flLastHiddenSpawnUpdate = 0.0f;
-
 
     m_hCursorFont = vgui::scheme()->GetIScheme( GetScheme() )->GetFont( "ZMCursorFont" );
     m_wszHiddenSpawnTxt[0] = L'\0';
@@ -204,29 +183,28 @@ void CZMViewBase::SetClickMode( ZMClickMode_t mode, bool print )
 {
     if ( mode == GetClickMode() ) return;
 
-
     if ( print )
     {
         switch ( mode )
         {
-        case ZMCLICKMODE_TRAP :
+        case ZMCLICKMODE_TRAP:
             ZMClientUtil::PrintNotify( "#ZMClickModeTrap", ZMCHATNOTIFY_ZM );
             break;
-        case ZMCLICKMODE_HIDDEN :
+        case ZMCLICKMODE_HIDDEN:
             ZMClientUtil::PrintNotify( "#ZMClickModeHidden", ZMCHATNOTIFY_ZM );
             break;
-        case ZMCLICKMODE_PHYSEXP :
+        case ZMCLICKMODE_PHYSEXP:
             ZMClientUtil::PrintNotify( "#ZMClickModeExp", ZMCHATNOTIFY_ZM );
             break;
-        case ZMCLICKMODE_RALLYPOINT :
+        case ZMCLICKMODE_RALLYPOINT:
             ZMClientUtil::PrintNotify( "#ZMClickModeRally", ZMCHATNOTIFY_ZM );
             break;
-        case ZMCLICKMODE_AMBUSH :
+        case ZMCLICKMODE_AMBUSH:
             ZMClientUtil::PrintNotify( "#ZMClickModeAmbush", ZMCHATNOTIFY_ZM );
-        default : break;
+        default:
+            break;
         }
     }
-
 
     m_iClickMode = mode;
 }
@@ -243,12 +221,12 @@ float CZMViewBase::GetDoubleClickDelta() const
 
 bool CZMViewBase::IsDoubleClickLeft() const
 {
-    return (gpGlobals->curtime - m_flLastLeftClick) <= GetDoubleClickDelta();
+    return ( gpGlobals->curtime - m_flLastLeftClick ) <= GetDoubleClickDelta();
 }
 
 bool CZMViewBase::IsDoubleClickRight() const
 {
-    return (gpGlobals->curtime - m_flLastRightClick) <= GetDoubleClickDelta();
+    return ( gpGlobals->curtime - m_flLastRightClick ) <= GetDoubleClickDelta();
 }
 
 bool CZMViewBase::IsDraggingLeft() const
@@ -275,15 +253,17 @@ MouseCode CZMViewBase::SwitchMouseButtons( MouseCode code )
 {
     switch ( code )
     {
-        case MOUSE_LEFT : return MOUSE_RIGHT;
-        case MOUSE_RIGHT : return MOUSE_LEFT;
-        default : return code;
+    case MOUSE_LEFT:
+        return MOUSE_RIGHT;
+    case MOUSE_RIGHT:
+        return MOUSE_LEFT;
+    default:
+        return code;
     }
 }
 
 void CZMViewBase::CloseChildMenus()
 {
-
 }
 
 void CZMViewBase::HideMouseTools()
@@ -294,8 +274,6 @@ void CZMViewBase::HideMouseTools()
         m_LineTool->SetVisible( false );
 }
 
-
-
 void CZMViewBase::SetVisible( bool state )
 {
     BaseClass::SetVisible( state );
@@ -303,9 +281,7 @@ void CZMViewBase::SetVisible( bool state )
     ZMInput()->SetScreenScrollStatePitch( CZMInput::SCROLL_NONE );
     ZMInput()->SetScreenScrollStateYaw( CZMInput::SCROLL_NONE );
 
-
     HideMouseTools();
-
 
     FreeTempHiddenZombie();
 }
@@ -337,26 +313,25 @@ void CZMViewBase::OnMouseReleased( MouseCode code )
         return;
     }
 
-
     if ( UseSwitchedButtons() )
     {
         code = SwitchMouseButtons( code );
     }
 
-
     switch ( code )
     {
-    case MOUSE_RIGHT :
+    case MOUSE_RIGHT:
         OnRightRelease();
         m_flLastRightClick = gpGlobals->curtime;
         m_bDraggingRight = false;
         break;
-    case MOUSE_LEFT :
+    case MOUSE_LEFT:
         OnLeftRelease();
         m_flLastLeftClick = gpGlobals->curtime;
         m_bDraggingLeft = false;
         break;
-    default : break;
+    default:
+        break;
     }
 }
 
@@ -369,27 +344,25 @@ void CZMViewBase::OnMousePressed( MouseCode code )
         return;
     }
 
-
     CloseChildMenus();
-
 
     if ( UseSwitchedButtons() )
     {
         code = SwitchMouseButtons( code );
     }
 
-
     switch ( code )
     {
-    case MOUSE_RIGHT :
+    case MOUSE_RIGHT:
         OnRightClick();
         m_bDraggingRight = true;
         break;
-    case MOUSE_LEFT :
+    case MOUSE_LEFT:
         OnLeftClick();
         m_bDraggingLeft = true;
         break;
-    default : break;
+    default:
+        break;
     }
 }
 
@@ -403,7 +376,6 @@ void CZMViewBase::OnMouseDoublePressed( MouseCode code )
 void CZMViewBase::OnMouseWheeled( int delta )
 {
     BaseClass::OnMouseWheeled( delta );
-
 
     // Apparently, it is possible for the delta to be 0.
     if ( delta )
@@ -420,7 +392,7 @@ void CZMViewBase::Paint()
     if ( GetClickMode() == ZMCLICKMODE_HIDDEN )
     {
         int mx, my;
-        
+
         if ( IsMouseInputEnabled() )
         {
             ::input->GetFullscreenMousePos( &mx, &my );
@@ -430,7 +402,6 @@ void CZMViewBase::Paint()
             mx = ScreenWidth() / 2;
             my = ScreenHeight() / 2;
         }
-
 
         mx += 16;
 
@@ -450,7 +421,6 @@ void CZMViewBase::OnThink()
 
     if ( !pPlayer ) return;
 
-
     if ( !pPlayer->IsZM() && IsVisible() )
     {
         SetVisible( false );
@@ -464,7 +434,6 @@ void CZMViewBase::OnThink()
         return;
     }
 
-
     if ( pPlayer->m_nButtons & IN_SCORE && zm_cl_hidemouseinscore.GetBool() )
     {
         if ( IsMouseInputEnabled() )
@@ -476,20 +445,15 @@ void CZMViewBase::OnThink()
             SetMouseInputEnabled( true );
     }
 
-
-    
-
     if ( IsMouseInputEnabled() )
     {
         CheckBorderScrolling();
     }
 
-
-
     if ( GetClickMode() == ZMCLICKMODE_HIDDEN )
     {
         int mx, my;
-        
+
         if ( IsMouseInputEnabled() )
         {
             ::input->GetFullscreenMousePos( &mx, &my );
@@ -515,16 +479,14 @@ void CZMViewBase::CheckBorderScrolling()
     if ( nBorderScroll <= 0 )
         return;
 
-
-
-	int mx, my;
-	::input->GetFullscreenMousePos( &mx, &my );
+    int mx, my;
+    ::input->GetFullscreenMousePos( &mx, &my );
 
     if ( mx < nBorderScroll )
     {
         ZMInput()->SetScreenScrollStateYaw( CZMInput::SCROLL_POSITIVE );
     }
-    else if ( mx > (ScreenWidth() - nBorderScroll) )
+    else if ( mx > ( ScreenWidth() - nBorderScroll ) )
     {
         ZMInput()->SetScreenScrollStateYaw( CZMInput::SCROLL_NEGATIVE );
     }
@@ -533,12 +495,11 @@ void CZMViewBase::CheckBorderScrolling()
         ZMInput()->SetScreenScrollStateYaw( CZMInput::SCROLL_NONE );
     }
 
-
     if ( my < nBorderScroll )
     {
         ZMInput()->SetScreenScrollStatePitch( CZMInput::SCROLL_NEGATIVE );
     }
-    else if ( my > (ScreenHeight() - nBorderScroll) )
+    else if ( my > ( ScreenHeight() - nBorderScroll ) )
     {
         ZMInput()->SetScreenScrollStatePitch( CZMInput::SCROLL_POSITIVE );
     }
@@ -557,7 +518,6 @@ int CZMViewBase::ZMKeyInput( ButtonCode_t keynum, int down )
 
     if ( !bNumber && !bNumpad )
         return -1;
-
 
     auto* pBuild = GetBuildMenu();
     auto* pMani = GetManiMenu();
@@ -581,10 +541,8 @@ void CZMViewBase::OnLeftClick()
     int mx, my;
     ::input->GetFullscreenMousePos( &mx, &my );
 
-
     m_BoxSelect->SetVisible( true );
     m_BoxSelect->SetStart( mx, my );
-
 
     if ( GetClickMode() == ZMCLICKMODE_NORMAL ) return;
 
@@ -598,7 +556,7 @@ void CZMViewBase::OnLeftClick()
 
         switch ( GetClickMode() )
         {
-        case ZMCLICKMODE_TRAP :
+        case ZMCLICKMODE_TRAP:
             if ( GetManiMenu() )
                 engine->ClientCmd( VarArgs( "zm_cmd_createtrigger %i %.1f %.1f %.1f",
                     GetManiMenu()->GetTrapIndex(),
@@ -607,8 +565,7 @@ void CZMViewBase::OnLeftClick()
                     pos[2] ) );
             break;
 
-
-        case ZMCLICKMODE_RALLYPOINT :
+        case ZMCLICKMODE_RALLYPOINT:
             if ( GetBuildMenu() )
             {
                 engine->ClientCmd( VarArgs( "zm_cmd_setrally %i %.1f %.1f %.1f",
@@ -617,20 +574,18 @@ void CZMViewBase::OnLeftClick()
                     pos[1],
                     pos[2] ) );
 
-
                 GetBuildMenu()->ShowPanel( true );
             }
             break;
 
-
-        case ZMCLICKMODE_HIDDEN :
+        case ZMCLICKMODE_HIDDEN:
             engine->ClientCmd( VarArgs( "zm_cmd_createhidden %.1f %.1f %.1f",
                 pos[0],
                 pos[1],
                 pos[2] ) );
             break;
 
-        case ZMCLICKMODE_PHYSEXP :
+        case ZMCLICKMODE_PHYSEXP:
             pos = pos + trace.plane.normal * 1.0f;
             engine->ClientCmd( VarArgs( "zm_cmd_physexp %.1f %.1f %.1f",
                 pos[0],
@@ -638,17 +593,17 @@ void CZMViewBase::OnLeftClick()
                 pos[2] ) );
             break;
 
-        case ZMCLICKMODE_AMBUSH :
+        case ZMCLICKMODE_AMBUSH:
             pos = pos + trace.plane.normal * 1.0f;
             engine->ClientCmd( VarArgs( "zm_cmd_createambush %.1f %.1f %.1f",
                 pos[0],
                 pos[1],
-                pos[2]  ) );
+                pos[2] ) );
 
-        default : break;
+        default:
+            break;
         }
     }
-
 
     SetClickMode( ZMCLICKMODE_NORMAL );
 }
@@ -657,12 +612,10 @@ void CZMViewBase::OnLeftRelease()
 {
     m_BoxSelect->SetVisible( false );
 
-
     int mx, my;
     ::input->GetFullscreenMousePos( &mx, &my );
 
     m_BoxSelect->SetEnd( mx, my );
-
 
     // If our box is too small then don't use it.
     if ( m_BoxSelect->ShouldSelect() )
@@ -670,8 +623,6 @@ void CZMViewBase::OnLeftRelease()
         int i, j, k, l;
         m_BoxSelect->GetBox( &i, &j, &k, &l );
 
-        
-        
         FindZombiesInBox( i, j, k, l, GetZMClientMode()->IsZMHoldingCtrl() );
     }
     else
@@ -696,7 +647,6 @@ void CZMViewBase::OnRightRelease()
 {
     m_LineTool->SetVisible( false );
 
-
     int mx, my;
     ::input->GetFullscreenMousePos( &mx, &my );
 
@@ -713,7 +663,6 @@ void CZMViewBase::OnRightRelease()
     trace_t trace;
     CTraceFilterNoNPCs filter( nullptr, COLLISION_GROUP_NONE );
     TraceScreenToWorld( mx, my, &trace, &filter, MASK_ZMTARGET );
-
 
     Vector end = trace.endpos;
 
@@ -734,7 +683,7 @@ void CZMViewBase::OnRightRelease()
         {
             IPhysicsObject* phys = pTarget->VPhysicsGetObject();
 
-            bObj = (phys && phys->IsMoveable()) || !pTarget->IsBaseTrain();
+            bObj = ( phys && phys->IsMoveable() ) || !pTarget->IsBaseTrain();
         }
 
         if ( bObj && !bIsOnZombieTeam )
@@ -746,47 +695,44 @@ void CZMViewBase::OnRightRelease()
                 bForceBreak ? 1 : 0,
                 end[0], end[1], end[2] ) );
 
-
             FX_AddQuad( end + trace.plane.normal * 2.0f,
-                        trace.plane.normal,
-                        8.0f,
-                        24.0f,
-                        0, 
-                        0.2f,
-                        0.8f,
-                        0.4f,
-                        random->RandomInt( 0, 360 ), 
-                        0,
-                        Vector( 1.0f, 1.0f, 1.0f ), 
-                        0.2f, 
-                        MAT_TARGETBREAK,
-                        (FXQUAD_BIAS_ALPHA) );
+                trace.plane.normal,
+                8.0f,
+                24.0f,
+                0,
+                0.2f,
+                0.8f,
+                0.4f,
+                random->RandomInt( 0, 360 ),
+                0,
+                Vector( 1.0f, 1.0f, 1.0f ),
+                0.2f,
+                MAT_TARGETBREAK,
+                ( FXQUAD_BIAS_ALPHA ) );
 
             return;
         }
     }
 
-
     // Otherwise, just move there.
     engine->ClientCmd( VarArgs( "zm_cmd_move %.1f %.1f %.1f %.1f",
         end[0], end[1], end[2],
-        clamp( (ZMClientUtil::GetSelectedZombieCount() - 1) * 2.5f, 0.0f, 92.0f ) ) );
+        clamp( ( ZMClientUtil::GetSelectedZombieCount() - 1 ) * 2.5f, 0.0f, 92.0f ) ) );
 
     FX_AddQuad( end,
-                Vector( 0.0f, 0.0f, 1.0f ),
-                10.0f,
-                25.0f,
-                0, 
-                0.2f,
-                0.8f,
-                0.4f,
-                random->RandomInt( 0, 360 ), 
-                0,
-                Vector( 1.0f, 1.0f, 1.0f ), 
-                0.4f, 
-                MAT_RING,
-                (FXQUAD_BIAS_ALPHA) );
-
+        Vector( 0.0f, 0.0f, 1.0f ),
+        10.0f,
+        25.0f,
+        0,
+        0.2f,
+        0.8f,
+        0.4f,
+        random->RandomInt( 0, 360 ),
+        0,
+        Vector( 1.0f, 1.0f, 1.0f ),
+        0.4f,
+        MAT_RING,
+        ( FXQUAD_BIAS_ALPHA ) );
 }
 
 void CZMViewBase::DoMoveLine()
@@ -807,7 +753,7 @@ void CZMViewBase::DoMoveLine()
     engine->ClientCmd( VarArgs( "zm_cmd_moveline %.1f %.1f %.1f %.1f %.1f %.1f",
         start[0], start[1], start[2],
         end[0], end[1], end[2] ) );
-        //clamp( (ZMClientUtil::GetSelectedZombieCount() - 1) * 2.5f, 0.0f, 92.0f ) ) );
+    //clamp( (ZMClientUtil::GetSelectedZombieCount() - 1) * 2.5f, 0.0f, 92.0f ) ) );
 }
 
 void CZMViewBase::FindZombiesInBox( int start_x, int start_y, int end_x, int end_y, bool bSticky )
@@ -835,25 +781,24 @@ void CZMViewBase::FindZombiesInBox( int start_x, int start_y, int end_x, int end
         end_y = i;
     }
 
-    g_ZombieManager.ForEachAliveZombie( [ &vZombies, &trace, &filter, &screen, &x, &y, start_x, start_y, end_x, end_y ]( C_ZMBaseZombie* pZombie )
-    {
-        // Do we see the mad man?
-        if ( !zm_cl_poweruser_boxselect.GetBool() )
+    g_ZombieManager.ForEachAliveZombie( [&vZombies, &trace, &filter, &screen, &x, &y, start_x, start_y, end_x, end_y]( C_ZMBaseZombie* pZombie )
         {
-            UTIL_TraceZMView( &trace, pZombie->GetAbsOrigin() + Vector( 0, 0, 8 ), MASK_ZMVIEW, &filter );
+            // Do we see the mad man?
+            if ( !zm_cl_poweruser_boxselect.GetBool() )
+            {
+                UTIL_TraceZMView( &trace, pZombie->GetAbsOrigin() + Vector( 0, 0, 8 ), MASK_ZMVIEW, &filter );
 
-            if ( trace.fraction != 1.0f && !trace.startsolid ) return;
-        }
+                if ( trace.fraction != 1.0f && !trace.startsolid ) return;
+            }
 
-        if ( !ZMClientUtil::WorldToScreen( pZombie->GetAbsOrigin(), screen, x, y ) )
-            return;
+            if ( !ZMClientUtil::WorldToScreen( pZombie->GetAbsOrigin(), screen, x, y ) )
+                return;
 
-        if ( x > start_x && x < end_x && y > start_y && y < end_y )
-        {
-            vZombies.AddToTail( pZombie );
-        }
-    } );
-
+            if ( x > start_x && x < end_x && y > start_y && y < end_y )
+            {
+                vZombies.AddToTail( pZombie );
+            }
+        } );
 
     ZMClientUtil::SelectZombies( vZombies, bSticky );
 }
@@ -869,14 +814,11 @@ void CZMViewBase::FindZMObject( int x, int y, bool bSticky )
 
     TraceScreenToWorld( x, y, &trace, nullptr, zm_cl_poweruser.GetBool() ? 0 : MASK_ZMSELECTUSABLE );
 
-
     ray.Init( MainViewOrigin(), trace.endpos,
         Vector( -1.0, -1.0, -1.0 ),
         Vector( 1.0, 1.0, 1.0 ) );
 
-    
     int found = UTIL_EntitiesAlongRay( list, ARRAYSIZE( list ), ray, 0 );
-
 
     bool bHit = false;
 
@@ -899,8 +841,7 @@ void CZMViewBase::FindZMObject( int x, int y, bool bSticky )
                 return;
             }
 
-
-            C_ZMEntManipulate* pTrap = dynamic_cast<C_ZMEntManipulate*> ( pUsable );
+            C_ZMEntManipulate* pTrap = dynamic_cast<C_ZMEntManipulate*>( pUsable );
 
             if ( pTrap && !pTrap->IsEffectActive( EF_NODRAW ) )
             {
@@ -913,14 +854,12 @@ void CZMViewBase::FindZMObject( int x, int y, bool bSticky )
                 return;
             }
 
-
             /*engine->ClientCmd( VarArgs( "zm_cmd_select %i%s",
                 pUsable->entindex(),
                 bSticky ? " 1" : "" ) );
             bHit = true;*/
             continue;
         }
-
 
         pZombie = ToZMBaseZombie( list[i] );
 
@@ -933,15 +872,12 @@ void CZMViewBase::FindZMObject( int x, int y, bool bSticky )
             bool bSelectOfType = pZombie->GetSelectorIndex() == GetLocalPlayerIndex();
             float flLastSelect = pZombie->GetLastLocalSelect();
 
-
             ZMClientUtil::SelectSingleZombie( pZombie, bSticky );
 
-            if (bSelectOfType
-            &&  (gpGlobals->curtime - flLastSelect) <= GetDoubleClickDelta() )
+            if ( bSelectOfType && ( gpGlobals->curtime - flLastSelect ) <= GetDoubleClickDelta() )
             {
                 SelectZombiesOfType( pZombie->GetZombieClass(), true );
             }
-
 
             bHit = true;
             return;
@@ -960,37 +896,34 @@ void CZMViewBase::SelectZombiesOfType( ZombieClass_t zclass, bool bSticky )
     CTraceFilterNoNPCsOrPlayer filter( nullptr, COLLISION_GROUP_NONE );
 
     CUtlVector<C_ZMBaseZombie*> vZombies;
-    
+
     int myindex = GetLocalPlayerIndex();
 
-
-    g_ZombieManager.ForEachAliveZombie( [ zclass, &vZombies, &tr, &filter, &screen, &myindex ]( C_ZMBaseZombie* pZombie )
-    {
-        if ( pZombie->GetSelectorIndex() == myindex )
-            return;
-
-        if ( pZombie->GetZombieClass() != zclass )
-            return;
-
-
-        int x, y;
-        // Do we see the mad man?
-        if ( !zm_cl_poweruser_boxselect.GetBool() )
+    g_ZombieManager.ForEachAliveZombie( [zclass, &vZombies, &tr, &filter, &screen, &myindex]( C_ZMBaseZombie* pZombie )
         {
-            UTIL_TraceZMView( &tr, pZombie->GetAbsOrigin() + Vector( 0, 0, 8 ), MASK_ZMVIEW, &filter );
+            if ( pZombie->GetSelectorIndex() == myindex )
+                return;
 
-            if ( tr.fraction != 1.0f && !tr.startsolid ) return;
-        }
+            if ( pZombie->GetZombieClass() != zclass )
+                return;
 
-        if ( !ZMClientUtil::WorldToScreen( pZombie->GetAbsOrigin(), screen, x, y ) )
-            return;
+            int x, y;
+            // Do we see the mad man?
+            if ( !zm_cl_poweruser_boxselect.GetBool() )
+            {
+                UTIL_TraceZMView( &tr, pZombie->GetAbsOrigin() + Vector( 0, 0, 8 ), MASK_ZMVIEW, &filter );
 
-        if ( x > 0 && x < ScreenWidth() && y > 0 && y < ScreenHeight() )
-        {
-            vZombies.AddToTail( pZombie );
-        }
-    } );
+                if ( tr.fraction != 1.0f && !tr.startsolid ) return;
+            }
 
+            if ( !ZMClientUtil::WorldToScreen( pZombie->GetAbsOrigin(), screen, x, y ) )
+                return;
+
+            if ( x > 0 && x < ScreenWidth() && y > 0 && y < ScreenHeight() )
+            {
+                vZombies.AddToTail( pZombie );
+            }
+        } );
 
     ZMClientUtil::SelectZombies( vZombies, bSticky );
 }
@@ -1000,7 +933,6 @@ void CZMViewBase::TraceScreenToWorld( int mx, int my, trace_t* res, CTraceFilter
     C_ZMPlayer* pPlayer = C_ZMPlayer::GetLocalPlayer();
 
     if ( !pPlayer ) return;
-
 
     float fov = pPlayer->GetFOV();
 
@@ -1013,16 +945,15 @@ void CZMViewBase::TraceScreenToWorld( int mx, int my, trace_t* res, CTraceFilter
 
     aspect = ( 4.0f / 3.0f ) / aspect;
 
-
     c_x = ScreenWidth() / 2.0f;
     c_y = ScreenHeight() / 2.0f;
 
-    dx = ((float)mx - c_x) / aspect;
-    dy = (c_y - (float)my) / aspect;
+    dx = ( (float)mx - c_x ) / aspect;
+    dy = ( c_y - (float)my ) / aspect;
 
     dist = c_x / tanf( M_PI_F * fov / 360.0f );
 
-    Vector ray = (MainViewForward() * dist) + (MainViewRight() * dx) + (MainViewUp() * dy);
+    Vector ray = ( MainViewForward() * dist ) + ( MainViewRight() * dx ) + ( MainViewUp() * dy );
     VectorNormalize( ray );
 
     UTIL_TraceZMView( res, MainViewOrigin() + ray * MAX_COORD_FLOAT, mask, filter, pPlayer );
@@ -1062,34 +993,27 @@ void CZMViewBase::FreeTempHiddenZombie()
 void CZMViewBase::UpdateHiddenSpawnSpot( int mx, int my )
 {
     // Don't update every frame
-    if ( (gpGlobals->curtime - m_flLastHiddenSpawnUpdate) < 0.05f )
+    if ( ( gpGlobals->curtime - m_flLastHiddenSpawnUpdate ) < 0.05f )
         return;
-
 
     m_flLastHiddenSpawnUpdate = gpGlobals->curtime;
 
-
     m_wszHiddenSpawnTxt[0] = L'\0';
-
 
     trace_t tr;
     CTraceFilterNoNPCsOrPlayer filter( nullptr, COLLISION_GROUP_NONE );
     TraceScreenToWorld( mx, my, &tr, &filter, MASK_ZMCREATE );
 
-
     if ( tr.fraction == 1.0f )
         return;
-
 
     // Create a temporary model to visualize the zombie.
     if ( !m_pTempHiddenZombie && zm_cl_zmview_hiddenspawneffect.GetBool() )
     {
         m_pTempHiddenZombie = CreateTempHiddenZombie();
     }
-            
 
     auto* pLocal = C_ZMPlayer::GetLocalPlayer();
-
 
     // Update the effect.
     if ( m_pTempHiddenZombie )
@@ -1097,23 +1021,20 @@ void CZMViewBase::UpdateHiddenSpawnSpot( int mx, int my )
         QAngle ang = pLocal->GetAbsAngles();
         ang.x = ang.z = 0.0f;
 
-
         m_pTempHiddenZombie->SetAbsOrigin( tr.endpos );
         m_pTempHiddenZombie->SetAbsAngles( ang );
     }
-
 
     // Get the hidden spawn data.
     int rescost = -1;
 
     auto res = g_ZMHiddenSpawn.Spawn( ZMCLASS_SHAMBLER, pLocal, tr.endpos, &rescost );
 
-
     m_HiddenSpawnTxtColor = Color( 255, 0, 0, 255 );
 
     switch ( res )
     {
-    case HSERROR_OK :
+    case HSERROR_OK:
         //V_wcsncpy( buf, L"OK", sizeof( buf ) );
         V_snwprintf( m_wszHiddenSpawnTxt, ARRAYSIZE( m_wszHiddenSpawnTxt ), L"Cost: %i", rescost );
         break;
@@ -1122,32 +1043,31 @@ void CZMViewBase::UpdateHiddenSpawnSpot( int mx, int my )
     //case HSERROR_NOTENOUGHRES :
     //case HSERROR_NOTENOUGHPOP :
     //case HSERROR_BADCLASS :
-    default :
+    default:
         m_HiddenSpawnTxtColor[0] = 150;
         V_wcsncpy( m_wszHiddenSpawnTxt, L"X", sizeof( m_wszHiddenSpawnTxt ) );
         break;
     }
 }
 
-
 void UTIL_TraceZMView( trace_t* trace, Vector endpos, int mask, CTraceFilterSimple* filter, C_BaseEntity* pEnt, int collisionGroup )
 {
     Vector pos = MainViewOrigin();
 
-    const bool startinside = (UTIL_PointContents( pos ) & CONTENTS_SOLID) == 0;
+    const bool startinside = ( UTIL_PointContents( pos ) & CONTENTS_SOLID ) == 0;
 
     // If we started inside the world, only trace through nodraw surfaces.
     // It is possible to be able to see some things behind the sky while inside the world but let's stay safe.
-    const unsigned short invalidsurfaces = startinside ? SURF_NODRAW : (SURF_SKY | SURF_NODRAW);
+    const unsigned short invalidsurfaces = startinside ? SURF_NODRAW : ( SURF_SKY | SURF_NODRAW );
 
-    Vector dir = (endpos - pos).Normalized();
+    Vector dir = ( endpos - pos ).Normalized();
 
     // Keep tracing until we hit something that the player can't see through.
     while ( true )
     {
         // NOTE: You cannot rely on trace startsolid! This is why we check for point contents here.
         // It only works if you start inside a brush leaf (yes, the outside world also has leafs), simply being outside is apparently not solid.
-        bool bOutsideWorld = (UTIL_PointContents( pos ) & CONTENTS_SOLID) != 0;
+        bool bOutsideWorld = ( UTIL_PointContents( pos ) & CONTENTS_SOLID ) != 0;
 
         if ( filter )
         {
@@ -1165,7 +1085,7 @@ void UTIL_TraceZMView( trace_t* trace, Vector endpos, int mask, CTraceFilterSimp
         // Didn't start outside world, should be a valid trace.
         if ( !bOutsideWorld )
         {
-            if ( !trace->DidHitWorld() || (trace->surface.flags & invalidsurfaces) == 0 )
+            if ( !trace->DidHitWorld() || ( trace->surface.flags & invalidsurfaces ) == 0 )
             {
                 break;
             }
@@ -1176,6 +1096,6 @@ void UTIL_TraceZMView( trace_t* trace, Vector endpos, int mask, CTraceFilterSimp
         float dist = pos.DistTo( endpos );
         float frac = trace->startsolid ? trace->fractionleftsolid : trace->fraction;
 
-        pos += dir * (frac * dist) + dir * 2.0f; // Add a bit of extra so we definitely don't hit the same wall again.
+        pos += dir * ( frac * dist ) + dir * 2.0f; // Add a bit of extra so we definitely don't hit the same wall again.
     }
 }

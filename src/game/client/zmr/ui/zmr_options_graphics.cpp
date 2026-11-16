@@ -2,12 +2,10 @@
 #include "filesystem.h"
 #include <tier0/icommandline.h>
 
-
 #include "zmr_options_graphics.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 extern ConVar zm_cl_glow_weapon_enabled;
 extern ConVar zm_cl_glow_ammo_enabled;
@@ -20,7 +18,6 @@ extern ConVar zm_cl_colorcorrection_effects;
 extern ConVar zm_cl_muzzleflash_light;
 extern ConVar zm_cl_round_cinematic_effects;
 extern ConVar zm_cl_fireglow_max;
-
 
 CZMOptionsSubGraphics::CZMOptionsSubGraphics( Panel* parent ) : BaseClass( parent )
 {
@@ -38,10 +35,8 @@ CZMOptionsSubGraphics::CZMOptionsSubGraphics( Panel* parent ) : BaseClass( paren
     LoadItem( &m_pMuzzleflashBox, "ComboMuzzleflash" );
     LoadItem( &m_pCheck_CinematicBars, "CheckCinematicFX" );
     LoadItem( &m_pFireLightsBox, "ComboFireLights" );
-    
 
     if ( FailedLoad() ) return;
-
 
     KeyValuesAD tempkv( "temp" );
 
@@ -84,20 +79,19 @@ void CZMOptionsSubGraphics::OnApplyChanges()
     zm_cl_colorcorrection_effects.SetValue( m_pCheck_CC->IsSelected() ? 1 : 0 );
     zm_cl_round_cinematic_effects.SetValue( m_pCheck_CinematicBars->IsSelected() ? 1 : 0 );
 
-
     zm_cl_flashlight_expensive_max.SetValue( m_pExpFlashlightAmtBox->GetActiveItem() );
     zm_cl_muzzleflash_light.SetValue( m_pMuzzleflashBox->GetActiveItem() );
 
     int rainval = m_pRainBox->GetActiveItem();
     switch ( rainval )
     {
-    case 0 :
-    case 1 :
-    case 2 : // None/Low/Medium
+    case 0:
+    case 1:
+    case 2: // None/Low/Medium
         zm_cl_precipitationquality.SetValue( rainval );
         break;
-    case 3 : // High
-    default :
+    case 3: // High
+    default:
         zm_cl_precipitationquality.SetValue( 3 );
         break;
     }
@@ -105,19 +99,19 @@ void CZMOptionsSubGraphics::OnApplyChanges()
     int fireglowmax = zm_cl_fireglow_max.GetInt();
     switch ( m_pFireLightsBox->GetActiveItem() )
     {
-    case 0 : // 0
+    case 0: // 0
         fireglowmax = 0;
         break;
-    case 1 : // 2
+    case 1: // 2
         fireglowmax = 2;
         break;
-    case 2 : // 5
+    case 2: // 5
         fireglowmax = 5;
         break;
-    case 3 : // 10
+    case 3: // 10
         fireglowmax = 10;
         break;
-    default :
+    default:
         break;
     }
 
@@ -128,7 +122,6 @@ void CZMOptionsSubGraphics::OnResetData()
 {
     if ( FailedLoad() ) return;
 
-
     m_pCheck_WepGlow->SetSelected( zm_cl_glow_weapon_enabled.GetBool() );
     m_pCheck_AmmoGlow->SetSelected( zm_cl_glow_ammo_enabled.GetBool() );
     m_pCheck_VisionDynLight->SetSelected( zm_cl_zmvision_dlight.GetBool() );
@@ -137,42 +130,39 @@ void CZMOptionsSubGraphics::OnResetData()
     m_pCheck_CC->SetSelected( zm_cl_colorcorrection_effects.GetBool() );
     m_pCheck_CinematicBars->SetSelected( zm_cl_round_cinematic_effects.GetBool() );
 
-
     m_pExpFlashlightAmtBox->ActivateItem( zm_cl_flashlight_expensive_max.GetInt() );
     m_pMuzzleflashBox->ActivateItem( zm_cl_muzzleflash_light.GetInt() );
-    
+
     int rainval = zm_cl_precipitationquality.GetInt();
     switch ( rainval )
     {
-    case 0 :
-    case 1 :
-    case 2 : // None/Low/Medium
+    case 0:
+    case 1:
+    case 2: // None/Low/Medium
         m_pRainBox->ActivateItem( rainval );
         break;
-    case 3 : // High
-    default :
+    case 3: // High
+    default:
         m_pRainBox->ActivateItem( 3 );
         break;
     }
 
-
     switch ( zm_cl_fireglow_max.GetInt() )
     {
-    case 0 :
+    case 0:
         m_pFireLightsBox->ActivateItem( 0 ); // 0
         break;
-    case 2 :
+    case 2:
         m_pFireLightsBox->ActivateItem( 1 ); // 2
         break;
-    case 5 :
+    case 5:
         m_pFireLightsBox->ActivateItem( 2 ); // 5
         break;
-    case 10 :
-    default :
+    case 10:
+    default:
         m_pFireLightsBox->ActivateItem( 3 ); // 10
         break;
     }
-
 
     char buffer[32];
     Q_snprintf( buffer, sizeof( buffer ), "%i", g_ragdoll_maxcount.GetInt() );
@@ -183,7 +173,6 @@ void CZMOptionsSubGraphics::OnResetData()
 void CZMOptionsSubGraphics::OnSliderMoved( Panel* panel )
 {
     if ( FailedLoad() ) return;
-
 
     if ( panel == m_pSlider_MaxRagdolls )
     {
@@ -198,7 +187,6 @@ void CZMOptionsSubGraphics::OnTextChanged( Panel* panel )
 {
     if ( FailedLoad() ) return;
 
-
     if ( panel == m_pTextEntry_MaxRagdolls )
     {
         char buffer[32];
@@ -207,4 +195,3 @@ void CZMOptionsSubGraphics::OnTextChanged( Panel* panel )
         m_pSlider_MaxRagdolls->SetValue( atoi( buffer ) );
     }
 }
-

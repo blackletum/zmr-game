@@ -7,7 +7,6 @@
 
 #include "zmr_zombie_chase.h"
 
-
 extern ConVar zm_sv_zombie_threat_investigation_dist;
 
 //
@@ -47,13 +46,11 @@ private:
 
     CBaseEntity* EvaluateEnemies();
 
-
     CZombieChaseSchedule* m_pChaseSched;
 
     Vector m_vecFaceTowards;
     CountdownTimer m_FaceTimer;
     CountdownTimer m_NextThreat;
-
 
     CountdownTimer m_NextEnemyScan;
 
@@ -61,7 +58,6 @@ private:
     NPCR::CFollowNavPath m_Path;
     NPCR::CPathCostGroundOnly m_PathCost;
     CountdownTimer m_NextMove;
-
 
     CHandle<CBaseEntity> m_hLastEnemy;
     float m_flLastAlertSoundTime;

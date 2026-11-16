@@ -1,10 +1,9 @@
-#include "cbase.h"
 #include "ammodef.h"
+#include "cbase.h"
 #include "filesystem.h"
 #ifdef CLIENT_DLL
-#include "ui/zmr_hud_itemhistory.h"
 #include "hud.h"
-
+#include "ui/zmr_hud_itemhistory.h"
 
 #include <vgui/ISurface.h>
 
@@ -16,14 +15,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_weaponconfig( "zm_sv_debug_weaponconfig", "0", FCVAR_REPLICATED );
 
+#define DEFAULT_MAX_RANGE 1024.0f
 
-#define DEFAULT_MAX_RANGE       1024.0f
-
-#define CONFIG_DIR      "scripts"
-
+#define CONFIG_DIR "scripts"
 
 using namespace ZMWeaponConfig;
 
@@ -64,12 +60,10 @@ void ZMAttackConfig_t::ToKeyValues( KeyValues* kv ) const
     kv->SetInt( "bulletspershot", nBulletsPerShot );
     kv->SetBool( "firesingly", bFireSingly );
 
-    
     // Radius in radians to diameter in degrees
     Vector correctspread;
     for ( int i = 0; i < 3; i++ )
         correctspread[i] = RAD2DEG( asinf( vecSpread[i] ) ) * 2.0f;
-
 
     CZMBaseWeaponConfig::VectorToKv( kv, "spread", correctspread );
     CZMBaseWeaponConfig::VectorToKv( kv, "viewpunch_min", vecViewPunch_Min );
@@ -84,13 +78,10 @@ void ZMAttackConfig_t::FromKeyValues( KeyValues* kv )
     nBulletsPerShot = kv->GetInt( "bulletspershot", 1 );
     bFireSingly = kv->GetBool( "firesingly", false );
 
-
     CZMBaseWeaponConfig::ComputeSpread( kv->GetString( "spread" ), vecSpread );
     CZMBaseWeaponConfig::CopyVector( kv->GetString( "viewpunch_min" ), vecViewPunch_Min );
     CZMBaseWeaponConfig::CopyVector( kv->GetString( "viewpunch_max" ), vecViewPunch_Max );
 }
-
-
 
 //
 //
@@ -100,10 +91,8 @@ CZMBaseWeaponConfig::CZMBaseWeaponConfig( const char* wepname, const char* confi
     pszWeaponName = nullptr;
     pszConfigFilePath = nullptr;
 
-
     CopyAllocString( wepname, &pszWeaponName );
     CopyAllocString( configpath, &pszConfigFilePath );
-    
 
     pszPrintName = nullptr;
 
@@ -116,7 +105,6 @@ CZMBaseWeaponConfig::CZMBaseWeaponConfig( const char* wepname, const char* confi
     for ( int i = 0; i < ARRAYSIZE( pszSounds ); i++ )
         pszSounds[i] = nullptr;
 
-
 #ifdef CLIENT_DLL
     pIconActive = nullptr;
     pIconInactive = nullptr;
@@ -125,13 +113,11 @@ CZMBaseWeaponConfig::CZMBaseWeaponConfig( const char* wepname, const char* confi
     iCrosshair = -1;
 #endif
 
-
     primary.Reset();
     secondary.Reset();
 
     bOverriddenViewmodel = false;
     bOverriddenWorldmodel = false;
-
 
     fFlags = WEPFLAG_NONE;
 
@@ -168,13 +154,10 @@ void CZMBaseWeaponConfig::LoadFromConfig( KeyValues* kv )
 
     CopyAllocString( kv->GetString( "primary_ammo" ), &pszAmmoName );
 
-
     flReloadTime = kv->GetFloat( "reloadtime", -1.0f );
-
 
     nClipSize = kv->GetInt( "clip_size", WEAPON_NOCLIP );
     nDefaultClip = kv->GetInt( "default_clip", 0 );
-
 
     auto* primattack = kv->FindKey( "PrimaryAttack" );
     if ( primattack )
@@ -182,14 +165,11 @@ void CZMBaseWeaponConfig::LoadFromConfig( KeyValues* kv )
         primary.FromKeyValues( primattack );
     }
 
-
     auto* secattack = kv->FindKey( "SecondaryAttack" );
     if ( secattack )
     {
         secondary.FromKeyValues( secattack );
     }
-
-
 
     flAccuracyIncrease = kv->GetFloat( "accuracy_increase", 2.0f );
     flAccuracyDecrease = kv->GetFloat( "accuracy_decrease", 2.0f );
@@ -198,11 +178,9 @@ void CZMBaseWeaponConfig::LoadFromConfig( KeyValues* kv )
     flMaxPenetrationDist = kv->GetFloat( "penetration_maxdist", 16.0f );
     nMaxPenetrations = kv->GetInt( "penetration_max", 0 );
 
-
     iSlot = kv->GetInt( "bucket", 0 );
     iPosition = kv->GetInt( "bucket_position", 0 );
     nWeight = kv->GetInt( "importance", 0 );
-
 
     // Sounds
     auto* snddata = kv->FindKey( "SoundData" );
@@ -216,7 +194,6 @@ void CZMBaseWeaponConfig::LoadFromConfig( KeyValues* kv )
         CopyAllocString( snddata->GetString( "deploy" ), &pszSounds[WeaponSound_t::DEPLOY] );
         CopyAllocString( snddata->GetString( "special1" ), &pszSounds[WeaponSound_t::SPECIAL1] );
     }
-
 
     // Client
 #ifdef CLIENT_DLL
@@ -238,17 +215,11 @@ void CZMBaseWeaponConfig::LoadFromConfig( KeyValues* kv )
         }
     }
 
-
     iCrosshair = g_ZMCrosshairs.FindCrosshairByName( kv->GetString( "crosshair" ) );
 #endif // CLIENT_DLL
 
-
-
     bUseArms = kv->GetBool( "usenewhands", true );
     iArmVersion = kv->GetInt( "viewmodel_armversion", ARMVERSION_CITIZEN );
-
-
-
 
     if ( kv->GetBool( "attackonladder", true ) )
         fFlags |= WEPFLAG_ATTACK_ONLADDER;
@@ -262,9 +233,6 @@ KeyValues* CZMBaseWeaponConfig::ToKeyValues() const
 {
     KeyValues* kv = new KeyValues( "WeaponData" );
 
-
-
-
     kv->SetString( "printname", pszPrintName );
     kv->SetString( "player_anims", pszPlayerAnimsName );
     kv->SetString( "viewmodel", pszModel_View );
@@ -272,12 +240,10 @@ KeyValues* CZMBaseWeaponConfig::ToKeyValues() const
 
     kv->SetString( "primary_ammo", pszAmmoName );
 
-
     kv->SetFloat( "reloadtime", flReloadTime );
 
     kv->SetInt( "clip_size", nClipSize );
     kv->SetInt( "default_clip", nDefaultClip );
-
 
     auto* primattack = kv->FindKey( "PrimaryAttack", true );
     if ( primattack )
@@ -285,25 +251,21 @@ KeyValues* CZMBaseWeaponConfig::ToKeyValues() const
         primary.ToKeyValues( primattack );
     }
 
-
     auto* secattack = kv->FindKey( "SecondaryAttack", true );
     if ( secattack )
     {
         secondary.ToKeyValues( secattack );
     }
 
-
     kv->SetFloat( "accuracy_increase", flAccuracyIncrease );
     kv->SetFloat( "accuracy_decrease", flAccuracyDecrease );
     kv->SetFloat( "penetration_dmgmult", flPenetrationDmgMult );
     kv->SetFloat( "penetration_maxdist", flMaxPenetrationDist );
     kv->SetFloat( "penetration_max", nMaxPenetrations );
-    
-    
+
     kv->SetInt( "bucket", iSlot );
     kv->SetInt( "bucket_position", iPosition );
     kv->SetInt( "importance", nWeight );
-
 
     //
     // Sounds
@@ -317,7 +279,6 @@ KeyValues* CZMBaseWeaponConfig::ToKeyValues() const
     snddata->SetString( "melee_hit", pszSounds[WeaponSound_t::MELEE_HIT] );
     snddata->SetString( "deploy", pszSounds[WeaponSound_t::DEPLOY] );
     snddata->SetString( "special1", pszSounds[WeaponSound_t::SPECIAL1] );
-
 
     //
     // Client stuff
@@ -341,7 +302,6 @@ KeyValues* CZMBaseWeaponConfig::ToKeyValues() const
         IconToKv( texdata->FindKey( "ammo", true ), pIconAmmo );
     }
 
-
     // Crosshair
     auto* pCrosshair = g_ZMCrosshairs.GetCrosshairByIndex( iCrosshair );
     if ( pCrosshair )
@@ -349,15 +309,13 @@ KeyValues* CZMBaseWeaponConfig::ToKeyValues() const
         kv->SetString( "crosshair", pCrosshair->GetName() );
     }
 #endif // CLIENT_DLL
-    
-
 
     kv->SetBool( "usenewhands", bUseArms );
 
-    kv->SetBool( "attackonladder", (fFlags & WEPFLAG_ATTACK_ONLADDER) ? true : false );
-    kv->SetBool( "reloadonladder", (fFlags & WEPFLAG_RELOAD_ONLADDER) ? true : false );
+    kv->SetBool( "attackonladder", ( fFlags & WEPFLAG_ATTACK_ONLADDER ) ? true : false );
+    kv->SetBool( "reloadonladder", ( fFlags & WEPFLAG_RELOAD_ONLADDER ) ? true : false );
 
-    kv->SetBool( "attackinwater", (fFlags & WEPFLAG_ATTACK_INWATER) ? true : false );
+    kv->SetBool( "attackinwater", ( fFlags & WEPFLAG_ATTACK_INWATER ) ? true : false );
 
     return kv;
 }
@@ -389,7 +347,7 @@ int CZMBaseWeaponConfig::GetPrimaryAmmoIndex() const
 
 const char* CZMBaseWeaponConfig::GetDebugName() const
 {
-    return (pszPrintName && *pszPrintName) ? pszPrintName : "(Unknown)";
+    return ( pszPrintName && *pszPrintName ) ? pszPrintName : "(Unknown)";
 }
 
 void CZMBaseWeaponConfig::ComputeSpread( const char* data, Vector& spread )
@@ -406,7 +364,6 @@ void CZMBaseWeaponConfig::ComputeSpread( const char* data, Vector& spread )
 void CZMBaseWeaponConfig::CopyAllocString( const char* str, char** out )
 {
     delete[] *out;
-
 
     int len = Q_strlen( str ) + 1;
     *out = new char[len];
@@ -438,7 +395,6 @@ void CZMBaseWeaponConfig::CopyIcon( KeyValues* kv, CHudTexture** icon )
         return;
     }
 
-
     *icon = new CHudTexture();
 
     CHudTexture* pTex = *icon;
@@ -448,9 +404,8 @@ void CZMBaseWeaponConfig::CopyIcon( KeyValues* kv, CHudTexture** icon )
 
     // it's a font-based icon
     pTex->bRenderUsingFont = true;
-    pTex->cCharacterInFont = *(kv->GetString( "character", "" ));
+    pTex->cCharacterInFont = *( kv->GetString( "character", "" ) );
     Q_strncpy( pTex->szTextureFile, kv->GetString( "font" ), sizeof( pTex->szTextureFile ) );
-
 
     vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
     pTex->hFont = vgui::scheme()->GetIScheme( scheme )->GetFont( pTex->szTextureFile, true );
@@ -458,7 +413,6 @@ void CZMBaseWeaponConfig::CopyIcon( KeyValues* kv, CHudTexture** icon )
     pTex->rc.left = 0;
     pTex->rc.right = vgui::surface()->GetCharacterWidth( pTex->hFont, pTex->cCharacterInFont );
     pTex->rc.bottom = vgui::surface()->GetFontTall( pTex->hFont );
-
 
     pTex->Precache();
 }
@@ -470,10 +424,9 @@ void CZMBaseWeaponConfig::CopyIcon( KeyValues* kv, CHudTexture** icon )
 bool CZMBaseWeaponConfig::OverrideFromConfig( KeyValues* kv )
 {
     const char* pszTmp;
-    
+
 #ifdef GAME_DLL
     OVERRIDE_FROM_WEPCONFIG( kv, clip_size, nClipSize );
-
 
     auto* primattack = kv->FindKey( "PrimaryAttack" );
     if ( primattack )
@@ -481,14 +434,12 @@ bool CZMBaseWeaponConfig::OverrideFromConfig( KeyValues* kv )
         OverrideAttack( primattack, primary );
     }
 
-
     auto* secattack = kv->FindKey( "SecondaryAttack" );
     if ( secattack )
     {
         OverrideAttack( secattack, secondary );
     }
 #endif // GAME_DLL
-
 
     //
     // Sounds
@@ -525,7 +476,6 @@ bool CZMBaseWeaponConfig::OverrideFromConfig( KeyValues* kv )
             CopyAllocString( pszTmp, &pszSounds[WeaponSound_t::SPECIAL1] );
     }
 
-
     // Fallback to anim_prefix value
     pszTmp = kv->GetString( "player_anims", kv->GetString( "anim_prefix", nullptr ) );
     if ( pszTmp )
@@ -534,9 +484,6 @@ bool CZMBaseWeaponConfig::OverrideFromConfig( KeyValues* kv )
     pszTmp = kv->GetString( "primary_ammo", nullptr );
     if ( pszTmp )
         CopyAllocString( pszTmp, &pszAmmoName );
-
-
-    
 
 #ifdef CLIENT_DLL
     pszTmp = kv->GetString( "printname", nullptr );
@@ -547,7 +494,6 @@ bool CZMBaseWeaponConfig::OverrideFromConfig( KeyValues* kv )
     if ( hands != -1 )
         bUseArms = ( hands > 0 ) ? true : false;
 #endif
-
 
     // Shared
     pszTmp = kv->GetString( "viewmodel", nullptr );
@@ -569,8 +515,7 @@ bool CZMBaseWeaponConfig::OverrideFromConfig( KeyValues* kv )
 
 void CZMBaseWeaponConfig::OverrideAttack( KeyValues* kv, ZMAttackConfig_t& attack )
 {
-    const float invalidf =    -1337.0f;
-
+    const float invalidf = -1337.0f;
 
     const char* pszTemp;
     Vector vecTemp;
@@ -583,7 +528,6 @@ void CZMBaseWeaponConfig::OverrideAttack( KeyValues* kv, ZMAttackConfig_t& attac
     pszTemp = kv->GetString( "spread", nullptr );
     if ( pszTemp )
         ComputeSpread( pszTemp, attack.vecSpread );
-
 
     vecTemp = vecInvalid;
     CopyVector( kv->GetString( "viewpunch_min" ), vecTemp );
@@ -612,7 +556,6 @@ CZMWepConfigReg::CZMWepConfigReg( WeaponConfigSlot_t slot, CreateWeaponConfigFn 
     pSystem->RegisterBaseConfig( slot, fn );
 }
 
-
 //
 //
 //
@@ -623,12 +566,13 @@ CZMWeaponConfigSystem::CZMWeaponConfigSystem() : CAutoGameSystem( "ZMWeaponConfi
         m_pConfigs[i] = nullptr;
     }
 
-
     for ( int i = 0; i < ARRAYSIZE( m_ConfigRegisters ); i++ )
     {
-        m_ConfigRegisters[i].fn = []( const char* wepname, const char* configpath ) { return new CZMBaseWeaponConfig( wepname, configpath ); };
+        m_ConfigRegisters[i].fn = []( const char* wepname, const char* configpath )
+        {
+            return new CZMBaseWeaponConfig( wepname, configpath );
+        };
     }
-
 
     //
     // Add new weapons here.
@@ -650,7 +594,6 @@ CZMWeaponConfigSystem::CZMWeaponConfigSystem() : CAutoGameSystem( "ZMWeaponConfi
     m_ConfigRegisters[ZMCONFIGSLOT_R700].pszWeaponName = "weapon_zm_r700";
     m_ConfigRegisters[ZMCONFIGSLOT_MOLOTOV].pszWeaponName = "weapon_zm_molotov";
     m_ConfigRegisters[ZMCONFIGSLOT_PIPEBOMB].pszWeaponName = "weapon_zm_pipebomb";
-
 
     InitPlayerAnimMap();
 }
@@ -722,7 +665,6 @@ void CZMWeaponConfigSystem::ReloadConfigs()
     }
 #endif
 
-
     // Reload base configs.
     for ( int i = 0; i < ARRAYSIZE( m_ConfigRegisters ); i++ )
     {
@@ -730,7 +672,6 @@ void CZMWeaponConfigSystem::ReloadConfigs()
     }
 
     InitBaseConfigs();
-
 
     // Reload custom configs.
     for ( int i = ZMCONFIGSLOT_CUSTOM_START; i < ARRAYSIZE( m_pConfigs ); i++ )
@@ -742,9 +683,7 @@ void CZMWeaponConfigSystem::ReloadConfigs()
             continue;
         }
 
-
         m_pConfigs[i] = nullptr;
-
 
         auto slot = FindBaseSlotByClassname( pOldConfig->pszWeaponName );
         if ( slot != ZMCONFIGSLOT_INVALID )
@@ -798,9 +737,7 @@ WeaponConfigSlot_t CZMWeaponConfigSystem::RegisterCustomWeapon( WeaponConfigSlot
         return baseslot;
     }
 
-
     Assert( baseslot < ZMCONFIGSLOT_REGISTERED_END );
-
 
     auto slot = FindEmptyCustomConfigSlot();
     // No more slots open!
@@ -809,10 +746,8 @@ WeaponConfigSlot_t CZMWeaponConfigSystem::RegisterCustomWeapon( WeaponConfigSlot
         return baseslot;
     }
 
-
     char file[256];
-    Q_snprintf( file, sizeof( file ), CONFIG_DIR"/%s.txt", filename );
-
+    Q_snprintf( file, sizeof( file ), CONFIG_DIR "/%s.txt", filename );
 
     // We don't need to load this config if we have it loaded already!
     auto existingslot = FindCustomConfigByConfigPath( file );
@@ -820,7 +755,6 @@ WeaponConfigSlot_t CZMWeaponConfigSystem::RegisterCustomWeapon( WeaponConfigSlot
     {
         return existingslot;
     }
-
 
     auto* pConfig = LoadCustomConfigFromFile( baseslot, file );
 
@@ -900,10 +834,9 @@ CZMBaseWeaponConfig* CZMWeaponConfigSystem::LoadConfigFromFile( const char* szWe
 {
     DevMsg( "Loading weapon config '%s' (%s)...\n", szWeaponName, gpGlobals->IsClient() ? "CLIENT" : "SERVER" );
 
-
     char file[256];
 
-    Q_snprintf( file, sizeof( file ), CONFIG_DIR"/%s.txt", szWeaponName );
+    Q_snprintf( file, sizeof( file ), CONFIG_DIR "/%s.txt", szWeaponName );
 
     KeyValuesAD baseKeyValues( "WeaponData" );
     if ( !baseKeyValues->LoadFromFile( filesystem, file ) )
@@ -912,8 +845,7 @@ CZMBaseWeaponConfig* CZMWeaponConfigSystem::LoadConfigFromFile( const char* szWe
         return nullptr;
     }
 
-
-    auto* pConfig = ( fn != nullptr ) ? (fn( szWeaponName, file )) : (new CZMBaseWeaponConfig( szWeaponName, file ));
+    auto* pConfig = ( fn != nullptr ) ? ( fn( szWeaponName, file ) ) : ( new CZMBaseWeaponConfig( szWeaponName, file ) );
     pConfig->LoadFromConfig( baseKeyValues );
 
     //
@@ -933,7 +865,7 @@ CZMBaseWeaponConfig* CZMWeaponConfigSystem::LoadConfigFromFile( const char* szWe
 
     for ( int i = 0; i < ARRAYSIZE( postfixes ); i++ )
     {
-        Q_snprintf( file, sizeof( file ), CONFIG_DIR"/%s%s.txt", szWeaponName, postfixes[i] );
+        Q_snprintf( file, sizeof( file ), CONFIG_DIR "/%s%s.txt", szWeaponName, postfixes[i] );
 
         KeyValuesAD overrideKeyValues( "WeaponData" );
         if ( overrideKeyValues->LoadFromFile( filesystem, file, "MOD" ) )
@@ -944,14 +876,12 @@ CZMBaseWeaponConfig* CZMWeaponConfigSystem::LoadConfigFromFile( const char* szWe
         }
     }
 
-
     return pConfig;
 }
 
 CZMBaseWeaponConfig* CZMWeaponConfigSystem::LoadCustomConfigFromFile( WeaponConfigSlot_t baseslot, const char* filepath )
 {
     DevMsg( "Loading custom weapon config '%s'...\n", filepath );
-
 
     KeyValuesAD kv( "WeaponData" );
     if ( !kv->LoadFromFile( filesystem, filepath ) )
@@ -960,18 +890,14 @@ CZMBaseWeaponConfig* CZMWeaponConfigSystem::LoadCustomConfigFromFile( WeaponConf
         return nullptr;
     }
 
-
-
     auto* pBaseConfig = m_pConfigs[baseslot];
     Assert( pBaseConfig );
 
     KeyValuesAD basekv( pBaseConfig->ToKeyValues() );
 
-
     const char* wepname = m_ConfigRegisters[baseslot].pszWeaponName;
 
     auto* pConfig = m_ConfigRegisters[baseslot].fn( wepname, filepath );
-
 
     pConfig->LoadFromConfig( basekv );
 
@@ -989,8 +915,7 @@ int CZMWeaponConfigSystem::GetWeaponClassnames( const char** pszWeaponNames, int
         return 0;
     }
 
-
-    int n = Min( nMaxWeapons, (int) ARRAYSIZE( m_ConfigRegisters ) );
+    int n = Min( nMaxWeapons, (int)ARRAYSIZE( m_ConfigRegisters ) );
     for ( int i = 0; i < n; i++ )
     {
         pszWeaponNames[i] = m_ConfigRegisters[i].pszWeaponName;

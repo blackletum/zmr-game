@@ -9,14 +9,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-
 DECLARE_BUILD_FACTORY( CZMMainMenuButton );
-
 
 extern CUtlSymbolTable g_ButtonSoundNames;
 
 using namespace vgui;
-
 
 CZMMainMenuButton::CZMMainMenuButton( Panel* pParent, const char* name ) : BaseClass( pParent, name )
 {
@@ -75,13 +72,11 @@ void CZMMainMenuButton::SetArmed( bool state )
             surface()->PlaySound( g_ButtonSoundNames.String( m_sArmedSoundName ) );
         }
 
-
         // Hide all other sub buttons
         if ( state )
         {
             GetMainMenu()->HideSubButtons( this );
         }
-
 
         if ( state )
         {
@@ -171,7 +166,6 @@ void CZMMainMenuButton::AttemptToShowButtons()
     if ( !m_vSubBtns.Count() )
         return;
 
-
     GetMainMenu()->HideSubButtons( this );
 
     if ( !IsSubButtonsVisible() )
@@ -182,7 +176,7 @@ void CZMMainMenuButton::ShowSubButtons()
 {
     FOR_EACH_VEC( m_vSubBtns, i )
     {
-        m_vSubBtns[i]->FadeIn( 0.1f + (i * 0.1f) );
+        m_vSubBtns[i]->FadeIn( 0.1f + ( i * 0.1f ) );
     }
 
     GetParent()->Repaint();
@@ -193,7 +187,7 @@ void CZMMainMenuButton::HideSubButtons()
     int len = m_vSubBtns.Count();
     for ( int i = 0; i < len; i++ )
     {
-        m_vSubBtns[i]->FadeOut( 0.1f + ((len-i-1) * 0.1f) );
+        m_vSubBtns[i]->FadeOut( 0.1f + ( ( len - i - 1 ) * 0.1f ) );
     }
 
     GetParent()->Repaint();
@@ -206,11 +200,9 @@ void CZMMainMenuButton::PositionSubButtons()
 
     const int size_y = GetTall() * 0.6f;
 
-
     m_nSubBtnHeight = size_y;
 
-
-    const int offset_x = (GetWide() - m_nMaxSubTextWidth) / 2;
+    const int offset_x = ( GetWide() - m_nMaxSubTextWidth ) / 2;
     const int offset_y = -size_y;
 
     int len = m_vSubBtns.Count();

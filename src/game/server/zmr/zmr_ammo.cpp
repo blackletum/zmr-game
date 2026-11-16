@@ -1,8 +1,8 @@
-#include "cbase.h"
 #include "ammodef.h"
+#include "cbase.h"
 
-#include "zmr_shareddefs.h"
 #include "zmr_ammo.h"
+#include "zmr_shareddefs.h"
 
 /*
     NOTE:
@@ -12,15 +12,19 @@
 
 int ITEM_GiveAmmo( CBasePlayer* pPlayer, float flCount, const char* pszAmmoName, bool bSuppressSound = false );
 
-
-#define REGISTER_ZMAMMO(classname,classname2,model,ammoname,ammocount)  class classname2 : public CZMAmmo \
-                                                                        { \
-                                                                        public: \
-                                                                            classname2() { m_nMaxAmmo = ammocount; m_nAmmo = m_nMaxAmmo; } \
-                                                                            virtual const char* GetItemModel() const override { return model; } \
-                                                                            virtual const char* GetAmmoName() const override { return ammoname; } \
-                                                                        }; \
-                                                                        LINK_ENTITY_TO_CLASS( classname, classname2 );
+#define REGISTER_ZMAMMO( classname, classname2, model, ammoname, ammocount )  \
+    class classname2 : public CZMAmmo                                         \
+    {                                                                         \
+    public:                                                                   \
+        classname2()                                                          \
+        {                                                                     \
+            m_nMaxAmmo = ammocount;                                           \
+            m_nAmmo = m_nMaxAmmo;                                             \
+        }                                                                     \
+        virtual const char* GetItemModel() const override { return model; }   \
+        virtual const char* GetAmmoName() const override { return ammoname; } \
+    };                                                                        \
+    LINK_ENTITY_TO_CLASS( classname, classname2 );
 
 CZMAmmo::CZMAmmo()
 {
@@ -64,7 +68,6 @@ void CZMAmmo::Precache()
 {
     PrecacheModel( GetItemModel() );
 
-
     m_iAmmoType = GetAmmoDef()->Index( GetAmmoName() );
 }
 
@@ -104,8 +107,6 @@ BEGIN_DATADESC( CZMAmmo )
     DEFINE_ENTITYFUNC( EmptyTouch ),
     DEFINE_THINKFUNC( NoPickupThink ),
 END_DATADESC()
-
-
 
 REGISTER_ZMAMMO( item_box_buckshot, CZMAmmo_Buckshot, "models/items/boxbuckshot.mdl", "Buckshot", SIZE_AMMO_BUCKSHOT );
 REGISTER_ZMAMMO( item_ammo_357, CZMAmmo_357, "models/items/357ammo.mdl", "357", SIZE_AMMO_357 );

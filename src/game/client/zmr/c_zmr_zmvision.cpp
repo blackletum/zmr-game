@@ -6,10 +6,8 @@
 #include "c_zmr_util.h"
 #include "c_zmr_zmvision.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 ConVar zm_cl_zmvision_dlight( "zm_cl_zmvision_dlight", "1", FCVAR_ARCHIVE, "Does ZM vision light up the area? No longer a dynamic light." );
 ConVar zm_cl_zmvision_color( "zm_cl_zmvision_color", "0.6 0.2 0.2 1", FCVAR_ARCHIVE, "" );
@@ -32,7 +30,6 @@ extern ConVar mat_slopescaledepthbias_shadowmap;
 extern ConVar mat_depthbias_shadowmap;
 
 void UTIL_ParseFloatColorFromString( const char* str, float clr[], int nColors );
-
 
 CZMVision g_ZMVision;
 
@@ -59,10 +56,8 @@ void CZMVision::RenderSilhouette()
     if ( zm_cl_silhouette_onlyzmvision.GetBool() && !IsOn() )
         return;
 
-
     int i;
     int len = m_Silhouettes.Count();
-
 
     if ( len < 1 ) return;
 
@@ -77,7 +72,6 @@ void CZMVision::RenderSilhouette()
     }
 
     if ( !bRender ) return;
-
 
     g_pStudioRender->ForcedMaterialOverride( materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true ) );
 
@@ -105,13 +99,11 @@ void CZMVision::RenderSilhouette()
             m_Silhouettes[i]->DrawModel( STUDIO_RENDER );
     }
 
-
     pRenderContext->OverrideAlphaWriteEnable( false, true );
     pRenderContext->OverrideColorWriteEnable( false, true );
 
     pRenderContext->OverrideDepthEnable( false, false );
 
-    
     pRenderContext->SetStencilReferenceValue( 3 );
     pRenderContext->SetStencilTestMask( 2 );
     pRenderContext->SetStencilWriteMask( 1 );
@@ -119,7 +111,6 @@ void CZMVision::RenderSilhouette()
     pRenderContext->SetStencilPassOperation( STENCILOPERATION_REPLACE );
     pRenderContext->SetStencilZFailOperation( STENCILOPERATION_REPLACE );
     pRenderContext->SetStencilFailOperation( STENCILOPERATION_KEEP );
-
 
     // Draw color+alpha, stenciling out pixels from the first pass
     const Vector vGlowColor = Vector( 1.0f, 0.0f, 0.0f ) * zm_cl_silhouette_strength.GetFloat();
@@ -200,7 +191,7 @@ void CZMVision::UpdateLight()
     {
         g_pClientShadowMgr->UpdateFlashlightState( m_FlashlightHandle, state );
     }
-    
+
     g_pClientShadowMgr->UpdateProjectedTexture( m_FlashlightHandle, true );
 }
 
@@ -244,14 +235,13 @@ void CZMVision::SetVision( bool bEnable )
         return;
     }
 
-
     if ( bEnable != m_bIsOn )
     {
         ZMClientUtil::PrintNotify( "#ZMToggleVision", ZMCHATNOTIFY_ZM );
     }
 
     m_bIsOn = bEnable;
-    
+
     if ( !bEnable )
     {
         DestroyFlashlight();
@@ -280,7 +270,6 @@ CON_COMMAND( zm_vision, "Toggles ZM vision." )
     bool bPrevState = g_ZMVision.IsOn();
 
     g_ZMVision.Toggle();
-
 
     auto* pLocalPlayer = C_ZMPlayer::GetLocalPlayer();
 

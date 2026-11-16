@@ -6,7 +6,6 @@
 
 #include "zmr_basepump.h"
 
-
 #ifdef CLIENT_DLL
 #define CZMWeaponShotgun C_ZMWeaponShotgun
 #endif
@@ -19,7 +18,6 @@ public:
     DECLARE_PREDICTABLE();
 
     CZMWeaponShotgun();
-    
 
     virtual Activity GetReloadStartAct() const override;
     virtual Activity GetReloadEndAct() const override;

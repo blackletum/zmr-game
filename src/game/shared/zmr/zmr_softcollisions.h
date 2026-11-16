@@ -1,11 +1,10 @@
 #pragma once
 
-
 //
 abstract_class CZMBaseSoftCol
 {
 public:
-    CZMBaseSoftCol( CBaseEntity* pOrigin, CBaseEntity* pOther )
+    CZMBaseSoftCol( CBaseEntity * pOrigin, CBaseEntity * pOther )
     {
         hOrigin.Set( pOrigin );
         hOther.Set( pOther );
@@ -18,7 +17,6 @@ public:
         return hOrigin.Get() == pOrigin && hOther.Get() == pOther;
     }
 
-
     enum SoftColRes_t
     {
         COLRES_NONE = 0,
@@ -27,10 +25,7 @@ public:
         COLRES_INVALID
     };
 
-
-
     SoftColRes_t PerformCollision() { return COLRES_NONE; }
-
 
 protected:
     EHANDLE hOrigin;
@@ -60,9 +55,8 @@ protected:
 };
 //
 
-
 //
-class CZMSoftCollisions : 
+class CZMSoftCollisions :
 #ifdef GAME_DLL
     public CAutoGameSystemPerFrame
 #else
@@ -75,7 +69,6 @@ public:
     virtual void FrameUpdatePostEntityThink() override;
 #endif
 
-    
 #ifdef GAME_DLL
     void OnZombieCollide( CBaseEntity* pOrigin, CBaseEntity* pOther );
 #else
@@ -94,6 +87,5 @@ protected:
 #endif
 };
 //
-
 
 extern CZMSoftCollisions* GetZMSoftCollisions();

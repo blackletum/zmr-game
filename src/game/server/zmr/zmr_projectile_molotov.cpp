@@ -1,17 +1,15 @@
 #include "cbase.h"
+#include "fire.h"
 #include "gib.h"
 #include "props_shared.h"
 #include "smoke_trail.h"
-#include "fire.h"
 
 #include "zmr_baseprojectile.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define MOLOTOV_MODEL       "models/weapons/molotov3rd_zm.mdl"
-
+#define MOLOTOV_MODEL "models/weapons/molotov3rd_zm.mdl"
 
 //
 //
@@ -20,7 +18,7 @@ class CFlamingGib : public CGib
 {
 public:
     DECLARE_CLASS( CFlamingGib, CGib );
-    
+
     virtual void Spawn() override;
 };
 
@@ -32,21 +30,14 @@ void CFlamingGib::Spawn()
 
     BaseClass::Spawn( gibname );
 
-
     SetBloodColor( DONT_BLEED );
     m_takedamage = DAMAGE_NO;
 
     SetCollisionGroup( COLLISION_GROUP_DEBRIS );
     AddEffects( EF_NODRAW );
-        
-
-
-
 
     SetNextThink( gpGlobals->curtime + m_lifeTime );
     SetThink( &CGib::DieThink );
-        
-
 
     QAngle ang;
     Vector vel;
@@ -59,14 +50,11 @@ void CFlamingGib::Spawn()
 
     SetAbsVelocity( vel );
 
-
     IPhysicsObject* pPhys = VPhysicsInitNormal( SOLID_NONE, GetSolidFlags(), false );
 
     if ( pPhys )
     {
         AngularImpulse angimp = RandomAngularImpulse( -90.0f, 90.0f );
-
-
 
         pPhys->EnableMotion( true );
         pPhys->SetVelocity(
@@ -84,7 +72,7 @@ void CFlamingGib::Spawn()
         trail->SetMoveType( MOVETYPE_NONE );
         trail->SetLifetime( this->m_lifeTime - 1.0f );
         //trail->m_StartSize = 15; //TGB: made the chunks smaller
-        //trail->m_EndSize = 6;  
+        //trail->m_EndSize = 6;
     }
 }
 
@@ -109,7 +97,6 @@ public:
     void CreateFlyingChunk( const Vector& pos );
 
     virtual void OnThrow() override;
-
 
     virtual bool IsCombatItem() const override;
 
@@ -154,7 +141,7 @@ void CZMProjectileMolotov::OnThrow()
         fire->FollowEntity( this, "flame" );
         fire->SetLocalOrigin( vec3_origin );
         fire->SetMoveType( MOVETYPE_NONE );
-        fire->SetLifetime( 20.0f ); 
+        fire->SetLifetime( 20.0f );
         //fire->m_StartSize = random->RandomFloat(1.0f, 2.0f);
         //fire->m_EndSize = random->RandomFloat(3.5f, 5.0f);
     }
@@ -174,9 +161,8 @@ void CZMProjectileMolotov::Spawn()
 
 void CZMProjectileMolotov::MolotovTouch( CBaseEntity* pOther )
 {
-    if ( pOther->IsSolidFlagSet( FSOLID_TRIGGER|FSOLID_VOLUME_CONTENTS ) )
+    if ( pOther->IsSolidFlagSet( FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS ) )
         return;
-
 
     Detonate();
 }
@@ -196,7 +182,6 @@ void CZMProjectileMolotov::Detonate()
 {
     AddEffects( EF_NODRAW );
 
-
     // Travel back to the touch position.
     trace_t trace;
     trace = GetTouchTrace();
@@ -210,14 +195,12 @@ void CZMProjectileMolotov::Detonate()
         // Go off the wall a bit.
         SetAbsOrigin( trace.endpos + normal * 2.0f );
     }
-    
 
     if ( UTIL_PointContents( GetAbsOrigin() ) & CONTENTS_WATER )
     {
         UTIL_Remove( this );
         return;
     }
-
 
     EmitSound( "Grenade_Molotov.Detonate" );
     EmitSound( "Grenade_Molotov.Detonate2" );
@@ -246,28 +229,24 @@ void CZMProjectileMolotov::Detonate()
 
         end = start + fwd * 300.0f;
 
-
         UTIL_TraceLine( start, end, MASK_SOLID, this, COLLISION_GROUP_NONE, &firetrace );
 
         if ( firetrace.fraction != 1.0f )
         {
-            FireSystem_StartFire( firetrace.endpos + ( firetrace.plane.normal * 12.0f ), 125.0f, 128.0f, 10.0f, (SF_FIRE_START_ON), pThrower, FIRE_NATURAL );
+            FireSystem_StartFire( firetrace.endpos + ( firetrace.plane.normal * 12.0f ), 125.0f, 128.0f, 10.0f, ( SF_FIRE_START_ON ), pThrower, FIRE_NATURAL );
         }
         else
         {
-            FireSystem_StartFire( firetrace.endpos, 125.0f, 128.0f, 20.0f, (SF_FIRE_START_ON|SF_FIRE_SMOKELESS), pThrower, FIRE_NATURAL );
+            FireSystem_StartFire( firetrace.endpos, 125.0f, 128.0f, 20.0f, ( SF_FIRE_START_ON | SF_FIRE_SMOKELESS ), pThrower, FIRE_NATURAL );
         }
     }
 
-
     UTIL_ScreenShake( GetAbsOrigin(), 10.0f, 60.0f, 1.0f, 200.0f, SHAKE_START, true );
-
 
     if ( pThrower )
     {
         RadiusDamage( CTakeDamageInfo( this, pThrower, 40.0f, DMG_BURN ), GetAbsOrigin(), 128.0f, CLASS_NONE, nullptr );
     }
-
 
     UTIL_Remove( this );
 

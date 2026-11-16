@@ -4,12 +4,10 @@
 #include "npcr_motor.h"
 #include "npcr_nonplayer.h"
 
-
 ConVar npcr_debug_navigator( "npcr_debug_navigator", "0" );
 ConVar npcr_debug_navigator_ground( "npcr_debug_navigator_ground", "0" );
 
 ConVar npcr_motor_jump_groundoffset( "npcr_motor_jump_groundoffset", "2" );
-
 
 class CMoveFilter : public CTraceFilterSimple
 {
@@ -30,13 +28,11 @@ public:
         if ( UTIL_EntityHasMatchingRootParent( m_pRootParent, pEnt ) )
             return false;
 
-
         NPCR::QueryResult_t res = m_pNPC->ShouldTouch( pEnt );
         if ( res == NPCR::RES_YES )
             return true;
         if ( res == NPCR::RES_NO )
             return false;
-
 
         return CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask );
     }
@@ -45,7 +41,6 @@ private:
     NPCR::CBaseNPC* m_pNPC;
     CBaseEntity* m_pRootParent;
 };
-
 
 NPCR::CBaseMotor::CBaseMotor( CBaseNPC* pNPC ) : NPCR::CEventListener( pNPC, pNPC )
 {
@@ -84,7 +79,6 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
     Vector maxs = Vector( halfhull, halfhull, GetHullHeight() - height );
     Assert( mins.z < maxs.z );
 
-
     Vector vecStepDown;
     if ( m_bDoStepDownTrace )
     {
@@ -95,9 +89,7 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
         vecStepDown = Vector( 0, 0, -0.01f );
     }
 
-
     Vector offGround = Vector( 0.0f, 0.0f, height );
-
 
     CMoveFilter filter( GetNPC(), COLLISION_GROUP_NPC );
     trace_t tr;
@@ -112,17 +104,16 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
         bool bInvalid = tr.startsolid;
         switch ( npcr_debug_navigator_ground.GetInt() )
         {
-        case 1 :
-            NDebugOverlay::Box( startPos + offGround, mins, maxs, bInvalid ? 255 : 0, (!bInvalid) ? 255 : 0, 0, 0, 0.1f );
+        case 1:
+            NDebugOverlay::Box( startPos + offGround, mins, maxs, bInvalid ? 255 : 0, ( !bInvalid ) ? 255 : 0, 0, 0, 0.1f );
             break;
-        case 2 :
-            NDebugOverlay::Box( tr.endpos, mins, maxs, bInvalid ? 255 : 0, (!bInvalid) ? 255 : 0, 0, 0, 0.1f );
+        case 2:
+            NDebugOverlay::Box( tr.endpos, mins, maxs, bInvalid ? 255 : 0, ( !bInvalid ) ? 255 : 0, 0, 0, 0.1f );
             break;
-        default :
+        default:
             break;
         }
     }
-
 
     bool bValidPos = true;
 
@@ -130,7 +121,6 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
     if ( tr.fraction < 1.0f && !tr.startsolid )
     {
         bool bCanStand = CanStandOnNormal( tr.plane.normal );
-
 
         // NEVER get on a poor normal if we're on good ground.
         //
@@ -150,7 +140,6 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
             bValidPos = false;
         }
 
-
         if ( bCanStand )
         {
             // This ground z offset is used to fix npcs getting stuck to a ceiling.
@@ -158,8 +147,8 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
             {
                 m_flGroundZOffset = tr.endpos.z - startPos.z;
             }
-            else m_flGroundZOffset = 0.0f;
-
+            else
+                m_flGroundZOffset = 0.0f;
 
             m_vecGroundNormal = tr.plane.normal;
 
@@ -180,7 +169,6 @@ CBaseEntity* NPCR::CBaseMotor::UpdateGround()
 
         return tr.m_pEnt;
     }
-
 
     // We're off the ground, wait until we hit the ground properly.
     m_bDoStepDownTrace = false;
@@ -224,11 +212,9 @@ void NPCR::CBaseMotor::NavJump( const Vector& vecGoal, float flOverrideHeight )
 {
     GetNPC()->OnLeftGround( nullptr );
     m_bDoStepDownTrace = false;
-    
 
     // Step up off the ground so we don't snap back to ground.
     Vector pos = GetNPC()->GetPosition();
-
 
     float halfhull = GetHullWidth() / 2.0f;
     Vector mins = Vector( -halfhull, -halfhull, 0.0f );
@@ -265,7 +251,6 @@ void NPCR::CBaseMotor::NavJump( const Vector& vecGoal, float flOverrideHeight )
 
     SetVelocity( vel );
 
-
     // Make sure we don't apply ground move.
     m_vecGroundNormal.z = 0.0f;
 
@@ -276,18 +261,18 @@ void NPCR::CBaseMotor::NavJump( const Vector& vecGoal, float flOverrideHeight )
 Vector NPCR::CBaseMotor::CalcJumpLaunchVelocity( const Vector& startPos, const Vector& endPos, float flGravity, float* pminHeight, float maxHorzVelocity, Vector* pvecApex )
 {
     // Get the height I have to jump to get to the target
-    float	stepHeight = endPos.z - startPos.z;
+    float stepHeight = endPos.z - startPos.z;
 
     // get horizontal distance to target
-    Vector targetDir2D	= endPos - startPos;
+    Vector targetDir2D = endPos - startPos;
     targetDir2D.z = 0;
-    float distance = VectorNormalize(targetDir2D);
+    float distance = VectorNormalize( targetDir2D );
 
     Assert( maxHorzVelocity > 0 );
 
     // get minimum times and heights to meet ideal horz velocity
     float minHorzTime = distance / maxHorzVelocity;
-    float minHorzHeight = 0.5 * flGravity * (minHorzTime * 0.5) * (minHorzTime * 0.5);
+    float minHorzHeight = 0.5 * flGravity * ( minHorzTime * 0.5 ) * ( minHorzTime * 0.5 );
 
     // jump height must be enough to hang in the air
     *pminHeight = MAX( *pminHeight, minHorzHeight );
@@ -295,17 +280,17 @@ Vector NPCR::CBaseMotor::CalcJumpLaunchVelocity( const Vector& startPos, const V
     *pminHeight = MAX( *pminHeight, stepHeight );
 
     // time from start to apex
-    float t0 = sqrtf( (2.0f * *pminHeight) / flGravity );
+    float t0 = sqrtf( ( 2.0f * *pminHeight ) / flGravity );
     // time from apex to end
-    float t1 = sqrtf( (2.0f * fabsf(*pminHeight - stepHeight)) / flGravity );
+    float t1 = sqrtf( ( 2.0f * fabsf( *pminHeight - stepHeight ) ) / flGravity );
 
-    float velHorz = distance / (t0 + t1);
+    float velHorz = distance / ( t0 + t1 );
 
     Vector jumpVel = targetDir2D * velHorz;
 
-    jumpVel.z = sqrtf( 2.0f * flGravity * (*pminHeight) );
+    jumpVel.z = sqrtf( 2.0f * flGravity * ( *pminHeight ) );
 
-    if (pvecApex)
+    if ( pvecApex )
     {
         *pvecApex = startPos + targetDir2D * velHorz * t0 + Vector( 0, 0, *pminHeight );
     }
@@ -319,9 +304,7 @@ Vector NPCR::CBaseMotor::CalcJumpLaunchVelocity( const Vector& startPos, const V
 
 void NPCR::CBaseMotor::Climb()
 {
-
 }
-
 
 void NPCR::CBaseMotor::MoveTowards( const Vector& vecNewPos )
 {
@@ -334,12 +317,10 @@ Vector NPCR::CBaseMotor::HandleCollisions( const Vector& vecGoal )
 {
     VPROF_BUDGET( "CBaseMotor::HandleCollisions", "NPCR" );
 
-
     m_bAdjustVel = false;
 
-
     Vector validPos = GetNPC()->GetPosition();
-    
+
     float halfhull = GetHullWidth() / 2.0f;
 
     // If we're on ground, ignore step height.
@@ -350,7 +331,6 @@ Vector NPCR::CBaseMotor::HandleCollisions( const Vector& vecGoal )
     // Should never happen.
     Assert( mins.z < maxs.z );
 
-
     int limit = 3;
     Vector startPos = validPos;
     Vector goalPos = vecGoal;
@@ -359,7 +339,6 @@ Vector NPCR::CBaseMotor::HandleCollisions( const Vector& vecGoal )
     {
         NDebugOverlay::Box( startPos, mins, maxs, 0, 255, 0, 0, 0.1f );
     }
-
 
     trace_t tr;
     while ( limit-- > 0 )
@@ -404,15 +383,12 @@ Vector NPCR::CBaseMotor::HandleCollisions( const Vector& vecGoal )
             break;
         }
 
-
         Vector fullMove = goalPos - startPos;
         Vector leftToMove = fullMove * ( 1.0f - tr.fraction );
 
-
         // Don't bother going down when we're on ground and there's a slanted wall.
         // This stops npcs getting stuck in the ground.
-        if (!CanStandOnNormal( tr.plane.normal )
-        &&  IsOnGround() )
+        if ( !CanStandOnNormal( tr.plane.normal ) && IsOnGround() )
         //&&  fullMove.z > 0.0f )
         {
             fullMove.z = 0.0f;
@@ -430,7 +406,6 @@ Vector NPCR::CBaseMotor::HandleCollisions( const Vector& vecGoal )
             break;
         }
 
-
         goalPos = remainingMove;
     }
 
@@ -439,7 +414,7 @@ Vector NPCR::CBaseMotor::HandleCollisions( const Vector& vecGoal )
         m_vecLastValidPos = validPos;
         m_bHasValidPos = true;
     }
-    
+
     return validPos;
 }
 
@@ -471,7 +446,7 @@ bool NPCR::CBaseMotor::FixStuck( const trace_t& tr, Vector& vecValidPos ) const
                 GetOuter(),
                 COLLISION_GROUP_NONE,
                 &hulltr );
-            
+
             if ( !hulltr.startsolid )
             {
                 vecValidPos = hulltr.endpos;
@@ -485,7 +460,7 @@ bool NPCR::CBaseMotor::FixStuck( const trace_t& tr, Vector& vecValidPos ) const
 
             Vector vel;
             pPhys->GetVelocity( &vel, nullptr );
-            if ( pPhys->IsMotionEnabled() && vel.LengthSqr() < (10.0f*10.0f) )
+            if ( pPhys->IsMotionEnabled() && vel.LengthSqr() < ( 10.0f * 10.0f ) )
             {
                 Vector dir = pEnt->WorldSpaceCenter() - vecValidPos;
                 dir.NormalizeInPlace();
@@ -532,13 +507,13 @@ void NPCR::CBaseMotor::FaceTowards( const QAngle& angGoal )
 {
     QAngle curAngles = GetNPC()->GetEyeAngles();
     float time = GetNPC()->GetUpdateInterval();
-    
+
     float dx = UTIL_AngleDiff( angGoal.x, curAngles.x );
     float dy = UTIL_AngleDiff( angGoal.y, curAngles.y );
 
     float mx = GetPitchRate( dx ) * time;
     float my = GetYawRate( dy ) * time;
-    
+
     if ( UsePitch() )
     {
         if ( dx < -mx )
@@ -549,14 +524,12 @@ void NPCR::CBaseMotor::FaceTowards( const QAngle& angGoal )
             curAngles.x = angGoal.x;
     }
 
-
     if ( dy < -my )
         curAngles.y -= my;
     else if ( dy > my )
         curAngles.y += my;
     else
         curAngles.y = angGoal.y;
-    
 
     GetNPC()->SetEyeAngles( curAngles );
 }
@@ -565,7 +538,7 @@ void NPCR::CBaseMotor::FaceTowards( float yaw )
 {
     QAngle ang = GetNPC()->GetEyeAngles();
     float time = GetNPC()->GetUpdateInterval();
-    
+
     float dy = UTIL_AngleDiff( yaw, ang.y );
 
     float my = GetYawRate( dy ) * time;
@@ -576,7 +549,6 @@ void NPCR::CBaseMotor::FaceTowards( float yaw )
         ang.y += my;
     else
         ang.y = yaw;
-    
 
     GetNPC()->SetEyeAngles( ang );
 }

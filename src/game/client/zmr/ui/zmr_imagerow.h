@@ -1,17 +1,15 @@
 #pragma once
 
-#include <vgui_controls/Panel.h>
 #include <vgui_controls/Label.h>
+#include <vgui_controls/Panel.h>
 
 #include "zmr_placeimg.h"
 #include "zmr_radial.h"
 
-
 class CZMImageRowItem;
 
-typedef void (*ZMImageRowLayoutFunc_t)( vgui::Panel* pPanel, CUtlVector<CZMImageRowItem*>* pImages );
-typedef CZMImageRowItem* (*ZMImageRowItemCreateFunc_t)( vgui::Panel* pParent );
-
+typedef void ( *ZMImageRowLayoutFunc_t )( vgui::Panel* pPanel, CUtlVector<CZMImageRowItem*>* pImages );
+typedef CZMImageRowItem* ( *ZMImageRowItemCreateFunc_t )( vgui::Panel* pParent );
 
 //
 class CZMImageRowItem : public vgui::Panel
@@ -19,20 +17,16 @@ class CZMImageRowItem : public vgui::Panel
 public:
     DECLARE_CLASS_SIMPLE( CZMImageRowItem, vgui::Panel );
 
-    
     CZMImageRowItem( vgui::Panel* pParent, const char* name );
     ~CZMImageRowItem();
 
-
     virtual void Paint() override;
-
 
     vgui::IImage* GetImage() const;
     CZMPlaceImage* GetPlaceImage() const;
     void SetImage( vgui::IImage* pImage );
 
     vgui::Label* GetLabel() const { return m_pLabel; }
-
 
     void SetText( const char* txt );
 
@@ -41,7 +35,6 @@ protected:
     CZMPlaceImage* m_pImage;
 };
 //
-
 
 //
 // Places images inside the panel with custom layout function.
@@ -53,27 +46,25 @@ public:
     CZMImageRow( vgui::Panel* pParent, const char* name );
     ~CZMImageRow();
 
-
     CZMImageRowItem* CreateItem();
 
-    int     AddImage( const char* image );
-    int     AddImage( vgui::IImage* pImage );
-    bool    SetImage( int index, vgui::IImage* pImage );
-    bool    SetText( int index, const char* txt );
-    bool    RemoveImageByIndex( int index );
-    void    RemoveImages();
+    int AddImage( const char* image );
+    int AddImage( vgui::IImage* pImage );
+    bool SetImage( int index, vgui::IImage* pImage );
+    bool SetText( int index, const char* txt );
+    bool RemoveImageByIndex( int index );
+    void RemoveImages();
 
+    CZMImageRowItem* GetItemByIndex( int index ) const;
+    vgui::IImage* GetImageByIndex( int index ) const;
+    int GetImageCount() const { return m_Images.Count(); }
+    int GetImageIndexAtPos( int x, int y );
 
-    CZMImageRowItem*    GetItemByIndex( int index ) const;
-    vgui::IImage*   GetImageByIndex( int index ) const;
-    int             GetImageCount() const { return m_Images.Count(); }
-    int             GetImageIndexAtPos( int x, int y );
+    int GetImagesSize() const { return m_nImageSize; }
+    void SetImagesSize( int size ) { m_nImageSize = size; }
 
-    int     GetImagesSize() const { return m_nImageSize; }
-    void    SetImagesSize( int size ) { m_nImageSize = size; }
-
-    void    SetLayoutFunc( ZMImageRowLayoutFunc_t func ) { m_pLayoutFunc = func; }
-    void    SetCreateFunc( ZMImageRowItemCreateFunc_t func ) { m_pCreateFunc = func; }
+    void SetLayoutFunc( ZMImageRowLayoutFunc_t func ) { m_pLayoutFunc = func; }
+    void SetCreateFunc( ZMImageRowItemCreateFunc_t func ) { m_pCreateFunc = func; }
 
     void LayoutImages();
     void DefaultLayout();
@@ -84,7 +75,6 @@ public:
         DIR_X,
         DIR_Y
     };
-
 
     virtual void OnMousePressed( vgui::MouseCode code ) override;
     virtual void OnThink() override;

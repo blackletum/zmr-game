@@ -1,6 +1,6 @@
 #include "cbase.h"
-#include "npcevent.h"
 #include "fire.h"
+#include "npcevent.h"
 
 #include "zmr_gamerules.h"
 #include "zmr_immolator.h"
@@ -8,9 +8,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-#define ZOMBIE_MODEL            "models/zombie/burnzie.mdl"
-
+#define ZOMBIE_MODEL "models/zombie/burnzie.mdl"
 
 ConVar zm_sv_immolator_burndist( "zm_sv_immolator_burndist", "250", FCVAR_NOTIFY, "The distance from which the Immolator will start chasing enemies." );
 
@@ -22,8 +20,7 @@ ConVar zm_sv_immolator_burndmg( "zm_sv_immolator_burndmg", "1", FCVAR_NOTIFY, "A
 ConVar zm_sv_immolator_burnhealthcap( "zm_sv_immolator_burnhealthcap", "1", FCVAR_NOTIFY, "The health cap at which the immolator will ignite the player." );
 ConVar zm_sv_immolator_waterdmg( "zm_sv_immolator_waterdmg", "10", FCVAR_NOTIFY, "The damage we take every second from water." );
 
-#define BURNOTHER_INTERVAL          1.0f
-
+#define BURNOTHER_INTERVAL 1.0f
 
 extern ConVar zm_sk_burnzombie_health;
 extern ConVar zm_sk_burnzombie_dmg;
@@ -48,7 +45,6 @@ void CZMImmolator::Precache()
     if ( !IsPrecacheAllowed() )
         return;
 
-
     PrecacheScriptSound( "Zombie.AttackHit" );
     PrecacheScriptSound( "Zombie.AttackMiss" );
     PrecacheScriptSound( "NPC_BurnZombie.Pain" );
@@ -58,14 +54,12 @@ void CZMImmolator::Precache()
     //PrecacheScriptSound( "NPC_BurnZombie.Attack" ); // Don't have this
     PrecacheScriptSound( "NPC_BurnZombie.Scream" );
 
-
     BaseClass::Precache();
 }
 
 void CZMImmolator::Spawn()
 {
     SetMaxHealth( zm_sk_burnzombie_health.GetInt() );
-
 
     BaseClass::Spawn();
 }
@@ -88,11 +82,10 @@ void CZMImmolator::PreUpdate()
     if ( GetWaterLevel() >= WL_Waist )
     {
         float dmg = zm_sv_immolator_waterdmg.GetFloat() * GetUpdateInterval();
-        
+
         CTakeDamageInfo dmgInfo( this, this, dmg, DMG_GENERIC );
         TakeDamage( dmgInfo );
     }
-
 
     // We're on fire, burn people around me.
     if ( IsOnFire() && m_flNextBurnDamageTime <= gpGlobals->curtime )
@@ -137,20 +130,18 @@ void CZMImmolator::BurnHurtOthers()
 
     const float flBurnTime = zm_sv_immolator_burndmgtime.GetFloat();
     const float flPropBurnTime = zm_sv_immolator_burndmgtime_prop.GetFloat();
-    
-    while ( (pEnt = gEntList.FindEntityInSphere( pEnt, mypos, zm_sv_immolator_burndmgdist.GetFloat() )) != nullptr )
+
+    while ( ( pEnt = gEntList.FindEntityInSphere( pEnt, mypos, zm_sv_immolator_burndmgdist.GetFloat() ) ) != nullptr )
     {
         // They're in water
         if ( pEnt->GetWaterLevel() >= WL_Waist )
             continue;
 
-
         // Can't damage if we can't see.
-        UTIL_TraceLine( mypos, pEnt->WorldSpaceCenter(), MASK_SOLID & ~(CONTENTS_MONSTER), &filter, &tr );
+        UTIL_TraceLine( mypos, pEnt->WorldSpaceCenter(), MASK_SOLID & ~( CONTENTS_MONSTER ), &filter, &tr );
 
         if ( tr.fraction != 1.0f )
             continue;
-
 
         if ( pEnt->IsPlayer() || pEnt->IsBaseZombie() )
         {
@@ -192,8 +183,7 @@ void CZMImmolator::BurnHurtOthers()
                 // Check material index if they are flammable.
                 if ( !bFlammable )
                 {
-                    static const int flammableIndices[] =
-                    {
+                    static const int flammableIndices[] = {
                         physprops->GetSurfaceIndex( "wood" ),
                         physprops->GetSurfaceIndex( "wood_crate" ),
                     };
@@ -209,20 +199,16 @@ void CZMImmolator::BurnHurtOthers()
                 }
 
                 // Check if they can explode.
-                bool bExplode = pBreak->GetExplosiveDamage() > 0
-                            ||  pBreak->GetExplosiveRadius() > 0
-                            ||  pBreak->HasInteraction( PROPINTER_PHYSGUN_BREAK_EXPLODE );
-
+                bool bExplode = pBreak->GetExplosiveDamage() > 0 || pBreak->GetExplosiveRadius() > 0 || pBreak->HasInteraction( PROPINTER_PHYSGUN_BREAK_EXPLODE );
 
                 // Only ignite if we are flammable and
                 // if it's an explosive, we are allowed to ignite it.
-                bool bIgnite = bFlammable && (!bExplode || zm_sv_immolator_burn_explosives.GetBool());
+                bool bIgnite = bFlammable && ( !bExplode || zm_sv_immolator_burn_explosives.GetBool() );
 
                 if ( bIgnite )
                 {
                     pBreak->CBaseAnimating::Ignite( flPropBurnTime, false );
                 }
-                
             }
         }
     }
@@ -236,12 +222,12 @@ void CZMImmolator::StartFires()
     Vector vecTraceDir;
     trace_t firetrace;
 
-    for( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; i++ )
     {
         // build a little ray
-        vecTraceAngles[PITCH]   = random->RandomFloat( 45, 135 );
-        vecTraceAngles[YAW]     = random->RandomFloat( 0, 360 );
-        vecTraceAngles[ROLL]    = 0.0f;
+        vecTraceAngles[PITCH] = random->RandomFloat( 45, 135 );
+        vecTraceAngles[YAW] = random->RandomFloat( 0, 360 );
+        vecTraceAngles[ROLL] = 0.0f;
 
         AngleVectors( vecTraceAngles, &vecTraceDir );
 
@@ -250,8 +236,8 @@ void CZMImmolator::StartFires()
 
         UTIL_TraceLine( vecStart, vecEnd, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &firetrace );
 
-        Vector	ofsDir = ( firetrace.endpos - GetAbsOrigin() );
-        float	offset = VectorNormalize( ofsDir );
+        Vector ofsDir = ( firetrace.endpos - GetAbsOrigin() );
+        float offset = VectorNormalize( ofsDir );
 
         if ( offset > 128 )
             offset = 128;
@@ -261,9 +247,9 @@ void CZMImmolator::StartFires()
         float growth = 0.8f + ( 0.75f * ( offset / 128.0f ) );
         float scale = 125.0f;
 
-        if( firetrace.fraction != 1.0 )
+        if ( firetrace.fraction != 1.0 )
         {
-            int flags = (SF_FIRE_START_ON); // SF_FIRE_SMOKELESS|SF_FIRE_NO_GLOW
+            int flags = ( SF_FIRE_START_ON ); // SF_FIRE_SMOKELESS|SF_FIRE_NO_GLOW
             FireSystem_StartFire( firetrace.endpos, scale, growth, 20.0f, flags, nullptr, FIRE_NATURAL );
         }
     }
@@ -271,8 +257,7 @@ void CZMImmolator::StartFires()
 
 void CZMImmolator::HandleAnimEvent( animevent_t* pEvent )
 {
-    if (pEvent->event == AE_ZOMBIE_ATTACK_LEFT
-    ||  pEvent->event == AE_ZOMBIE_ATTACK_RIGHT)
+    if ( pEvent->event == AE_ZOMBIE_ATTACK_LEFT || pEvent->event == AE_ZOMBIE_ATTACK_RIGHT )
     {
         Vector right, forward;
         AngleVectors( GetLocalAngles(), &forward, &right, nullptr );

@@ -2,12 +2,10 @@
 
 #include "in_buttons.h"
 
-
-#include "zmr_shareddefs.h"
 #include "zmr_player_shared.h"
+#include "zmr_shareddefs.h"
 
 #include "zmr_basemelee.h"
-
 
 #ifdef CLIENT_DLL
 #define CZMWeaponBaseballBat C_ZMWeaponBaseballBat
@@ -16,12 +14,11 @@
 class CZMWeaponBaseballBat : public CZMBaseMeleeWeapon
 {
 public:
-	DECLARE_CLASS( CZMWeaponBaseballBat, CZMBaseMeleeWeapon );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS( CZMWeaponBaseballBat, CZMBaseMeleeWeapon );
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
     CZMWeaponBaseballBat();
-
 
     virtual bool UsesAnimEvent( bool bSecondary ) const override { return false; }
 
@@ -40,7 +37,6 @@ END_PREDICTION_DATA()
 
 LINK_ENTITY_TO_CLASS( weapon_zm_baseballbat, CZMWeaponBaseballBat );
 PRECACHE_WEAPON_REGISTER( weapon_zm_baseballbat );
-
 
 CZMWeaponBaseballBat::CZMWeaponBaseballBat()
 {

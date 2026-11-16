@@ -11,7 +11,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 class CZMCreditsMenu : public vgui::Frame
 {
 public:
@@ -25,7 +24,6 @@ public:
 private:
     vgui::RichText* m_pRichText;
 };
-
 
 static vgui::DHANDLE<CZMCreditsMenu> g_hCreditsMenu;
 
@@ -45,18 +43,15 @@ CON_COMMAND( OpenZMCreditsMenu, "" )
         g_hCreditsMenu.Set( pPanel );
     }
 
-
     auto* pPanel = g_hCreditsMenu.Get();
-
 
     // Center
     int x, y, w, h;
     vgui::surface()->GetWorkspaceBounds( x, y, w, h );
-    
+
     int mw = pPanel->GetWide();
     int mh = pPanel->GetTall();
     pPanel->SetPos( x + w / 2 - mw / 2, y + h / 2 - mh / 2 );
-
 
     pPanel->Activate();
 }
@@ -71,12 +66,9 @@ CZMCreditsMenu::CZMCreditsMenu( vgui::VPANEL parent ) : BaseClass( nullptr, "ZMC
     SetMoveable( true );
     SetSizeable( false );
 
-
     m_pRichText = new vgui::RichText( this, "RichText1" );
 
-
     LoadControlSettings( "resource/ui/zmcredits.res" );
-
 
     auto hndl = filesystem->Open( "resource/zmcredits.txt", "rb", "MOD" );
     if ( hndl )
@@ -84,14 +76,13 @@ CZMCreditsMenu::CZMCreditsMenu( vgui::VPANEL parent ) : BaseClass( nullptr, "ZMC
         unsigned int size = filesystem->Size( hndl );
 
         char* buf = new char[size];
-        buf[size-1] = '\0';
+        buf[size - 1] = '\0';
 
-        filesystem->Read( buf, size-1, hndl );
+        filesystem->Read( buf, size - 1, hndl );
 
         m_pRichText->InsertString( buf );
 
         delete[] buf;
-
 
         filesystem->Close( hndl );
     }
@@ -105,8 +96,8 @@ void CZMCreditsMenu::ApplySchemeSettings( vgui::IScheme* pScheme )
 {
     BaseClass::ApplySchemeSettings( pScheme );
 
-	vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
-	vgui::HFont font = vgui::scheme()->GetIScheme( scheme )->GetFont( "ZMMainMenuCreditsText", true );
+    vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
+    vgui::HFont font = vgui::scheme()->GetIScheme( scheme )->GetFont( "ZMMainMenuCreditsText", true );
     if ( font != vgui::INVALID_FONT )
     {
         m_pRichText->SetFont( font );

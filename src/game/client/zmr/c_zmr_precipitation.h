@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "precipitation_shared.h"
-
 
 enum PrecipitationQuality_t
 {
@@ -22,7 +20,6 @@ public:
     C_ZMPrecipitationSystem();
     ~C_ZMPrecipitationSystem();
 
-
     virtual void PostInit() override;
     virtual void Update( float frametime ) override;
     virtual void LevelInitPostEntity() override;
@@ -35,7 +32,6 @@ public:
     PrecipitationType_t GetPrecipitationType() const;
 
     CParticleProperty* ParticleProp();
-
 
     const CNewParticleEffect* GetInner() const;
     const CNewParticleEffect* GetOuter() const;
@@ -56,16 +52,13 @@ protected:
     void DispatchMistParticlePrecip( C_BasePlayer* pPlayer, const Vector& vForward );
     void DispatchInnerParticlePrecip( C_BasePlayer* pPlayer, const Vector& vForward );
 
-
     CUtlVector<C_ZMEntPrecipitation*> m_vPrecipitations;
-
 
     TimedEvent m_tParticlePrecipTraceTimer;
 
     HPARTICLEFFECT m_pParticlePrecipInner;
     HPARTICLEFFECT m_pParticlePrecipOuter;
     HPARTICLEFFECT m_pParticlePrecipMist;
-
 
     const char* m_pszParticleInner;
     const char* m_pszParticleOuter;

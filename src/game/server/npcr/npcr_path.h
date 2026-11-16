@@ -8,8 +8,7 @@
 
 namespace NPCR
 {
-#define MAX_PATH_LINKS   128
-
+#define MAX_PATH_LINKS 128
 
     enum NavBuildMethod_t
     {
@@ -26,7 +25,7 @@ namespace NPCR
         TRAVEL_DROPDOWN,
         TRAVEL_NAVJUMP, // We need to jump
     };
-    
+
     struct NavLink_t
     {
     public:
@@ -45,20 +44,16 @@ namespace NPCR
         CBaseNavPath();
         virtual ~CBaseNavPath();
 
-
         virtual NavBuildMethod_t GetBuildMethod();
-
 
         // We must at least have 2 segments. (start & end)
         virtual bool IsValid() const { return m_nLinkCount >= 2; }
 
         virtual void Invalidate() { m_nLinkCount = 0; }
 
-
         virtual void OnPathCreated() {}
         virtual void OnPathSuccess();
         virtual void OnPathFailed();
-
 
         virtual bool Compute( const Vector& vecStart, const Vector& vecGoal, CNavArea* pStartArea, CNavArea* pGoalArea, const CBasePathCost& cost );
         virtual bool Compute( const Vector& vecStart, const Vector& vecGoal, const CBasePathCost& cost, float maxDistanceToArea = 10000.0f );
@@ -71,41 +66,33 @@ namespace NPCR
         virtual bool BuildSimplePath( const Vector& vecStart, const Vector& vecGoal, bool bNoNavArea = false, float maxDistanceToArea = 10000.0f );
         virtual bool BuildSimplePath( const Vector& vecStart, const Vector& vecGoal, CNavArea* pStartArea, CNavArea* pGoalArea );
 
-
         bool CheckSimpleLOS( const Vector& vecStart, const Vector& vecEnd, trace_t& tr ) const;
 
-
         float ComputeLength();
-
 
         bool ShouldDraw();
         virtual void Draw();
 
-        int                 LinkCount() const { return m_nLinkCount; }
-        const NavLink_t*    FirstLink() const;
-        const NavLink_t*    PreviousLink( const NavLink_t* seg ) const;
-        const NavLink_t*    NextLink( const NavLink_t* seg ) const;
-        const NavLink_t*    LastLink() const;
-        int                 GetLinkOffset( const NavLink_t* seg ) const;
-
+        int LinkCount() const { return m_nLinkCount; }
+        const NavLink_t* FirstLink() const;
+        const NavLink_t* PreviousLink( const NavLink_t* seg ) const;
+        const NavLink_t* NextLink( const NavLink_t* seg ) const;
+        const NavLink_t* LastLink() const;
+        int GetLinkOffset( const NavLink_t* seg ) const;
 
         bool IsUsingExactGoal() const { return m_bExactGoal; }
         void UseExactGoal( bool state ) { m_bExactGoal = state; }
-
 
         virtual bool ShouldDecelerateToGoal() const { return false; }
 
     protected:
         virtual void DrawSegment( const NavLink_t* from, const NavLink_t* to );
 
-
         virtual bool BuildNavPath( const Vector& vecStart, const Vector& vecGoal, CNavArea* pStartArea, CNavArea* pGoalArea, const CBasePathCost& cost );
         virtual bool BuildGraphPath( const Vector& vecStart, const Vector& vecGoal, const CBasePathCost& cost );
 
-
         int m_nLinkCount;
         NavLink_t m_Links[MAX_PATH_LINKS];
-
 
         bool m_bExactGoal;
     };

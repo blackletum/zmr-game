@@ -1,14 +1,12 @@
 #include "cbase.h"
 
-
-#include "iclientmode.h"
 #include "hud_macros.h"
-#include <vgui/ILocalize.h>
+#include "iclientmode.h"
 #include <engine/IEngineSound.h>
+#include <vgui/ILocalize.h>
 
 #include "usermessages.h"
 //#include "c_user_message_register.h"
-
 
 #include "IGameUIFuncs.h"
 #include <igameresources.h>
@@ -16,28 +14,18 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 extern IGameUIFuncs* gameuifuncs; // for key binding details
-
-
 
 #include "c_zmr_util.h"
 #include "zmr_hud_tooltips.h"
 
-
 using namespace vgui;
-
-
 
 ConVar zm_cl_showhelp( "zm_cl_showhelp", "1", FCVAR_ARCHIVE, "Show help?" );
 ConVar zm_cl_help_randomtips( "zm_cl_help_randomtips", "320", FCVAR_ARCHIVE, "Show random tips every X seconds. 0 = disable" );
 
-
-
 DECLARE_HUDELEMENT( CZMHudTooltip );
 DECLARE_HUD_MESSAGE( CZMHudTooltip, ZMTooltip );
-
-
 
 CON_COMMAND( zm_hudtooltip, "Displays a tool-tip message." )
 {
@@ -49,12 +37,9 @@ CON_COMMAND( zm_hudtooltipbyname, "Displays a tool-tip by name." )
     ZMClientUtil::ShowTooltipByName( args.ArgS() );
 }
 
-
-
-CZMHudTooltip::CZMHudTooltip( const char *pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudTooltip" )
+CZMHudTooltip::CZMHudTooltip( const char* pElementName ) : CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "ZMHudTooltip" )
 {
     SetPaintBackgroundEnabled( false );
-
 
     m_vQueue.Purge();
 
@@ -70,7 +55,6 @@ CZMHudTooltip::CZMHudTooltip( const char *pElementName ) : CHudElement( pElement
     m_bPulse = false;
     m_iPriority = 0;
 
-
     m_pTextImage = new TextImage( "" );
     m_pTextImage->SetWrap( true );
 }
@@ -84,7 +68,6 @@ CZMHudTooltip::~CZMHudTooltip()
 void CZMHudTooltip::Init()
 {
     HOOK_HUD_MESSAGE( CZMHudTooltip, ZMTooltip );
-
 
     Reset();
     HideTooltip();
@@ -100,7 +83,6 @@ void CZMHudTooltip::LevelInit()
 
 void CZMHudTooltip::LevelShutdown()
 {
-    
 }
 
 void CZMHudTooltip::VidInit()
@@ -123,7 +105,7 @@ void CZMHudTooltip::OnThink()
         if ( m_flNextHide <= gpGlobals->curtime || !CanDisplay() )
             HideTooltip();
     }
-    
+
     if ( !IsDisplayingTip() )
     {
         if ( m_vQueue.Count() )
@@ -146,7 +128,6 @@ void CZMHudTooltip::FindNextQueueTip()
 
     CZMTip* tip;
 
-
     auto* pToolTips = g_ZMTipSystem.GetManagerByIndex( ZMTIPMANAGER_TOOLTIPS );
     Assert( pToolTips );
 
@@ -157,11 +138,9 @@ void CZMHudTooltip::FindNextQueueTip()
     {
         if ( m_vQueue[i].m_flDisplay > curtime ) continue;
 
-
         tip = pToolTips->FindTipByIndex( m_vQueue[i].m_iIndex );
 
         if ( !tip ) continue;
-
 
         if ( highest_tip == nullptr || highest_tip->GetPriority() < tip->GetPriority() )
         {
@@ -169,7 +148,6 @@ void CZMHudTooltip::FindNextQueueTip()
             highest_index = i;
         }
     }
-        
 
     if ( highest_tip )
     {
@@ -192,7 +170,6 @@ void CZMHudTooltip::FindNextRandomTipToQueue()
     if ( zm_cl_showhelp.GetBool() )
         return;
 
-
     auto* pToolTips = g_ZMTipSystem.GetManagerByIndex( ZMTIPMANAGER_TOOLTIPS );
     Assert( pToolTips );
 
@@ -210,9 +187,8 @@ void CZMHudTooltip::FindNextRandomTipToQueue()
 
     if ( vTips.Count() )
     {
-        QueueTip( vTips[random->RandomInt( 0, vTips.Count() - 1)]->GetIndex(), 0.0f );
+        QueueTip( vTips[random->RandomInt( 0, vTips.Count() - 1 )]->GetIndex(), 0.0f );
     }
-
 
     m_flNextRandomTip = gpGlobals->curtime + delay;
 }
@@ -224,28 +200,20 @@ void CZMHudTooltip::Paint()
     if ( !m_pTextImage->GetUText() || m_pTextImage->GetUText()[0] == L'\0' )
         return;
 
-#define PADDING_SIDES       6
-#define PADDING_TOP         5
-#define PADDING_IMAGE       4
+#define PADDING_SIDES 6
+#define PADDING_TOP   5
+#define PADDING_IMAGE 4
 
-
-    
     int w, h;
     m_pTextImage->GetContentSize( w, h );
 
-
     int tex_size = !m_nTexId ? 0 : m_nTexSize;
     int padding_image = !tex_size ? 0 : PADDING_IMAGE;
-
-
 
     int content_size = w + tex_size + padding_image;
 
     int box_w = content_size + PADDING_SIDES * 2;
     int box_h = max( h, tex_size ) + PADDING_TOP * 2;
-
-
-
 
     int box_x = GetWide() / 2.0f - box_w / 2.0f;
 
@@ -253,12 +221,9 @@ void CZMHudTooltip::Paint()
 
     DrawBox( box_x, y, box_w, box_h, m_BgColor, m_flAlphaMult );
 
-    int content_x = (GetWide() / 2.0f - content_size / 2.0f);
-    int tex_y = y + ((box_h - tex_size) / 2.0f);
-    int text_y = y + ((box_h - h) / 2.0f);
-
-
-
+    int content_x = ( GetWide() / 2.0f - content_size / 2.0f );
+    int tex_y = y + ( ( box_h - tex_size ) / 2.0f );
+    int text_y = y + ( ( box_h - h ) / 2.0f );
 
     int pulse;
 
@@ -271,9 +236,7 @@ void CZMHudTooltip::Paint()
         pulse = 255;
     }
 
-
     Color clr( 255, pulse, pulse, m_flAlphaMult * 255 );
-
 
     if ( tex_size > 0 )
     {
@@ -281,7 +244,6 @@ void CZMHudTooltip::Paint()
         surface()->DrawSetTexture( m_nTexId );
         surface()->DrawTexturedRect( content_x, tex_y, content_x + tex_size, tex_y + tex_size );
     }
-
 
     m_pTextImage->SetColor( clr );
     m_pTextImage->SetPos( content_x + padding_image + tex_size, text_y );
@@ -293,7 +255,6 @@ bool CZMHudTooltip::CanDisplay()
     C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
 
     if ( !pPlayer ) return false;
-
 
     if ( m_iTeam != 0 && pPlayer->GetTeamNumber() != m_iTeam )
     {
@@ -308,7 +269,7 @@ void CZMHudTooltip::HideTooltip()
     // Need to stop it immediately.
     g_pClientMode->GetViewportAnimationController()->StopAnimationSequence( g_pClientMode->GetViewportAnimationController()->GetParent(), "ZMTooltipShow" );
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMTooltipHide" );
-    
+
     m_iCurIndex = 0;
 
     m_flNextHide = gpGlobals->curtime + 2.0f;
@@ -345,17 +306,14 @@ int CZMHudTooltip::SetMessageByName( const char* name, bool force )
     auto* pToolTips = g_ZMTipSystem.GetManagerByIndex( ZMTIPMANAGER_TOOLTIPS );
     Assert( pToolTips );
 
-
     CZMTip* tip = pToolTips->FindTipByName( name );
 
     if ( !tip ) return 0;
-
 
     if ( !force && !tip->ShouldShow() )
     {
         return tip->GetIndex();
     }
-
 
     char buffer[512];
     buffer[0] = '\0';
@@ -363,7 +321,6 @@ int CZMHudTooltip::SetMessageByName( const char* name, bool force )
     tip->FormatMessage( buffer, sizeof( buffer ) );
 
     bool res = SetMessage( buffer, tip->GetIndex(), tip->GetTime(), tip->GetPulse(), tip->GetPriority(), tip->GetIcon(), tip->DoSound(), tip->GetTeam() );
-
 
     if ( res )
     {
@@ -387,11 +344,9 @@ bool CZMHudTooltip::SetMessage( const char* msg, int index, float displaytime, b
         return false;
     }
 
-
     m_iTeam = team;
 
     if ( !CanDisplay() ) return false;
-
 
     SetText( msg );
 
@@ -399,11 +354,9 @@ bool CZMHudTooltip::SetMessage( const char* msg, int index, float displaytime, b
     g_pClientMode->GetViewportAnimationController()->StopAnimationSequence( g_pClientMode->GetViewportAnimationController()->GetParent(), "ZMTooltipHide" );
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "ZMTooltipShow" );
 
-
     m_flNextHide = gpGlobals->curtime + displaytime;
     m_bPulse = pulse;
     m_iPriority = priority;
-
 
     if ( image && *image )
     {
@@ -427,7 +380,6 @@ bool CZMHudTooltip::SetMessage( const char* msg, int index, float displaytime, b
         CLocalPlayerFilter filter;
         C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "ZMTooltip.Show" );
 
-
         m_flNextSound = gpGlobals->curtime + displaytime + 6.0f;
     }
 
@@ -441,7 +393,6 @@ void CZMHudTooltip::SetText( const char* txt )
     wchar_t wtxt[512];
     wchar_t* pTxt = nullptr;
 
-    
     if ( txt[0] == '#' )
     {
         pTxt = g_pVGuiLocalize->Find( txt );
@@ -452,9 +403,6 @@ void CZMHudTooltip::SetText( const char* txt )
         g_pVGuiLocalize->ConvertANSIToUnicode( txt, wtxt, sizeof( wtxt ) );
         pTxt = wtxt;
     }
-    
-    
-
 
     int max_w = GetWide() * 0.6f;
 
@@ -462,7 +410,6 @@ void CZMHudTooltip::SetText( const char* txt )
     surface()->GetTextSize( m_hFont, pTxt, w, h );
 
     m_nTexSize = h * 1.333f;
-
 
     if ( w > max_w ) w = max_w;
 

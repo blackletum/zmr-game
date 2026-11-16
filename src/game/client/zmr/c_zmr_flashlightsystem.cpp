@@ -7,11 +7,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_cl_flashlight_expensive_max( "zm_cl_flashlight_expensive_max", "0", FCVAR_ARCHIVE );
 ConVar zm_cl_flashlight_expensive_dist( "zm_cl_flashlight_expensive_dist", "300" );
-
-
 
 //
 //
@@ -22,7 +19,6 @@ CZMFlashlightSystem* GetZMFlashlightSystem()
     return &s;
 }
 
-
 //
 //
 //
@@ -30,7 +26,6 @@ C_ZMPlayer* ZMPotentialPlayer_t::GetPlayer() const
 {
     return static_cast<C_ZMPlayer*>( UTIL_PlayerByIndex( entindex ) );
 }
-
 
 //
 //
@@ -59,8 +54,7 @@ void CZMFlashlightSystem::Update( float delta )
     if ( m_flNextUpdate > gpGlobals->curtime )
         return;
 
-    m_flNextUpdate = gpGlobals->curtime + (1.0f/10.0f);
-
+    m_flNextUpdate = gpGlobals->curtime + ( 1.0f / 10.0f );
 
     int numwanted = zm_cl_flashlight_expensive_max.GetInt();
     if ( numwanted < 1 )
@@ -69,15 +63,12 @@ void CZMFlashlightSystem::Update( float delta )
         return;
     }
 
-
     auto* pLocal = C_ZMPlayer::GetLocalPlayer();
     if ( !pLocal ) return;
-
 
     auto& mypos = pLocal->GetAbsOrigin();
     Vector myfwd;
     AngleVectors( pLocal->EyeAngles(), &myfwd );
-
 
     //
     // Find all potentially viable players that should get a flashlight.
@@ -100,9 +91,7 @@ void CZMFlashlightSystem::Update( float delta )
         // Is flashlight not on?
         if ( !pPlayer->IsEffectActive( EF_DIMLIGHT ) ) continue;
 
-
         if ( mypos.DistToSqr( pPlayer->GetAbsOrigin() ) > flMaxDist ) continue;
-
 
         Vector fwd;
         AngleVectors( pPlayer->EyeAngles(), &fwd );
@@ -111,15 +100,12 @@ void CZMFlashlightSystem::Update( float delta )
     }
 
     // Sort them based on how close they are looking at our direction.
-    newset.Sort([]( const ZMPotentialPlayer_t* p1, const ZMPotentialPlayer_t* p2 )
-    {
-        return p1->dotToLocalView > p2->dotToLocalView ? -1 : 1;
-    });
-
-
+    newset.Sort( []( const ZMPotentialPlayer_t* p1, const ZMPotentialPlayer_t* p2 )
+        {
+            return p1->dotToLocalView > p2->dotToLocalView ? -1 : 1;
+        } );
 
     newset.SetCountNonDestructively( MIN( newset.Count(), numwanted ) );
-
 
     // Update old ones.
     for ( int i = 0; i < m_vCurActiveExpensive.Count(); i++ )
@@ -163,7 +149,6 @@ void CZMFlashlightSystem::Update( float delta )
         }
     }
 
-
     int freeslots = numwanted - m_vCurActiveExpensive.Count();
 
     int num = MIN( newset.Count(), freeslots );
@@ -200,14 +185,12 @@ bool CZMFlashlightSystem::AddPlayerToExpensiveList( C_ZMPlayer* pPlayer )
 {
     Assert( pPlayer );
 
-
     if ( FindPlayer( pPlayer->entindex() ) == -1 && GetNumExpensiveFlashlights() < GetExpensiveFlashlightLimit() )
     {
         m_vCurActiveExpensive.AddToTail( { pPlayer->entindex(), 0.0f } );
 
         return true;
     }
-
 
     return false;
 }

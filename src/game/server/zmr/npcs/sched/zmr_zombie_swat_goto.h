@@ -6,7 +6,6 @@
 #include "zmr_zombie_main.h"
 #include "zmr_zombie_swat.h"
 
-
 //
 // Go to a swattable (or breakable) object.
 // See the swatting schedule for the actual swat.
@@ -28,9 +27,7 @@ public:
     bool DoCheckForEnemies() const { return m_bCheckForEnemies; }
     void SetCheckForEnemies( bool state ) { m_bCheckForEnemies = state; }
 
-
     virtual const char* GetName() const override { return "ZombieGotoSwatObj"; }
-
 
     virtual void OnStart() override;
 
@@ -43,7 +40,6 @@ public:
     virtual void OnQueuedCommand( CBasePlayer* pPlayer, ZombieCommandType_t com ) override;
 
     virtual void OnCommanded( CBasePlayer* pCommander, ZombieCommandType_t com ) override;
-
 
 private:
     bool CheckObject( CBaseEntity* pSwat );

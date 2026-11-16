@@ -6,25 +6,18 @@
 #include <vgui/ISurface.h>
 #include <vgui_controls/Controls.h>
 
-
-#include "c_zmr_player.h"
 #include "c_zmr_crosshair.h"
+#include "c_zmr_player.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
-
-#define CROSSHAIRFILE_DEFAULT       "resource/zmcrosshairs_default.txt"
-#define CROSSHAIRFILE               "resource/zmcrosshairs.txt"
-
-
+#define CROSSHAIRFILE_DEFAULT "resource/zmcrosshairs_default.txt"
+#define CROSSHAIRFILE         "resource/zmcrosshairs.txt"
 
 ConVar zm_cl_zmcrosshair( "zm_cl_zmcrosshair", "0", FCVAR_ARCHIVE, "Do we display the crosshair while being the ZM?" );
 
-
 CZMCrosshairSystem g_ZMCrosshairs;
-
 
 CZMCrosshairSystem::CZMCrosshairSystem() : CAutoGameSystem( "CrosshairSystem" )
 {
@@ -40,7 +33,6 @@ CZMBaseCrosshair* CZMCrosshairSystem::CreateCrosshairFromData( KeyValues* kv )
 {
     if ( !kv )
         return nullptr;
-
 
     const char* type = kv->GetString( "type" );
 
@@ -91,14 +83,12 @@ void CZMCrosshairSystem::WriteCrosshairsToFile() const
 {
     KeyValuesAD kv( "Crosshairs" );
 
-
     FOR_EACH_VEC( m_vCrosshairs, i )
     {
         KeyValues* mykv = kv->FindKey( m_vCrosshairs[i]->GetName(), true );
 
         m_vCrosshairs[i]->WriteValues( mykv );
     }
-
 
     if ( !kv->SaveToFile( filesystem, CROSSHAIRFILE ) )
     {
@@ -111,11 +101,9 @@ void CZMCrosshairSystem::ReadCrosshairs( KeyValues* kv )
     if ( !kv )
         return;
 
-
     KeyValues* crosshair = kv->GetFirstTrueSubKey();
     if ( !crosshair )
         return;
-
 
     do
     {
@@ -123,8 +111,7 @@ void CZMCrosshairSystem::ReadCrosshairs( KeyValues* kv )
         {
             Warning( "Couldn't init crosshair of type: '%s'!\n", crosshair->GetString( "type", "N/A" ) );
         }
-    }
-    while( (crosshair = crosshair->GetNextTrueSubKey()) != nullptr );
+    } while ( ( crosshair = crosshair->GetNextTrueSubKey() ) != nullptr );
 }
 
 int CZMCrosshairSystem::AddCrosshair( KeyValues* kv )
@@ -132,7 +119,6 @@ int CZMCrosshairSystem::AddCrosshair( KeyValues* kv )
     int index = FindCrosshairByName( kv->GetName() );
     if ( index != -1 )
         return index;
-
 
     CZMBaseCrosshair* pCross = CreateCrosshairFromData( kv );
 
@@ -174,7 +160,6 @@ int CZMCrosshairSystem::FindCrosshairByName( const char* name ) const
 
 using namespace vgui;
 
-
 //
 CZMBaseCrosshair::CZMBaseCrosshair()
 {
@@ -205,13 +190,11 @@ void CZMBaseCrosshair::LoadValues( KeyValues* kv )
     len = strlen( name ) + 1;
     m_szName = new char[len];
     Q_strncpy( m_szName, name, len );
-    
 
     const char* menuname = kv->GetString( "name" );
     len = strlen( menuname ) + 1;
     m_szMenuName = new char[len];
     Q_strncpy( m_szMenuName, menuname, len );
-
 
     m_bDisplayInMenu = kv->GetBool( "displayinmenu", true );
 
@@ -232,10 +215,9 @@ void CZMBaseCrosshair::WriteValues( KeyValues* kv ) const
     kv->SetFloat( "offsetfromcenter", GetOffsetFromCenter() );
     kv->SetFloat( "dot", GetDotSize() );
 
-
     char temp[64];
     Color clr;
-    
+
     clr = GetMainColor();
     Q_snprintf( temp, sizeof( temp ), "%i %i %i %i", (int)clr[0], (int)clr[1], (int)clr[2], (int)clr[3] );
     kv->SetString( "color", temp );
@@ -278,13 +260,11 @@ void CZMBaseCrosshair::DrawDot()
     if ( dot <= 0.0f )
         return;
 
-
     const Color clr = GetMainColor();
     const Color outlineclr = GetOutlineColor();
 
     float cx, cy;
     GetDrawPosition( cx, cy );
-
 
     dot /= 2.0f;
 
@@ -327,7 +307,6 @@ void CZMBaseCrosshair::DrawDot()
 }
 //
 
-
 //
 void CZMEmptyCrosshair::WriteValues( KeyValues* kv ) const
 {
@@ -338,10 +317,8 @@ void CZMEmptyCrosshair::WriteValues( KeyValues* kv ) const
 
 void CZMEmptyCrosshair::Draw()
 {
-
 }
 //
-
 
 //
 void CZMDotCrosshair::WriteValues( KeyValues* kv ) const
@@ -356,7 +333,6 @@ void CZMDotCrosshair::Draw()
     DrawDot();
 }
 //
-
 
 //
 CZMBaseDynamicCrosshair::CZMBaseDynamicCrosshair()
@@ -379,7 +355,6 @@ void CZMBaseDynamicCrosshair::WriteValues( KeyValues* kv ) const
     kv->SetFloat( "dynamicmove", m_flDynamicMove );
 }
 //
-
 
 //
 void CZMPistolCrosshair::LoadValues( KeyValues* kv )
@@ -463,7 +438,6 @@ void CZMPistolCrosshair::Draw()
 }
 //
 
-
 //
 CZMMaterialCrosshair::CZMMaterialCrosshair()
 {
@@ -475,7 +449,6 @@ void CZMMaterialCrosshair::LoadValues( KeyValues* kv )
 {
     CZMBaseCrosshair::LoadValues( kv );
 
-
     const char* mat = kv->GetString( "material0" );
 
     Q_strncpy( m_szTexture, mat, sizeof( m_szTexture ) );
@@ -484,7 +457,6 @@ void CZMMaterialCrosshair::LoadValues( KeyValues* kv )
 void CZMMaterialCrosshair::WriteValues( KeyValues* kv ) const
 {
     CZMBaseCrosshair::WriteValues( kv );
-
 
     kv->SetString( "type", "material" );
     kv->SetString( "material0", m_szTexture );
@@ -521,9 +493,6 @@ void CZMMaterialCrosshair::Draw()
         }
     }
 
-
-
-
     /*
     if ( m_hFont == INVALID_FONT )
     {
@@ -545,7 +514,6 @@ void CZMMaterialCrosshair::Draw()
     surface()->DrawUnicodeChar( m_wChar );
     */
 
-
     /*
     float offset = GetOffsetFromCenter();
 
@@ -559,7 +527,6 @@ void CZMMaterialCrosshair::Draw()
     DrawDot();
 }
 //
-
 
 //
 CZMAccuracyCrosshair::CZMAccuracyCrosshair()
@@ -614,7 +581,6 @@ float CZMAccuracyCrosshair::GetDynamicMoveScale() const
         }
         */
 
-
         return 1.0f - pPlayer->GetAccuracyRatio();
     }
 
@@ -626,13 +592,9 @@ void CZMAccuracyCrosshair::Draw()
     const Color clr = GetMainColor();
     const Color outlineclr = GetOutlineColor();
 
-
     float cx, cy;
     GetDrawPosition( cx, cy );
 
-
-    
-    
     float outlinewidth = GetOutlineWidth();
     float width = GetWidth();
     float length = GetLength();
@@ -640,10 +602,9 @@ void CZMAccuracyCrosshair::Draw()
     float hw = width / 2.0f;
 
     float offset = GetOffsetFromCenter();
-    
+
     float offsetdyn = offset + GetMaxDynamicMove() * GetDynamicMoveScale();
-    
-    
+
     IntRect rect[2];
 
     // Left
@@ -683,15 +644,13 @@ void CZMAccuracyCrosshair::Draw()
             rectout[i].x1 = rect[i].x1 + outw;
             rectout[i].y1 = rect[i].y1 + outw;
         }
-        
+
         surface()->DrawSetColor( outlineclr );
         surface()->DrawFilledRectArray( rectout, ARRAYSIZE( rectout ) );
     }
 
-
     surface()->DrawSetColor( clr );
     surface()->DrawFilledRectArray( rect, ARRAYSIZE( rect ) );
-
 
     DrawDot();
 }

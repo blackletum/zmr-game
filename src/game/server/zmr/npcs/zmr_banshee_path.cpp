@@ -6,7 +6,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-
 ConVar zm_sv_debug_banshee_path_jump( "zm_sv_debug_banshee_path_jump", "0" );
 
 CZMBansheeFollowPath::CZMBansheeFollowPath()
@@ -23,14 +22,12 @@ bool CZMBansheeFollowPath::Compute( const Vector& vecStart, const Vector& vecGoa
         return BaseClass::Compute( vecStart, vecGoal, pStartArea, pGoalArea, cost );
     }
 
-
     float height = FindJumpHeight( vecStart, vecGoal );
 
     if ( height < 0.0f )
     {
         return BaseClass::Compute( vecStart, vecGoal, pStartArea, pGoalArea, cost );
     }
-
 
     m_flHeight = height;
     BuildSimplePath( vecStart, vecGoal, true );
@@ -53,7 +50,6 @@ NPCR::PathRes_t CZMBansheeFollowPath::CheckGoal( NPCR::CBaseNPC* pNPC ) const
     {
         return NPCR::PATH_OK;
     }
-
 
     return BaseClass::CheckGoal( pNPC );
 }
@@ -108,7 +104,6 @@ bool CZMBansheeFollowPath::CanPotentiallyJumpTo( const Vector& vecStart, const V
         return false;
     }
 
-
     // Check LOS, if we do, we don't need to!
     Vector up( 0.0f, 0.0f, 2.0f );
     trace_t tr;
@@ -133,18 +128,13 @@ float CZMBansheeFollowPath::FindJumpHeight( const Vector& vecStart, const Vector
         DevMsg( "Attempting to find jump height...\n" );
     }
 
-
     float ret_height = -1.0f;
 
-    
-
-    
     // Trace until we don't hit obstacles and return the height.
 
     const float flMaxClearance = CZMBanshee::GetBansheeHullHeight();
     float clearance = 0.0f;
     float flIncrementZ = 16.0f;
-
 
     const float flMaxJump = CZMBanshee::GetMaxNavJumpHeight();
 
@@ -164,7 +154,7 @@ float CZMBansheeFollowPath::FindJumpHeight( const Vector& vecStart, const Vector
 
     bool bCheckClearance = false;
     float jump_z = vecStart.z;
-    
+
     while ( start.z < end_z )
     {
         UTIL_TraceLine( start, end, MASK_NPCSOLID, &filter, &tr );
@@ -172,13 +162,11 @@ float CZMBansheeFollowPath::FindJumpHeight( const Vector& vecStart, const Vector
         if ( tr.startsolid )
             break;
 
-
         bool bHit = tr.fraction < 0.9f;
         if ( bDebugging )
         {
-            NDebugOverlay::Line( start, end, bHit ? 255 : 0, (!bHit) ? 255 : 0, 0, true, 1.0f );
+            NDebugOverlay::Line( start, end, bHit ? 255 : 0, ( !bHit ) ? 255 : 0, 0, true, 1.0f );
         }
-
 
         if ( !bHit )
         {
@@ -203,9 +191,8 @@ float CZMBansheeFollowPath::FindJumpHeight( const Vector& vecStart, const Vector
 
             bCheckClearance = true;
         }
-        
 
-        if ( (bHit && bCheckClearance) || clearance >= flMaxClearance )
+        if ( ( bHit && bCheckClearance ) || clearance >= flMaxClearance )
         {
             // Add height based on how much we have room.
             float height_add = clamp( clearance / flMaxClearance, 0.0f, 1.0f ) * CZMBanshee::GetBansheeHullHeight();
@@ -213,29 +200,26 @@ float CZMBansheeFollowPath::FindJumpHeight( const Vector& vecStart, const Vector
             break;
         }
 
-
         start.z += flIncrementZ;
 
         if ( end.z <= start.z )
             end.z += flIncrementZ;
     }
 
-
     if ( ret_height == -1.0f )
         return -1.0f;
-
 
     // Finally, make sure we can actually get to the end by tracing to it.
     start = end;
     start.z = vecStart.z + ret_height;
     end.z = vecGoal.z + 1.0f;
 
-    UTIL_TraceLine( start, end, MASK_NPCSOLID & ~(CONTENTS_MONSTER), &filter, &tr );
+    UTIL_TraceLine( start, end, MASK_NPCSOLID & ~( CONTENTS_MONSTER ), &filter, &tr );
     bool bHit = tr.fraction != 1.0f;
 
     if ( bDebugging )
     {
-        NDebugOverlay::Line( start, end, bHit ? 255 : 0, (!bHit) ? 255 : 0, 0, true, 1.0f );
+        NDebugOverlay::Line( start, end, bHit ? 255 : 0, ( !bHit ) ? 255 : 0, 0, true, 1.0f );
     }
 
     if ( bHit )

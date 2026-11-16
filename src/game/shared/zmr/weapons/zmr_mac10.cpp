@@ -4,13 +4,10 @@
 #include "items.h"
 #endif
 
-
-#include "zmr_shareddefs.h"
 #include "zmr_mac10.h"
-
+#include "zmr_shareddefs.h"
 
 #include "zmr_player_shared.h"
-
 
 using namespace ZMWeaponConfig;
 
@@ -74,7 +71,6 @@ KeyValues* CZMMac10Config::ToKeyValues() const
 REGISTER_WEAPON_CONFIG( ZMCONFIGSLOT_MAC10, CZMMac10Config );
 //
 
-
 //
 IMPLEMENT_NETWORKCLASS_ALIASED( ZMWeaponMac10, DT_ZM_WeaponMac10 )
 
@@ -88,7 +84,6 @@ END_PREDICTION_DATA()
 
 LINK_ENTITY_TO_CLASS( weapon_zm_mac10, CZMWeaponMac10 );
 PRECACHE_WEAPON_REGISTER( weapon_zm_mac10 );
-
 
 //
 CZMWeaponMac10::CZMWeaponMac10()
@@ -106,7 +101,7 @@ void CZMWeaponMac10::AddViewKick()
 {
     auto* pConfig = GetMac10Config();
 
-	DoMachineGunKick(
+    DoMachineGunKick(
         pConfig->flEasyDampen,
         pConfig->flVerticalKick,
         m_fFireDuration,

@@ -6,18 +6,14 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define DEF_MODELGROUP "DefaultModels"
 
-#define DEF_MODELGROUP                  "DefaultModels"
+#define DATAFILE_NAME "zombiemodelgroups"
+#define DATAFILE_PATH ( "scripts/" DATAFILE_NAME ".txt" )
 
-#define DATAFILE_NAME                   "zombiemodelgroups"
-#define DATAFILE_PATH                   ("scripts/" DATAFILE_NAME ".txt")
-
-#define DATAFILE_PATH_MAP_FORMAT        ("scripts/" DATAFILE_NAME "_%s.txt")
-
-
+#define DATAFILE_PATH_MAP_FORMAT ( "scripts/" DATAFILE_NAME "_%s.txt" )
 
 CZMZombieModelGroupSystem g_ZombieModelGroups;
-
 
 //
 //
@@ -26,10 +22,8 @@ CZMZombieModelData::CZMZombieModelData( KeyValues* kv )
 {
     m_iPrecacheIndex = -1;
 
-
     m_sName = AllocPooledString( kv->GetName() );
     m_sModelPath = NULL_STRING;
-
 
     CopyData( kv );
 }
@@ -46,24 +40,20 @@ void CZMZombieModelData::CopyData( KeyValues* kv )
         m_sModelPath = AllocPooledString( modelpath );
     }
 
-
-    
     int skin = kv->GetInt( "skin", -1 );
     if ( kv->GetBool( "randomskin" ) )
     {
         // Pick any skin
         m_fSkins = 0xFFFFFFFF;
-        
     }
     else if ( skin >= 0 )
     {
-        m_fSkins = (1 << skin);
+        m_fSkins = ( 1 << skin );
     }
     else
     {
         m_fSkins = 1;
     }
-
 
     int bodygroup = kv->GetInt( "bodygroup", -1 );
     if ( kv->GetBool( "randombodygroup" ) )
@@ -73,7 +63,7 @@ void CZMZombieModelData::CopyData( KeyValues* kv )
     }
     else if ( bodygroup >= 0 )
     {
-        m_fBodygroups = (1 << bodygroup);
+        m_fBodygroups = ( 1 << bodygroup );
     }
     else
     {
@@ -83,9 +73,8 @@ void CZMZombieModelData::CopyData( KeyValues* kv )
 
 bool CZMZombieModelData::IsValidModel( const char* mdlpath )
 {
-    if ( !mdlpath || !(*mdlpath) )
+    if ( !mdlpath || !( *mdlpath ) )
         return false;
-
 
     return filesystem->FileExists( mdlpath );
 }
@@ -93,10 +82,9 @@ bool CZMZombieModelData::IsValidModel( const char* mdlpath )
 bool CZMZombieModelData::PrecacheMe()
 {
     m_iPrecacheIndex = CBaseEntity::PrecacheModel( GetModelPath() );
-    
+
     return m_iPrecacheIndex != -1;
 }
-
 
 //
 //
@@ -131,7 +119,7 @@ int CZMZombieDataPerType::FindModelByName( const char* name ) const
             return i;
         }
     }
-    
+
     return -1;
 }
 
@@ -144,8 +132,7 @@ void CZMZombieDataPerType::CopyData( KeyValues* kv )
     do
     {
         AddModelData( mdl );
-    }
-    while ( (mdl = mdl->GetNextKey()) != nullptr );
+    } while ( ( mdl = mdl->GetNextKey() ) != nullptr );
 }
 
 void CZMZombieDataPerType::LoadSection( KeyValues* kv )
@@ -153,23 +140,19 @@ void CZMZombieDataPerType::LoadSection( KeyValues* kv )
     if ( !kv )
         return;
 
-
-
     KeyValues* mdldata = kv->GetFirstSubKey();
     if ( !mdldata )
         return;
 
-
     do
     {
-        if ( !(*mdldata->GetName()) )
+        if ( !( *mdldata->GetName() ) )
         {
             continue;
         }
 
         AddModelData( mdldata );
-    }
-    while ( (mdldata = mdldata->GetNextKey()) != nullptr );
+    } while ( ( mdldata = mdldata->GetNextKey() ) != nullptr );
 }
 
 bool CZMZombieDataPerType::PrecacheMe()
@@ -180,7 +163,7 @@ bool CZMZombieDataPerType::PrecacheMe()
         if ( !pModelData->PrecacheMe() )
         {
             Warning( "Failed to precache zombie model group! Model: %s!\n", pModelData->GetModelPath() );
-            
+
             m_vModels.Remove( i );
             --i;
 
@@ -190,7 +173,6 @@ bool CZMZombieDataPerType::PrecacheMe()
 
     return m_vModels.Count() > 0;
 }
-
 
 //
 //
@@ -228,8 +210,6 @@ const CZMZombieModelData* CZMZombieModelGroup::RandomModel( ZombieClass_t zclass
 
     return mdls[random->RandomInt( 0, l - 1 )];
 }
-
-
 
 //
 //
@@ -279,7 +259,6 @@ void CZMZombieModelGroupSystem::LoadFiles()
             return;
         }
 
-
         LoadFromFile( kv );
     }
 
@@ -298,11 +277,10 @@ void CZMZombieModelGroupSystem::LoadFiles()
 void CZMZombieModelGroupSystem::LoadFromFile( KeyValues* kv )
 {
     KeyValues* temp;
-    
+
     temp = kv->FindKey( "default_modelgroup" );
     if ( temp )
         SetDefaultModelGroup( temp->GetString() );
-
 
     KeyValues* mdlgroup = kv->GetFirstTrueSubKey();
     if ( !mdlgroup )
@@ -310,14 +288,13 @@ void CZMZombieModelGroupSystem::LoadFromFile( KeyValues* kv )
 
     do
     {
-        if ( !(*mdlgroup->GetName()) )
+        if ( !( *mdlgroup->GetName() ) )
         {
             continue;
         }
 
         AddModelGroup( mdlgroup );
-    }
-    while ( (mdlgroup = mdlgroup->GetNextTrueSubKey()) != nullptr );
+    } while ( ( mdlgroup = mdlgroup->GetNextTrueSubKey() ) != nullptr );
 }
 
 void CZMZombieModelGroupSystem::OnZombieSpawn( CZMBaseZombie* pZombie )
@@ -340,7 +317,6 @@ void CZMZombieModelGroupSystem::OnZombieSpawn( CZMBaseZombie* pZombie )
 
         pZombie->SetModel( model );
 
-
         CStudioHdr* hdr = pZombie->GetModelPtr();
 
         if ( hdr )
@@ -349,14 +325,13 @@ void CZMZombieModelGroupSystem::OnZombieSpawn( CZMBaseZombie* pZombie )
             CUtlVector<int> vSkins;
 
             int flags = data->GetSkinBitFlag();
-            int num = MIN( hdr->numskinfamilies(), (sizeof( flags ) * 8) );
+            int num = MIN( hdr->numskinfamilies(), ( sizeof( flags ) * 8 ) );
             for ( int i = 0; i < num; i++ )
             {
                 int f = ( 1 << i );
                 if ( flags & f )
                     vSkins.AddToTail( i );
             }
-
 
             if ( vSkins.Count() > 0 )
             {
@@ -374,7 +349,7 @@ void CZMZombieModelGroupSystem::OnZombieSpawn( CZMBaseZombie* pZombie )
     {
         Warning( "Failed to find model group for zombie!\n" );
 
-#define ERROR_MODEL     "models/error.mdl"
+#define ERROR_MODEL "models/error.mdl"
 
         if ( CBaseEntity::PrecacheModel( ERROR_MODEL ) )
         {
@@ -402,7 +377,7 @@ void CZMZombieModelGroupSystem::AddModelGroup( KeyValues* kv )
 
 int CZMZombieModelGroupSystem::FindModelGroupByName( const char* name ) const
 {
-    if ( !name || !(*name) )
+    if ( !name || !( *name ) )
         return -1;
 
     FOR_EACH_VEC( m_vModelGroups, i )
@@ -412,7 +387,7 @@ int CZMZombieModelGroupSystem::FindModelGroupByName( const char* name ) const
             return i;
         }
     }
-    
+
     return -1;
 }
 
@@ -437,7 +412,6 @@ const CZMZombieModelData* CZMZombieModelGroupSystem::PickRandomModelFromGroup( Z
         }
     }
 
-
     return data;
 }
 
@@ -449,7 +423,6 @@ void CZMZombieModelGroupSystem::PrecacheModelGroup( const char* group )
 
     auto* mdlgroup = m_vModelGroups[index];
 
-    
     for ( int i = 0; i < ARRAYSIZE( mdlgroup->m_Data ); i++ )
     {
         mdlgroup->m_Data[i].PrecacheMe();
@@ -463,7 +436,6 @@ bool CZMZombieModelGroupSystem::PrecacheModelGroup( ZombieClass_t zclass, const 
     {
         return false;
     }
-
 
     m_vModelGroups[index]->m_Data[zclass].PrecacheMe();
 

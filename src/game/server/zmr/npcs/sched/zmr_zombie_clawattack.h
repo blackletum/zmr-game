@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "npcs/zmr_zombiebase.h"
 #include "zmr_zombie_main.h"
 
@@ -14,7 +13,6 @@ public:
     ~CZombieClawAttackSched();
 
     virtual const char* GetName() const override { return "ZombieClawAttack"; }
-
 
     virtual void OnStart() override;
 

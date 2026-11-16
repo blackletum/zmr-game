@@ -1,16 +1,13 @@
 #include "cbase.h"
 
-#include <vgui_controls/ImagePanel.h>
-#include <vgui_controls/Image.h>
 #include <vgui/IScheme.h>
-
+#include <vgui_controls/Image.h>
+#include <vgui_controls/ImagePanel.h>
 
 #include "zmr_shareddefs.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
-
 
 class CZMMainMenuImagePanel : public vgui::ImagePanel
 {
@@ -19,10 +16,8 @@ public:
     typedef CZMMainMenuImagePanel ThisClass;
     //DECLARE_CLASS( CZMMainMenuImagePanel, vgui::ImagePanel );
 
-
     CZMMainMenuImagePanel( vgui::Panel* pParent, const char* name );
     ~CZMMainMenuImagePanel();
-
 
     virtual void ApplySettings( KeyValues* kv ) override;
     virtual void PerformLayout() override;
@@ -34,12 +29,9 @@ private:
     int m_iBottomY;
 };
 
-
 DECLARE_BUILD_FACTORY( CZMMainMenuImagePanel );
 
-
 using namespace vgui;
-
 
 CZMMainMenuImagePanel::CZMMainMenuImagePanel( vgui::Panel* pParent, const char* name ) : BaseClass( pParent, name )
 {
@@ -51,13 +43,11 @@ CZMMainMenuImagePanel::CZMMainMenuImagePanel( vgui::Panel* pParent, const char* 
 
 CZMMainMenuImagePanel::~CZMMainMenuImagePanel()
 {
-    
 }
 
 void CZMMainMenuImagePanel::ApplySettings( KeyValues* kv )
 {
     m_bAlignBottom = kv->GetBool( "alignbottom", false );
-
 
     auto* images = kv->FindKey( "images" );
 
@@ -81,7 +71,7 @@ void CZMMainMenuImagePanel::ApplySettings( KeyValues* kv )
                 vImages.AddToTail( { imgname, iEvent } );
             }
         }
-        
+
         if ( vImages.Count() )
         {
             ZMImgData_t* pImageData = nullptr;
@@ -101,13 +91,10 @@ void CZMMainMenuImagePanel::ApplySettings( KeyValues* kv )
                     continue;
                 }
 
-
                 pImageData = &vImages.Element( index );
                 break;
-            }
-            while ( vImages.Count() > 0 );
+            } while ( vImages.Count() > 0 );
 
-            
             if ( pImageData )
             {
                 SetImage( pImageData->pszImageName );
@@ -125,7 +112,6 @@ void CZMMainMenuImagePanel::PerformLayout()
     int cw, ch;
     GetSize( cw, ch );
 
-
     if ( m_bGetBottom )
     {
         m_bGetBottom = false;
@@ -133,15 +119,12 @@ void CZMMainMenuImagePanel::PerformLayout()
         m_iBottomY = GetYPos() + m_nOriginalHeight;
     }
 
-
     // Change the image height so the image doesn't look stretched.
     auto* pImage = GetImage();
     if ( pImage )
     {
         int imgw, imgh;
         pImage->GetContentSize( imgw, imgh );
-
-
 
         float intendedratio = 1024 / (float)512;
 
@@ -157,7 +140,6 @@ void CZMMainMenuImagePanel::PerformLayout()
             SetTall( ch );
         }
     }
-
 
     // Align the image using the bottom corner
     if ( m_bAlignBottom )

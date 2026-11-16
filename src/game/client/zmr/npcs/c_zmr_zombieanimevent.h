@@ -4,7 +4,6 @@
 
 #include "c_zmr_zombiebase.h"
 
-
 class C_ZMTEZombieAnimEvent : public C_BaseTempEntity
 {
 public:

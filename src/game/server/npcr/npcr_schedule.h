@@ -1,10 +1,8 @@
 #pragma once
 
-
 #include "cbase.h"
 
 #include "npcr_basenpc.h"
-
 
 namespace NPCR
 {
@@ -63,12 +61,10 @@ namespace NPCR
             //delete m_pChild;
             //m_pChild = nullptr;
         }
-        
 
         virtual const char* GetName() const { return ""; }
 
         virtual NPCRChar* GetOuter() const override { return m_pOuter; }
-
 
         bool HasStarted() const { return m_State != SCHED_INSTART; }
         bool IsDone() const { return m_State == SCHED_DONE; }
@@ -80,7 +76,6 @@ namespace NPCR
         virtual void OnEnd() {}
         virtual void OnContinue() {} // When the child schedule has finished.
         virtual void OnIntercept() {}
-        
 
         CSchedule<NPCRChar>* GetActiveSchedule() const
         {
@@ -93,7 +88,6 @@ namespace NPCR
             return const_cast<CSchedule<NPCRChar>*>( this );
         }
 
-        
         ScheduleState_t GetState() const { return m_State; }
         EventState_t GetEventState() const { return m_EventState; }
 
@@ -118,7 +112,6 @@ namespace NPCR
             if ( IsDebugging() )
                 Msg( "[NPCR] Trying to intercept '%s' with '%s' because '%s'.\n", GetName(), sched->GetName(), szReason );
 
-
             m_EventState = SCHED_EVENT_INTERCEPT;
             m_pNextSchedule = sched;
             m_pszEventReason = szReason;
@@ -138,20 +131,17 @@ namespace NPCR
             if ( IsDebugging() )
                 Msg( "[NPCR] Intercepted '%s' with '%s' because '%s'.\n", GetName(), sched->GetName(), szReason );
 
-
             sched->m_pParent = this;
             sched->m_pChild = nullptr;
             ScheduleState_t retState = sched->RunStart( GetOuter(), GetParentInterface() );
-            
+
             if ( retState == SCHED_DONE )
             {
                 return retState;
             }
-            
 
             OnIntercept();
             GetParentInterface()->RemoveComponent( this );
-
 
             m_State = SCHED_INTERCEPTED;
             m_pChild = sched;
@@ -169,7 +159,6 @@ namespace NPCR
             if ( IsDebugging() )
                 Msg( "[NPCR] Trying to end '%s' because '%s'.\n", GetName(), szReason );
 
-
             m_EventState = SCHED_EVENT_DONE;
             m_pszEventReason = szReason;
         }
@@ -186,9 +175,7 @@ namespace NPCR
             if ( IsDebugging() )
                 Msg( "[NPCR] Ended '%s' because '%s'.\n", GetName(), szReason );
 
-
             m_State = SCHED_DONE;
-
 
             if ( m_pChild )
             {
@@ -197,7 +184,6 @@ namespace NPCR
             }
 
             m_pChild = nullptr;
-
 
             if ( m_pFriendSched )
             {
@@ -210,16 +196,13 @@ namespace NPCR
 
         CScheduleInterface* GetParentInterface() const { return m_pParentInterface; }
 
-
         void SetOuter( NPCRChar* pOuter ) { m_pOuter = pOuter; }
-
 
         void RunEnd()
         {
             GetParentInterface()->RemoveComponent( this );
 
             OnEnd();
-
 
             if ( m_pParent )
             {
@@ -236,13 +219,10 @@ namespace NPCR
                 return;
             }
 
-
             m_pChild = nullptr;
             m_State = SCHED_INPROGRESS;
 
-
             GetParentInterface()->AddComponent( this );
-
 
             if ( IsDebugging() )
                 Msg( "[NPCR] Continuing '%s'\n", GetName() );
@@ -257,18 +237,15 @@ namespace NPCR
             SetOuter( pOuter );
             m_pParentInterface = pParentInterface;
 
-
             m_pFriendSched = CreateFriendSchedule();
             if ( m_pFriendSched )
             {
                 m_pFriendSched->RunStart( pOuter, pParentInterface );
             }
-            
 
             m_EventState = SCHED_EVENT_OK;
             m_State = SCHED_INPROGRESS;
             OnStart();
-
 
             CSchedule<NPCRChar>* newSched = GetActiveSchedule();
             if ( newSched->IsRunning() )
@@ -277,10 +254,8 @@ namespace NPCR
                 GetParentInterface()->AddComponent( newSched );
             }
 
-
             return newSched->GetState();
         }
-
 
         virtual void StartInitialSchedule() override
         {
@@ -298,7 +273,7 @@ namespace NPCR
             while ( pFirst )
             {
                 CSchedule<NPCRChar>* pActive;
-                
+
                 pActive = pFirst->GetActiveSchedule();
 
                 if ( !pActive->HasStarted() )
@@ -308,7 +283,6 @@ namespace NPCR
                     // Might get updated.
                     pActive = pActive->GetActiveSchedule();
                 }
-
 
                 // Handle any event requests.
                 while ( pActive->GetEventState() != SCHED_EVENT_OK )
@@ -321,7 +295,6 @@ namespace NPCR
                     {
                         pActive->End( m_pszEventReason );
                     }
-
 
                     pActive->m_EventState = SCHED_EVENT_OK;
 
@@ -340,7 +313,6 @@ namespace NPCR
                     pActive = next;
                 }
 
-
                 if ( pActive->IsRunning() )
                 {
                     pActive->OnUpdate();
@@ -350,7 +322,6 @@ namespace NPCR
             }
         }
 
-    
         NPCRChar* m_pOuter;
         ScheduleState_t m_State;
 
@@ -364,7 +335,6 @@ namespace NPCR
         CScheduleInterface* m_pParentInterface;
     };
 
-
     class CScheduleInterface : public CEventDispatcher
     {
     public:
@@ -372,7 +342,6 @@ namespace NPCR
         ~CScheduleInterface();
 
         virtual const char* GetComponentName() const override { return "ScheduleInterface"; }
-
 
     protected:
         virtual void Update() override;
